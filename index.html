@@ -10,21 +10,55 @@
   
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#60a5fa">
 <title>Calculadora de Arbitraje Cambiario</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   /* Evita el zoom automático de iOS al enfocar inputs (mínimo 16px) */
   input { font-size: 16px; }
+
+  /* Transición suave entre temas */
+  body, section, input, button { transition: background-color .25s ease, color .25s ease, border-color .25s ease; }
+
+  /* ===== Modo Claro ===== */
+  html.light body,
+  html.light .bg-slate-950 { background-color: #f8fafc !important; }
+  html.light .bg-slate-950\/50 { background-color: #eef2f7 !important; }
+  html.light .bg-slate-900 { background-color: #ffffff !important; }
+  html.light .bg-slate-800,
+  html.light .bg-slate-800\/60 { background-color: #eef2f7 !important; }
+  html.light .border-slate-800,
+  html.light .border-slate-800\/80 { border-color: #e2e8f0 !important; }
+  html.light .border-slate-700 { border-color: #cbd5e1 !important; }
+  html.light .text-slate-100 { color: #0f172a !important; }
+  html.light .text-slate-300 { color: #334155 !important; }
+  html.light .text-slate-400 { color: #64748b !important; }
+  html.light .text-slate-500 { color: #94a3b8 !important; }
+  html.light .text-slate-600 { color: #94a3b8 !important; }
+  html.light .placeholder-slate-600::placeholder { color: #cbd5e1 !important; }
+  html.light .shadow-black\/20,
+  html.light .shadow-black\/40 { --tw-shadow-color: rgb(100 116 139 / 0.15) !important; }
 </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen antialiased">
+<script>
+  // Aplica el tema guardado lo antes posible para evitar parpadeo visual
+  if (localStorage.getItem('arbitrajeTema') === 'light') {
+    document.documentElement.classList.add('light');
+  }
+</script>
 
-  <div class="max-w-md mx-auto px-4 py-6 pb-16">
+  <div class="max-w-md mx-auto px-4 py-6 pb-16 relative">
 
     <!-- Encabezado -->
-    <header class="mb-6 text-center">
-      <h1 class="text-2xl font-bold text-blue-400 tracking-tight">Arbitraje Cambiario</h1>
-      <p class="text-slate-400 text-sm mt-1">Bs → USD → USDT → Bs</p>
+    <header class="mb-6 flex items-center justify-between">
+      <div class="flex-1 text-center">
+        <h1 class="text-2xl font-bold text-blue-400 tracking-tight">Arbitraje Cambiario</h1>
+        <p class="text-slate-400 text-sm mt-1">Bs → USD → USDT → Bs</p>
+      </div>
+      <button id="themeToggleBtn" aria-label="Cambiar tema" class="absolute right-4 top-4 w-9 h-9 flex items-center justify-center rounded-full bg-slate-800 border border-slate-700 text-slate-300 hover:text-blue-400 transition">
+        <span id="themeIcon">🌙</span>
+      </button>
     </header>
 
     <!-- Tarjeta 1: Compra en Banco -->
@@ -42,12 +76,21 @@
             <input type="text" id="montoUSD" inputmode="decimal" pattern="[0-9,.]*" placeholder="100.00"
               class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-7 pr-3 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
           </div>
+          <div class="flex gap-2 mt-2">
+            <button type="button" data-monto="50" class="quick-amount flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">$50</button>
+            <button type="button" data-monto="100" class="quick-amount flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">$100</button>
+            <button type="button" data-monto="500" class="quick-amount flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">$500</button>
+            <button type="button" data-monto="1000" class="quick-amount flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">$1000</button>
+          </div>
         </div>
 
         <div>
           <div class="flex justify-between items-center mb-1.5">
             <label for="tasaBanco" class="block text-xs font-medium text-slate-400">Tasa Banco (Bs)</label>
-            <span id="bcvStatus" class="text-[10px] text-amber-400 font-medium animate-pulse">Cargando BCV...</span>
+            <span class="flex items-center gap-1.5">
+              <span id="bcvVolatilidad" class="text-[10px] font-semibold"></span>
+              <span id="bcvStatus" class="text-[10px] text-amber-400 font-medium animate-pulse">Cargando BCV...</span>
+            </span>
           </div>
           <div class="relative">
             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">Bs</span>
@@ -97,7 +140,10 @@
         <div>
           <div class="flex justify-between items-center mb-1.5">
             <label for="tasaP2P" class="block text-xs font-medium text-slate-400">Tasa de Venta P2P (Bs/USDT)</label>
-            <span id="p2pStatus" class="text-[10px] text-amber-400 font-medium animate-pulse">Cargando P2P...</span>
+            <span class="flex items-center gap-1.5">
+              <span id="p2pVolatilidad" class="text-[10px] font-semibold"></span>
+              <span id="p2pStatus" class="text-[10px] text-amber-400 font-medium animate-pulse">Cargando P2P...</span>
+            </span>
           </div>
           <div class="relative">
             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">Bs</span>
@@ -109,8 +155,13 @@
     </section>
 
     <!-- Resultados -->
-    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg shadow-black/20 mb-6">
-      <h2 class="text-blue-400 font-semibold text-base mb-4">Resultado del Arbitraje</h2>
+    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg shadow-black/20 mb-4">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-blue-400 font-semibold text-base">Resultado del Arbitraje</h2>
+        <button id="copyBtn" class="text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+          📋 <span id="copyBtnText">Copiar</span>
+        </button>
+      </div>
 
       <div class="space-y-3 text-sm">
         <div class="flex justify-between items-center py-2 border-b border-slate-800">
@@ -140,6 +191,27 @@
           <p class="text-xs text-slate-400 mb-1">Rentabilidad de la Operación</p>
           <p id="gananciaPct" class="text-2xl font-bold">0,00%</p>
         </div>
+      </div>
+
+      <div id="viabilidadBadge" class="mt-4 text-center text-xs font-semibold py-2.5 rounded-xl border"></div>
+
+      <button id="saveHistorialBtn" class="w-full mt-4 text-sm font-medium bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 py-2.5 rounded-xl transition flex items-center justify-center gap-2">
+        💾 Guardar en historial
+      </button>
+    </section>
+
+    <!-- Historial -->
+    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg shadow-black/20 mb-6">
+      <button id="toggleHistorialBtn" class="w-full flex justify-between items-center text-left">
+        <h2 class="text-blue-400 font-semibold text-base">📜 Historial de Cálculos</h2>
+        <span id="historialChevron" class="text-slate-500 transition-transform">▾</span>
+      </button>
+      <div id="historialPanel" class="hidden mt-4">
+        <div id="historialLista" class="space-y-2 max-h-72 overflow-y-auto"></div>
+        <p id="historialVacio" class="text-xs text-slate-500 text-center py-4">Aún no has guardado ningún cálculo.</p>
+        <button id="clearHistorialBtn" class="hidden w-full mt-3 text-xs font-medium text-red-400 hover:text-red-300 border border-red-500/30 bg-red-500/5 hover:bg-red-500/10 py-2 rounded-lg transition">
+          Vaciar historial
+        </button>
       </div>
     </section>
 
@@ -171,6 +243,30 @@
 
   const fmtBs = (n) => 'Bs ' + n.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const fmtUSD = (n) => '$' + Math.abs(n).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  // ===== Guarda el último cálculo para copiar/guardar en historial =====
+  let ultimoCalculo = null;
+
+  // ===== Tema Claro / Oscuro =====
+  function aplicarIconoTema() {
+    const esClaro = document.documentElement.classList.contains('light');
+    $('themeIcon').textContent = esClaro ? '☀️' : '🌙';
+  }
+  $('themeToggleBtn').addEventListener('click', () => {
+    document.documentElement.classList.toggle('light');
+    const esClaro = document.documentElement.classList.contains('light');
+    localStorage.setItem('arbitrajeTema', esClaro ? 'light' : 'dark');
+    aplicarIconoTema();
+  });
+  aplicarIconoTema();
+
+  // ===== Botones de montos rápidos =====
+  document.querySelectorAll('.quick-amount').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $('montoUSD').value = btn.dataset.monto;
+      $('montoUSD').dispatchEvent(new Event('input'));
+    });
+  });
 
   function num(el) {
     let texto = el.value.trim();
@@ -208,6 +304,8 @@
     $('gananciaUSD').className = "text-2xl font-bold text-slate-100";
     $('gananciaPct').textContent = '0,00%';
     $('gananciaPct').className = "text-2xl font-bold text-slate-100";
+    $('viabilidadBadge').className = "hidden";
+    ultimoCalculo = null;
   }
 
   function calcular() {
@@ -257,6 +355,52 @@
     setColor($('gananciaBs'), gananciaBs);
     setColor($('gananciaUSD'), gananciaUSD);
     setColor($('gananciaPct'), gananciaPct);
+
+    // ===== Badge de viabilidad de la operación =====
+    const badge = $('viabilidadBadge');
+    badge.className = "mt-4 text-center text-xs font-semibold py-2.5 rounded-xl border";
+    if (gananciaPct > 3) {
+      badge.textContent = '✓ Operación rentable';
+      badge.classList.add('bg-emerald-500/10', 'border-emerald-500/30', 'text-emerald-400');
+    } else if (gananciaPct < -1) {
+      badge.textContent = '✗ Mejor esperar mejores tasas';
+      badge.classList.add('bg-red-500/10', 'border-red-500/30', 'text-red-400');
+    } else {
+      badge.textContent = '→ Ganancia marginal, evalúa con cuidado';
+      badge.classList.add('bg-amber-500/10', 'border-amber-500/30', 'text-amber-400');
+    }
+
+    // ===== Guarda el cálculo actual para copiar/guardar en historial =====
+    ultimoCalculo = {
+      montoUSD, tasaBanco, comisionBanco, comisionTarjeta, usdtNetos, tasaP2P,
+      bsInvertidos, bsObtenidos, gananciaBs, gananciaUSD, gananciaPct, perdidaComisiones
+    };
+  }
+
+  // ===== Indicador de volatilidad: compara con la primera tasa vista hoy =====
+  function actualizarVolatilidad(clave, valorActual, elemento) {
+    const hoy = new Date().toDateString();
+    const claveFecha = `arbitraje_${clave}_fecha`;
+    const claveValor = `arbitraje_${clave}_baseline`;
+
+    const fechaGuardada = localStorage.getItem(claveFecha);
+    const baseline = parseFloat(localStorage.getItem(claveValor));
+
+    if (fechaGuardada === hoy && !isNaN(baseline) && baseline > 0) {
+      const variacion = ((valorActual - baseline) / baseline) * 100;
+      if (Math.abs(variacion) < 0.01) {
+        elemento.textContent = '';
+      } else {
+        const signo = variacion > 0 ? '▲' : '▼';
+        elemento.textContent = `${signo} ${Math.abs(variacion).toFixed(2)}% hoy`;
+        elemento.className = 'text-[10px] font-semibold ' + (variacion > 0 ? 'text-emerald-400' : 'text-red-400');
+      }
+    } else {
+      // Primera lectura del día: se guarda como referencia
+      localStorage.setItem(claveFecha, hoy);
+      localStorage.setItem(claveValor, valorActual);
+      elemento.textContent = '';
+    }
   }
 
   // OPTIMIZACIÓN MÁXIMA: Un solo Fetch a la API global para extraer BCV y Paralelo simultáneamente
@@ -275,9 +419,11 @@
       // 1. Buscamos y extraemos la tasa Oficial (BCV)
       const dataOficial = datos.find(item => item.fuente === 'oficial');
       if (dataOficial && dataOficial.promedio) {
-        $('tasaBanco').value = parseFloat(dataOficial.promedio).toFixed(2);
+        const valorBCV = parseFloat(dataOficial.promedio);
+        $('tasaBanco').value = valorBCV.toFixed(2);
         bcvStatusEl.textContent = "● BCV Actualizado";
         bcvStatusEl.className = "text-[10px] text-emerald-400 font-medium";
+        actualizarVolatilidad('bcv', valorBCV, $('bcvVolatilidad'));
         huboExito = true;
       } else {
         bcvStatusEl.textContent = "⚠️ Tasa manual (Offline)";
@@ -287,9 +433,11 @@
       // 2. Buscamos y extraemos la tasa Paralelo
       const dataParalelo = datos.find(item => item.fuente === 'paralelo');
       if (dataParalelo && dataParalelo.promedio) {
-        $('tasaP2P').value = parseFloat(dataParalelo.promedio).toFixed(2);
+        const valorP2P = parseFloat(dataParalelo.promedio);
+        $('tasaP2P').value = valorP2P.toFixed(2);
         p2pStatusEl.textContent = "● Paralelo Promedio Sincronizado";
         p2pStatusEl.className = "text-[10px] text-emerald-400 font-medium";
+        actualizarVolatilidad('p2p', valorP2P, $('p2pVolatilidad'));
         huboExito = true;
       } else {
         p2pStatusEl.textContent = "⚠️ Tasa manual (Offline)";
@@ -310,6 +458,147 @@
 
   inputs.forEach(el => el.addEventListener('input', calcular));
 
+  // ===== Copiar resumen al portapapeles =====
+  $('copyBtn').addEventListener('click', async () => {
+    if (!ultimoCalculo) return;
+    const c = ultimoCalculo;
+    const resumen =
+`📊 Arbitraje Cambiario
+Monto invertido: $${c.montoUSD.toFixed(2)}
+Bs Invertidos: ${fmtBs(c.bsInvertidos)}
+Bs Obtenidos: ${fmtBs(c.bsObtenidos)}
+Ganancia Neta: ${fmtBs(c.gananciaBs)} (${fmtUSD(c.gananciaUSD)})
+Rentabilidad: ${c.gananciaPct.toFixed(2)}%`;
+
+    try {
+      await navigator.clipboard.writeText(resumen);
+    } catch (err) {
+      // Fallback para contextos sin permiso de portapapeles
+      const temp = document.createElement('textarea');
+      temp.value = resumen;
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand('copy');
+      document.body.removeChild(temp);
+    }
+    const textEl = $('copyBtnText');
+    const original = textEl.textContent;
+    textEl.textContent = '¡Copiado!';
+    $('copyBtn').classList.add('text-emerald-400', 'border-emerald-500/30');
+    setTimeout(() => {
+      textEl.textContent = original;
+      $('copyBtn').classList.remove('text-emerald-400', 'border-emerald-500/30');
+    }, 1800);
+  });
+
+  // ===== Historial de Cálculos =====
+  const HISTORIAL_KEY = 'arbitrajeHistorial';
+  const MAX_HISTORIAL = 15;
+
+  function leerHistorial() {
+    try {
+      return JSON.parse(localStorage.getItem(HISTORIAL_KEY)) || [];
+    } catch { return []; }
+  }
+
+  function guardarHistorial(lista) {
+    localStorage.setItem(HISTORIAL_KEY, JSON.stringify(lista));
+  }
+
+  function renderHistorial() {
+    const lista = leerHistorial();
+    const cont = $('historialLista');
+    const vacio = $('historialVacio');
+    const clearBtn = $('clearHistorialBtn');
+
+    if (lista.length === 0) {
+      cont.innerHTML = '';
+      vacio.classList.remove('hidden');
+      clearBtn.classList.add('hidden');
+      return;
+    }
+
+    vacio.classList.add('hidden');
+    clearBtn.classList.remove('hidden');
+
+    cont.innerHTML = lista.map(item => {
+      const positivo = item.gananciaUSD >= 0;
+      const colorClase = positivo ? 'text-emerald-400' : 'text-red-400';
+      return `
+        <div class="flex items-center justify-between gap-2 bg-slate-800/60 rounded-xl p-3 text-xs">
+          <div class="cursor-pointer flex-1" data-load="${item.id}">
+            <p class="font-semibold text-slate-100">$${item.montoUSD.toFixed(2)} <span class="text-slate-500 font-normal">→</span> <span class="${colorClase} font-bold">${positivo ? '+' : ''}${fmtUSD(item.gananciaUSD)}</span></p>
+            <p class="text-slate-500 mt-0.5">${item.fecha} · Rentabilidad ${item.gananciaPct.toFixed(2)}%</p>
+          </div>
+          <button data-delete="${item.id}" class="text-slate-600 hover:text-red-400 px-2 py-1 transition">✕</button>
+        </div>`;
+    }).join('');
+
+    cont.querySelectorAll('[data-load]').forEach(el => {
+      el.addEventListener('click', () => cargarDesdeHistorial(el.dataset.load));
+    });
+    cont.querySelectorAll('[data-delete]').forEach(el => {
+      el.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        eliminarDeHistorial(el.dataset.delete);
+      });
+    });
+  }
+
+  function cargarDesdeHistorial(id) {
+    const item = leerHistorial().find(i => i.id === id);
+    if (!item) return;
+    $('montoUSD').value = item.montoUSD;
+    $('tasaBanco').value = item.tasaBanco;
+    $('comisionBanco').value = item.comisionBanco;
+    $('comisionTarjeta').value = item.comisionTarjeta;
+    $('usdtNetos').value = item.usdtNetos;
+    $('tasaP2P').value = item.tasaP2P;
+    calcular();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function eliminarDeHistorial(id) {
+    const nuevaLista = leerHistorial().filter(i => i.id !== id);
+    guardarHistorial(nuevaLista);
+    renderHistorial();
+  }
+
+  $('saveHistorialBtn').addEventListener('click', () => {
+    if (!ultimoCalculo) return;
+    const c = ultimoCalculo;
+    const nuevoItem = {
+      id: Date.now().toString(),
+      montoUSD: c.montoUSD, tasaBanco: c.tasaBanco, comisionBanco: c.comisionBanco,
+      comisionTarjeta: c.comisionTarjeta, usdtNetos: c.usdtNetos, tasaP2P: c.tasaP2P,
+      gananciaUSD: c.gananciaUSD, gananciaBs: c.gananciaBs, gananciaPct: c.gananciaPct,
+      fecha: new Date().toLocaleString('es-VE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+    };
+    const lista = [nuevoItem, ...leerHistorial()].slice(0, MAX_HISTORIAL);
+    guardarHistorial(lista);
+    renderHistorial();
+
+    const btn = $('saveHistorialBtn');
+    const textoOriginal = btn.innerHTML;
+    btn.innerHTML = '✓ Guardado en historial';
+    setTimeout(() => { btn.innerHTML = textoOriginal; }, 1500);
+  });
+
+  $('clearHistorialBtn').addEventListener('click', () => {
+    if (confirm('¿Vaciar todo el historial de cálculos?')) {
+      guardarHistorial([]);
+      renderHistorial();
+    }
+  });
+
+  $('toggleHistorialBtn').addEventListener('click', () => {
+    const panel = $('historialPanel');
+    const chevron = $('historialChevron');
+    panel.classList.toggle('hidden');
+    chevron.style.transform = panel.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+  });
+
+  renderHistorial();
   resetRender();
 
   setTimeout(consultarTasasEnTiempoReal, 500);
