@@ -9,24 +9,19 @@
 <title>Calculadora de Arbitraje Cambiario</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-  /* Evita el zoom automático de iOS al enfocar inputs (mínimo 16px) y afina el spinner numérico */
-  input[type="number"] { font-size: 16px; }
-  input[type="number"]::-webkit-outer-spin-button,
-  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-  input[type="number"] { -moz-appearance: textfield; }
+  /* Evita el zoom automático de iOS al enfocar inputs (mínimo 16px) */
+  input { font-size: 16px; }
 </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen antialiased">
 
   <div class="max-w-md mx-auto px-4 py-6 pb-16">
 
-    <!-- Encabezado -->
     <header class="mb-6 text-center">
       <h1 class="text-2xl font-bold text-blue-400 tracking-tight">Arbitraje Cambiario</h1>
       <p class="text-slate-400 text-sm mt-1">Bs → USD → USDT → Bs</p>
     </header>
 
-    <!-- Tarjeta 1: Compra en Banco -->
     <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-4 shadow-lg shadow-black/20">
       <h2 class="text-blue-400 font-semibold text-base mb-4 flex items-center gap-2">
         <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-400/10 text-blue-400 text-xs font-bold">1</span>
@@ -38,7 +33,7 @@
           <label for="montoUSD" class="block text-xs font-medium text-slate-400 mb-1.5">Monto a Comprar (USD)</label>
           <div class="relative">
             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
-            <input type="number" id="montoUSD" inputmode="decimal" placeholder="100.00" step="any"
+            <input type="text" id="montoUSD" inputmode="decimal" pattern="[0-9,.]*" placeholder="100.00"
               class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-7 pr-3 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
           </div>
         </div>
@@ -47,7 +42,7 @@
           <label for="tasaBanco" class="block text-xs font-medium text-slate-400 mb-1.5">Tasa Banco (Bs)</label>
           <div class="relative">
             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">Bs</span>
-            <input type="number" id="tasaBanco" inputmode="decimal" placeholder="130.00" step="any"
+            <input type="text" id="tasaBanco" inputmode="decimal" pattern="[0-9,.]*" placeholder="130.00"
               class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-9 pr-3 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
           </div>
         </div>
@@ -56,7 +51,7 @@
           <div>
             <label for="comisionBanco" class="block text-xs font-medium text-slate-400 mb-1.5">Comisión Banco (%)</label>
             <div class="relative">
-              <input type="number" id="comisionBanco" inputmode="decimal" placeholder="0.50" step="any"
+              <input type="text" id="comisionBanco" inputmode="decimal" pattern="[0-9,.]*" placeholder="0.50"
                 class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-3 pr-8 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
               <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">%</span>
             </div>
@@ -64,7 +59,7 @@
           <div>
             <label for="comisionTarjeta" class="block text-xs font-medium text-slate-400 mb-1.5">Comisión Tarjeta (%)</label>
             <div class="relative">
-              <input type="number" id="comisionTarjeta" inputmode="decimal" placeholder="1.50" step="any"
+              <input type="text" id="comisionTarjeta" inputmode="decimal" pattern="[0-9,.]*" placeholder="1.50"
                 class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-3 pr-8 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
               <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">%</span>
             </div>
@@ -73,7 +68,6 @@
       </div>
     </section>
 
-    <!-- Tarjeta 2: Conversión a Crypto -->
     <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6 shadow-lg shadow-black/20">
       <h2 class="text-blue-400 font-semibold text-base mb-4 flex items-center gap-2">
         <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-400/10 text-blue-400 text-xs font-bold">2</span>
@@ -85,7 +79,7 @@
           <label for="usdtNetos" class="block text-xs font-medium text-slate-400 mb-1.5">USDT a Recibir Netos</label>
           <div class="relative">
             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">₮</span>
-            <input type="number" id="usdtNetos" inputmode="decimal" placeholder="97.50" step="any"
+            <input type="text" id="usdtNetos" inputmode="decimal" pattern="[0-9,.]*" placeholder="97.50"
               class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-8 pr-3 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
           </div>
         </div>
@@ -94,14 +88,13 @@
           <label for="tasaP2P" class="block text-xs font-medium text-slate-400 mb-1.5">Tasa de Venta P2P (Bs/USDT)</label>
           <div class="relative">
             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">Bs</span>
-            <input type="number" id="tasaP2P" inputmode="decimal" placeholder="135.00" step="any"
+            <input type="text" id="tasaP2P" inputmode="decimal" pattern="[0-9,.]*" placeholder="135.00"
               class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-9 pr-3 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Resultados -->
     <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg shadow-black/20">
       <h2 class="text-blue-400 font-semibold text-base mb-4">Resultado del Arbitraje</h2>
 
@@ -147,8 +140,10 @@
   const fmtBs = (n) => 'Bs ' + n.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const fmtUSD = (n) => '$' + Math.abs(n).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+  // Modificado para limpiar el texto y cambiar comas por puntos antes de calcular
   function num(el) {
-    const v = parseFloat(el.value);
+    let valorTexto = el.value.replace(/,/g, '.'); // Reemplaza comas por puntos
+    const v = parseFloat(valorTexto);
     return isNaN(v) ? 0 : v;
   }
 
