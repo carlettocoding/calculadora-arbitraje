@@ -256,22 +256,23 @@
     setColor($('gananciaPct'), gananciaPct);
   }
 
-  // FUNCIÓN PERFECCIONADA: Petición 100% directa al JSON estático sin proxies inestables
+  // FUNCIÓN CORREGIDA: Apunta al endpoint real /bcv/current.json y lee la estructura exacta[cite: 2]
   async function consultarTasasEnTiempoReal() {
     const statusEl = $('bcvStatus');
-    const urlOriginal = 'https://rates.dolarvzla.com';
+    const urlCorrecta = 'https://rates.dolarvzla.com/bcv/current.json';
 
     try {
-      const respuesta = await fetch(urlOriginal);
+      const respuesta = await fetch(urlCorrecta);
       if (!respuesta.ok) throw new Error();
       
       const datos = await respuesta.json();
       
-      if (datos) {
-        const valorTasa = datos.bcv ? parseFloat(datos.bcv) : parseFloat(datos);
+      // Validamos y extraemos según la estructura: datos.current.usd[cite: 2]
+      if (datos && datos.current && datos.current.usd) {
+        const tasaBCV = parseFloat(datos.current.usd);
         
-        if (!isNaN(valorTasa) && valorTasa > 0) {
-          $('tasaBanco').value = valorTasa.toFixed(2);
+        if (!isNaN(tasaBCV) && tasaBCV > 0) {
+          $('tasaBanco').value = tasaBCV.toFixed(2);
           statusEl.textContent = "● BCV Actualizado";
           statusEl.className = "text-[10px] text-emerald-400 font-medium";
           calcular();
@@ -289,7 +290,7 @@
 
   resetRender();
 
-  // OBLIGATORIO: Le damos 500 milisegundos de espera para que la red procese el Service Worker y el fetch pase limpio
+  // Le damos el margen de espera estándar para que la PWA sincronice
   setTimeout(consultarTasasEnTiempoReal, 500);
 </script>
 
