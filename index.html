@@ -190,7 +190,7 @@
     el.classList.remove('text-emerald-400', 'text-red-400', 'text-slate-100');
     if (value > 0) el.classList.add('text-red-400');      
     else if (value < 0) el.classList.add('text-emerald-400'); 
-    else el.classList.add('text-slate-100');
+    else el.className = "font-medium text-slate-100";
   }
 
   function resetRender() {
@@ -256,21 +256,19 @@
     setColor($('gananciaPct'), gananciaPct);
   }
 
-  // FUNCIÓN CORREGIDA: Apunta directo al recurso bcv.json según la documentación del CDN sin CORS
+  // FUNCIÓN REESTRUCTURADA: Usa un proxy CORS compatible y estable tanto para navegadores de PC como móviles
   async function consultarTasasEnTiempoReal() {
     const statusEl = $('bcvStatus');
-    // Ruta directa al archivo estático del BCV provisto por el CDN libre de CORS
-    const urlCDN = 'https://rates.dolarvzla.com/bcv.json';
+    const urlOriginal = 'https://rates.dolarvzla.com/bcv.json';
+    const urlConProxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(urlOriginal);
 
     try {
-      const respuesta = await fetch(urlCDN);
+      const respuesta = await fetch(urlConProxy);
       if (!respuesta.ok) throw new Error();
       
       const datos = await respuesta.json();
       
-      // La API entrega un objeto directo con la tasa o un campo específico, validamos la propiedad 'bcv' o similar
       if (datos) {
-        // Si el JSON contiene directamente el número o viene bajo la propiedad 'bcv'
         const valorTasa = datos.bcv ? parseFloat(datos.bcv) : parseFloat(datos);
         
         if (!isNaN(valorTasa) && valorTasa > 0) {
@@ -283,7 +281,7 @@
       }
       throw new Error();
     } catch (error) {
-      statusEl.textContent = "⚠️ Error de conexión BCV";
+      statusEl.textContent = "⚠️ Tasa manual (Offline)";
       statusEl.className = "text-[10px] text-red-400 font-medium animate-none";
     }
   }
@@ -333,12 +331,26 @@
   });
 </script>
 
-<!-- Script de Registro del Service Worker para PWA -->
+<!-- Script de Registro y Actualización del Service Worker -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('sw.js')
-        .then(reg => console.log('Service Worker registrado con éxito', reg))
+        .then(reg => {
+          console.log('Service Worker registrado con éxito', reg);
+          
+          // Escucha si hay una nueva versión lista para instalar en segundo plano
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            newWorker.addEventListener('statechange', () => {
+              // Si el archivo nuevo terminó de instalarse, refresca la página solo una vez de forma automática
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                console.log('Nueva versión detectada. Recargando la aplicación...');
+                window.location.reload();
+              }
+            });
+          });
+        })
         .catch(err => console.error('Error al registrar el Service Worker', err));
     });
   }
