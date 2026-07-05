@@ -45,7 +45,10 @@
         </div>
 
         <div>
-          <label for="tasaBanco" class="block text-xs font-medium text-slate-400 mb-1.5">Tasa Banco (Bs)</label>
+          <div class="flex justify-between items-center mb-1.5">
+            <label for="tasaBanco" class="block text-xs font-medium text-slate-400">Tasa Banco (Bs)</label>
+            <span id="bcvStatus" class="text-[10px] text-amber-400 font-medium animate-pulse">Cargando BCV...</span>
+          </div>
           <div class="relative">
             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">Bs</span>
             <input type="text" id="tasaBanco" inputmode="decimal" pattern="[0-9,.]*" placeholder="130.00"
@@ -116,8 +119,8 @@
           <span id="bsObtenidos" class="font-medium text-slate-100">Bs 0,00</span>
         </div>
         <div class="flex justify-between items-center py-2 border-b border-slate-800">
-          <span class="text-slate-400">Pérdida en Comisiones (USD)</span>
-          <span id="perdidaComisiones" class="font-medium text-red-400">- $0,00</span>
+          <span id="labelComisiones" class="text-slate-400">Pérdida en Comisiones (USD)</span>
+          <span id="perdidaComisiones" class="font-medium text-red-400">$0,00</span>
         </div>
       </div>
 
@@ -137,7 +140,7 @@
       </div>
     </section>
 
-    <!-- APARTADO NUEVO: Tarjeta de Instrucciones de Instalación PWA -->
+    <!-- Tarjeta de Instrucciones de Instalación PWA -->
     <section id="pwaInstructionsCard" class="hidden bg-slate-900 border border-blue-500/30 rounded-2xl p-5 shadow-lg shadow-black/40 relative overflow-hidden">
       <div class="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
       <div class="flex justify-between items-start mb-2">
@@ -150,7 +153,6 @@
       </div>
       <p class="text-xs text-slate-400 mb-3 leading-relaxed">Úsala a pantalla completa, más rápido y sin necesidad de abrir el navegador.</p>
       
-      <!-- El contenido de esta lista se inyectará dinámicamente con JavaScript según el sistema operativo -->
       <ol id="instructionsList" class="text-xs text-slate-300 space-y-2 list-decimal list-inside bg-slate-950/50 p-3 rounded-xl border border-slate-800/80">
         <!-- Instrucciones dinámicas -->
       </ol>
@@ -167,8 +169,13 @@
   const fmtBs = (n) => 'Bs ' + n.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const fmtUSD = (n) => '$' + Math.abs(n).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+  // Fallback: Si un campo está vacío, toma el valor numérico de su placeholder por defecto para calcular[cite: 1]
   function num(el) {
-    let valorTexto = el.value.replace(/,/g, '.'); // Convierte comas a puntos internamente
+    let texto = el.value.trim();
+    if (texto === "") {
+      texto = el.getAttribute('placeholder') || "0";
+    }
+    let valorTexto = texto.replace(/,/g, '.'); 
     const v = parseFloat(valorTexto);
     return isNaN(v) ? 0 : v;
   }
@@ -180,7 +187,34 @@
     else el.classList.add('text-slate-100');
   }
 
+  function setComisionesColor(el, value) {
+    el.classList.remove('text-emerald-400', 'text-red-400', 'text-slate-100');
+    if (value > 0) el.classList.add('text-red-400');      
+    else if (value < 0) el.classList.add('text-emerald-400'); 
+    else el.classList.add('text-slate-100');
+  }
+
+  function resetRender() {
+    $('bsInvertidos').textContent = fmtBs(0);
+    $('bsObtenidos').textContent = fmtBs(0);
+    $('labelComisiones').textContent = 'Pérdida en Comisiones (USD)';
+    $('perdidaComisiones').textContent = fmtUSD(0);
+    $('perdidaComisiones').className = "font-medium text-slate-100";
+    $('gananciaBs').textContent = fmtBs(0);
+    $('gananciaBs').className = "text-2xl font-bold text-slate-100";
+    $('gananciaUSD').textContent = fmtUSD(0);
+    $('gananciaUSD').className = "text-2xl font-bold text-slate-100";
+    $('gananciaPct').textContent = '0,00%';
+    $('gananciaPct').className = "text-2xl font-bold text-slate-100";
+  }
+
   function calcular() {
+    // NUEVA VALIDACIÓN: Si el monto a comprar está vacío, forzar a renderizar todo en cero absoluto
+    if ($('montoUSD').value.trim() === "") {
+      resetRender();
+      return;
+    }
+
     const montoUSD = num($('montoUSD'));
     const tasaBanco = num($('tasaBanco'));
     const comisionBanco = num($('comisionBanco'));
@@ -202,7 +236,18 @@
 
     $('bsInvertidos').textContent = fmtBs(bsInvertidos);
     $('bsObtenidos').textContent = fmtBs(bsObtenidos);
-    $('perdidaComisiones').textContent = '- ' + fmtUSD(perdidaComisiones);
+
+    if (perdidaComisiones > 0) {
+      $('labelComisiones').textContent = 'Pérdida en Comisiones (USD)';
+      $('perdidaComisiones').textContent = '- ' + fmtUSD(perdidaComisiones);
+    } else if (perdidaComisiones < 0) {
+      $('labelComisiones').textContent = 'Ganancia en Comisiones (USD)';
+      $('perdidaComisiones').textContent = '+ ' + fmtUSD(perdidaComisiones);
+    } else {
+      $('labelComisiones').textContent = 'Pérdida en Comisiones (USD)';
+      $('perdidaComisiones').textContent = fmtUSD(0);
+    }
+    setComisionesColor($('perdidaComisiones'), perdidaComisiones);
 
     $('gananciaBs').textContent = (gananciaBs >= 0 ? '' : '-') + fmtBs(Math.abs(gananciaBs));
     $('gananciaUSD').textContent = (gananciaUSD >= 0 ? '' : '-') + fmtUSD(gananciaUSD);
@@ -213,17 +258,45 @@
     setColor($('gananciaPct'), gananciaPct);
   }
 
+  // FUNCIÓN: Consumir el CDN externo de tasas ( rates.dolarvzla.com )
+  async function consultarTasasEnTiempoReal() {
+    const statusEl = $('bcvStatus');
+    try {
+      const respuesta = await fetch('https://rates.dolarvzla.com/index.json');
+      if (!respuesta.ok) throw new Error();
+      
+      const datos = await respuesta.json();
+      
+      if (datos && datos.bcv) {
+        const tasaBCV = parseFloat(datos.bcv);
+        
+        // Inyectamos el valor en vivo del BCV en el input de tasa del banco
+        $('tasaBanco').value = tasaBCV.toFixed(2);
+        
+        statusEl.textContent = "● BCV Actualizado";
+        statusEl.className = "text-[10px] text-emerald-400 font-medium";
+        
+        // Recalcular todo una vez inyectada la tasa oficial
+        calcular();
+      }
+    } catch (error) {
+      statusEl.textContent = "⚠️ Error CORS (Localhost)";
+      statusEl.className = "text-[10px] text-red-400 font-medium animate-none";
+    }
+  }
+
+  // Asignar listeners tradicionales de cálculo
   inputs.forEach(el => el.addEventListener('input', calcular));
-  calcular();
+
+  // Flujo de arranque al abrir la aplicación - Ahora inicia limpio
+  resetRender();
+  consultarTasasEnTiempoReal();
 </script>
 
 <!-- Lógica de detección del Sistema Operativo para mostrar instrucciones -->
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    // Verifica si la app ya está corriendo instalada en modo standalone
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-    
-    // Si ya está instalada, no mostramos el banner de instrucciones
     if (isStandalone) return;
 
     const userAgent = navigator.userAgent || navigator.vendor || window.opera;
@@ -231,7 +304,6 @@
     const card = $('pwaInstructionsCard');
     let showCard = false;
 
-    // Validación para detectar iOS (iPhone/iPad)
     if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
       list.innerHTML = `
         <li>Abre esta página en el navegador <strong>Safari</strong>.</li>
@@ -240,7 +312,6 @@
       `;
       showCard = true;
     } 
-    // Validación para detectar Android
     else if (/android/i.test(userAgent)) {
       list.innerHTML = `
         <li>Abre esta página en <strong>Google Chrome</strong>.</li>
@@ -250,12 +321,10 @@
       showCard = true;
     }
 
-    // Si detectamos un móvil y el usuario no ha cerrado manualmente las instrucciones antes
     if (showCard && localStorage.getItem('hidePwaInstructions') !== 'true') {
       card.classList.remove('hidden');
     }
 
-    // Acción para cerrar el apartado y recordar la preferencia
     $('closeInstructionsBtn').addEventListener('click', () => {
       card.classList.add('hidden');
       localStorage.setItem('hidePwaInstructions', 'true');
