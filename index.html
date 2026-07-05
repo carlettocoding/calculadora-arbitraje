@@ -209,7 +209,6 @@
   }
 
   function calcular() {
-    // NUEVA VALIDACIÓN: Si el monto a comprar está vacío, forzar a renderizar todo en cero absoluto
     if ($('montoUSD').value.trim() === "") {
       resetRender();
       return;
@@ -258,37 +257,39 @@
     setColor($('gananciaPct'), gananciaPct);
   }
 
-  // FUNCIÓN: Consumir el CDN externo de tasas ( rates.dolarvzla.com )
+  // FUNCIÓN OPTIMIZADA: Intenta fetch directo con www., si falla usa un proxy público anticorrupción de CORS
   async function consultarTasasEnTiempoReal() {
     const statusEl = $('bcvStatus');
+    const urlDirecta = 'https://www.rates.dolarvzla.com/index.json';[cite: 1]
+    const urlProxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(urlDirecta);
+
     try {
-      const respuesta = await fetch('https://rates.dolarvzla.com/index.json');
-      if (!respuesta.ok) throw new Error();
+      // Intento 1: Petición directa con URL corregida (www.)[cite: 1]
+      let respuesta = await fetch(urlDirecta);
       
+      // Intento 2: Si la directa falla o da error, usamos la contingencia de proxy
+      if (!respuesta.ok) {
+        respuesta = await fetch(urlProxy);
+      }
+      
+      if (!respuesta.ok) throw new Error();
       const datos = await respuesta.json();
       
       if (datos && datos.bcv) {
         const tasaBCV = parseFloat(datos.bcv);
-        
-        // Inyectamos el valor en vivo del BCV en el input de tasa del banco
         $('tasaBanco').value = tasaBCV.toFixed(2);
-        
         statusEl.textContent = "● BCV Actualizado";
         statusEl.className = "text-[10px] text-emerald-400 font-medium";
-        
-        // Recalcular todo una vez inyectada la tasa oficial
-        calcular();
+        calcular();[cite: 1]
       }
     } catch (error) {
-      statusEl.textContent = "⚠️ Error CORS (Localhost)";
+      statusEl.textContent = "⚠️ Error de conexión BCV";
       statusEl.className = "text-[10px] text-red-400 font-medium animate-none";
     }
   }
 
-  // Asignar listeners tradicionales de cálculo
   inputs.forEach(el => el.addEventListener('input', calcular));
 
-  // Flujo de arranque al abrir la aplicación - Ahora inicia limpio
   resetRender();
   consultarTasasEnTiempoReal();
 </script>
