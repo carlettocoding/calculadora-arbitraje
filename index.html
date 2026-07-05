@@ -259,7 +259,7 @@
   // FUNCIÓN PERFECCIONADA: Petición 100% directa al JSON estático sin proxies inestables
   async function consultarTasasEnTiempoReal() {
     const statusEl = $('bcvStatus');
-    const urlOriginal = 'https://rates.dolarvzla.com/bcv.json';
+    const urlOriginal = 'https://rates.dolarvzla.com';
 
     try {
       const respuesta = await fetch(urlOriginal);
