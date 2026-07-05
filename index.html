@@ -259,53 +259,59 @@
     setColor($('gananciaPct'), gananciaPct);
   }
 
-  // NUEVA IMPLEMENTACIÓN EN PARALELO COMPLETAMENTE LIMPIA Y AUTOMÁTICA
+  // OPTIMIZACIÓN MÁXIMA: Un solo Fetch a la API global para extraer BCV y Paralelo simultáneamente
   async function consultarTasasEnTiempoReal() {
     const bcvStatusEl = $('bcvStatus');
     const p2pStatusEl = $('p2pStatus');
 
-    // 1. Fetch de Tasa BCV Oficial (rates.dolarvzla.com)
     try {
-      const resBCV = await fetch('https://rates.dolarvzla.com/bcv/current.json');
-      if (resBCV.ok) {
-        const datosBCV = await resBCV.json();
-        if (datosBCV && datosBCV.current && datosBCV.current.usd) {
-          $('tasaBanco').value = parseFloat(datosBCV.current.usd).toFixed(2);
-          bcvStatusEl.textContent = "● BCV Actualizado";
-          bcvStatusEl.className = "text-[10px] text-emerald-400 font-medium";
-        }
-      } else { throw new Error(); }
-    } catch (e) {
+      // Hacemos una única llamada al endpoint general que devuelve el arreglo con todas las tasas
+      const respuesta = await fetch('https://ve.dolarapi.com/v1/dolares');
+      if (!respuesta.ok) throw new Error();
+      
+      const datos = await respuesta.json();
+      let huboExito = false;
+
+      // 1. Buscamos y extraemos la tasa Oficial (BCV)
+      const dataOficial = datos.find(item => item.fuente === 'oficial');
+      if (dataOficial && dataOficial.promedio) {
+        $('tasaBanco').value = parseFloat(dataOficial.promedio).toFixed(2);
+        bcvStatusEl.textContent = "● BCV Actualizado";
+        bcvStatusEl.className = "text-[10px] text-emerald-400 font-medium";
+        huboExito = true;
+      } else {
+        bcvStatusEl.textContent = "⚠️ Tasa manual (Offline)";
+        bcvStatusEl.className = "text-[10px] text-red-400 font-medium animate-none";
+      }
+
+      // 2. Buscamos y extraemos la tasa Paralelo
+      const dataParalelo = datos.find(item => item.fuente === 'paralelo');
+      if (dataParalelo && dataParalelo.promedio) {
+        $('tasaP2P').value = parseFloat(dataParalelo.promedio).toFixed(2);
+        p2pStatusEl.textContent = "● Paralelo Promedio Sincronizado";
+        p2pStatusEl.className = "text-[10px] text-emerald-400 font-medium";
+        huboExito = true;
+      } else {
+        p2pStatusEl.textContent = "⚠️ Tasa manual (Offline)";
+        p2pStatusEl.className = "text-[10px] text-red-400 font-medium animate-none";
+      }
+
+      // Si al menos una tasa se cargó bien, forzamos un recálculo
+      if (huboExito) calcular();
+
+    } catch (error) {
+      // Si falla la red general, mostramos error en ambas etiquetas
       bcvStatusEl.textContent = "⚠️ Tasa manual (Offline)";
       bcvStatusEl.className = "text-[10px] text-red-400 font-medium animate-none";
-    }
-
-    // 2. Fetch de USDT Binance P2P (ve.dolarapi.com) - Libre de CORS, directo y nativo
-    try {
-      const resP2P = await fetch('https://ve.dolarapi.com/v1/dolares/binance');
-      if (resP2P.ok) {
-        const datosP2P = await resP2P.json();
-        // Siguiendo el esquema de respuesta oficial mostrado en tu captura: leo 'promedio'
-        if (datosP2P && datosP2P.promedio) {
-          $('tasaP2P').value = parseFloat(datosP2P.promedio).toFixed(2);
-          p2pStatusEl.textContent = "● Binance P2P Sincronizado";
-          p2pStatusEl.className = "text-[10px] text-emerald-400 font-medium";
-        }
-      } else { throw new Error(); }
-    } catch (e) {
       p2pStatusEl.textContent = "⚠️ Tasa manual (Offline)";
       p2pStatusEl.className = "text-[10px] text-red-400 font-medium animate-none";
     }
-
-    // Recalcular todo en vivo con los datos recién inyectados automáticamente
-    calcular();
   }
 
   inputs.forEach(el => el.addEventListener('input', calcular));
 
   resetRender();
 
-  // Margen de espera estándar para sincronización de red limpia
   setTimeout(consultarTasasEnTiempoReal, 500);
 </script>
 
