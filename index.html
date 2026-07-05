@@ -6,7 +6,6 @@
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="icon" href="favicon.png" type="image/png">
   
-  <!-- Vinculación del Manifiesto PWA -->
   <link rel="manifest" href="manifest.json">
   
 <meta charset="UTF-8">
@@ -51,7 +50,6 @@
 
   <div class="max-w-md mx-auto px-4 py-6 pb-16 relative">
 
-    <!-- Encabezado -->
     <header class="mb-6 flex items-center justify-between">
       <div class="flex-1 text-center">
         <h1 class="text-2xl font-bold text-blue-400 tracking-tight">Arbitraje Cambiario</h1>
@@ -62,7 +60,6 @@
       </button>
     </header>
 
-    <!-- Tarjeta 1: Compra en Banco -->
     <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-4 shadow-lg shadow-black/20">
       <h2 class="text-blue-400 font-semibold text-base mb-4 flex items-center gap-2">
         <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-400/10 text-blue-400 text-xs font-bold">1</span>
@@ -121,7 +118,6 @@
       </div>
     </section>
 
-    <!-- Tarjeta 2: Conversión a Crypto -->
     <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6 shadow-lg shadow-black/20">
       <h2 class="text-blue-400 font-semibold text-base mb-4 flex items-center gap-2">
         <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-400/10 text-blue-400 text-xs font-bold">2</span>
@@ -155,7 +151,14 @@
       </div>
     </section>
 
-    <!-- Resultados -->
+    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 shadow-lg shadow-black/20">
+      <div class="flex items-center justify-between">
+        <span class="text-xs text-slate-400 flex items-center gap-1.5">📏 Diferencial Cambiario (Spread)</span>
+        <span id="spreadValor" class="text-sm font-bold text-slate-100">Bs 0,00 (0,00%)</span>
+      </div>
+      <p id="spreadNota" class="text-[10px] text-slate-500 mt-1"></p>
+    </section>
+
     <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg shadow-black/20 mb-4">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-blue-400 font-semibold text-base">Resultado del Arbitraje</h2>
@@ -201,7 +204,6 @@
       </button>
     </section>
 
-    <!-- Historial -->
     <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg shadow-black/20 mb-6">
       <button id="toggleHistorialBtn" class="w-full flex justify-between items-center text-left">
         <h2 class="text-blue-400 font-semibold text-base">📜 Historial de Cálculos</h2>
@@ -216,7 +218,6 @@
       </div>
     </section>
 
-    <!-- Tarjeta de Instrucciones de Instalación PWA -->
     <section id="pwaInstructionsCard" class="hidden bg-slate-900 border border-blue-500/30 rounded-2xl p-5 shadow-lg shadow-black/40 relative overflow-hidden">
       <div class="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
       <div class="flex justify-between items-start mb-2">
@@ -230,8 +231,7 @@
       <p class="text-xs text-slate-400 mb-3 leading-relaxed">Úsala a pantalla completa, más rápido y sin necesidad de abrir el navegador.</p>
       
       <ol id="instructionsList" class="text-xs text-slate-300 space-y-2 list-decimal list-inside bg-slate-950/50 p-3 rounded-xl border border-slate-800/80">
-        <!-- Instrucciones dinámicas -->
-      </ol>
+        </ol>
     </section>
 
     <p class="text-center text-slate-600 text-xs mt-6">Cálculo referencial. Verifica siempre las tasas antes de operar.</p>
@@ -306,6 +306,9 @@
     $('gananciaPct').textContent = '0,00%';
     $('gananciaPct').className = "text-2xl font-bold text-slate-100";
     $('viabilidadBadge').className = "hidden";
+    $('spreadValor').textContent = 'Bs 0,00 (0,00%)';
+    $('spreadValor').className = "text-sm font-bold text-slate-100";
+    $('spreadNota').textContent = '';
     ultimoCalculo = null;
   }
 
@@ -334,6 +337,10 @@
 
     const gananciaPct = montoUSD !== 0 ? (gananciaUSD / montoUSD) * 100 : 0;
 
+    // ===== Spread: diferencial entre Tasa P2P y Tasa Banco =====
+    const spreadBs = tasaP2P - tasaBanco;
+    const spreadPct = tasaBanco !== 0 ? (spreadBs / tasaBanco) * 100 : 0;
+
     $('bsInvertidos').textContent = fmtBs(bsInvertidos);
     $('bsObtenidos').textContent = fmtBs(bsObtenidos);
 
@@ -356,6 +363,20 @@
     setColor($('gananciaBs'), gananciaBs);
     setColor($('gananciaUSD'), gananciaUSD);
     setColor($('gananciaPct'), gananciaPct);
+
+    // ===== Render del Spread =====
+    const spreadEl = $('spreadValor');
+    const notaEl = $('spreadNota');
+    spreadEl.textContent = (spreadBs >= 0 ? '' : '-') + fmtBs(Math.abs(spreadBs)) + ` (${spreadPct >= 0 ? '+' : '-'}${Math.abs(spreadPct).toFixed(2)}%)`;
+    spreadEl.className = "text-sm font-bold " + (spreadPct > 0 ? "text-emerald-400" : spreadPct < 0 ? "text-red-400" : "text-slate-100");
+
+    if (spreadPct >= 4) {
+      notaEl.textContent = "Margen amplio: buen colchón antes de comisiones.";
+    } else if (spreadPct > 0) {
+      notaEl.textContent = "Margen ajustado: las comisiones pueden consumirlo casi todo.";
+    } else {
+      notaEl.textContent = "Sin margen: la tasa P2P está igual o por debajo de la Tasa Banco.";
+    }
 
     // ===== Badge de viabilidad de la operación =====
     const badge = $('viabilidadBadge');
@@ -605,7 +626,6 @@ Rentabilidad: ${c.gananciaPct.toFixed(2)}%`;
   setTimeout(consultarTasasEnTiempoReal, 500);
 </script>
 
-<!-- Lógica de detección del Sistema Operativo para mostrar instrucciones -->
 <script>
   document.addEventListener("DOMContentLoaded", () => {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
@@ -644,7 +664,6 @@ Rentabilidad: ${c.gananciaPct.toFixed(2)}%`;
   });
 </script>
 
-<!-- Script de Registro y Actualización del Service Worker -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
