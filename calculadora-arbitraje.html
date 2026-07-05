@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Calculadora de Arbitraje Cambiario</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  /* Evita el zoom automático de iOS al enfocar inputs (mínimo 16px) y afina el spinner numérico */
+  input[type="number"] { font-size: 16px; }
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type="number"] { -moz-appearance: textfield; }
+</style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen antialiased">
+
+  <div class="max-w-md mx-auto px-4 py-6 pb-16">
+
+    <!-- Encabezado -->
+    <header class="mb-6 text-center">
+      <h1 class="text-2xl font-bold text-blue-400 tracking-tight">Arbitraje Cambiario</h1>
+      <p class="text-slate-400 text-sm mt-1">Bs → USD → USDT → Bs</p>
+    </header>
+
+    <!-- Tarjeta 1: Compra en Banco -->
+    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-4 shadow-lg shadow-black/20">
+      <h2 class="text-blue-400 font-semibold text-base mb-4 flex items-center gap-2">
+        <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-400/10 text-blue-400 text-xs font-bold">1</span>
+        Compra en Banco
+      </h2>
+
+      <div class="space-y-4">
+        <div>
+          <label for="montoUSD" class="block text-xs font-medium text-slate-400 mb-1.5">Monto a Comprar (USD)</label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
+            <input type="number" id="montoUSD" inputmode="decimal" placeholder="100.00" step="any"
+              class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-7 pr-3 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
+          </div>
+        </div>
+
+        <div>
+          <label for="tasaBanco" class="block text-xs font-medium text-slate-400 mb-1.5">Tasa Banco (Bs)</label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">Bs</span>
+            <input type="number" id="tasaBanco" inputmode="decimal" placeholder="130.00" step="any"
+              class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-9 pr-3 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="comisionBanco" class="block text-xs font-medium text-slate-400 mb-1.5">Comisión Banco (%)</label>
+            <div class="relative">
+              <input type="number" id="comisionBanco" inputmode="decimal" placeholder="0.50" step="any"
+                class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-3 pr-8 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
+              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">%</span>
+            </div>
+          </div>
+          <div>
+            <label for="comisionTarjeta" class="block text-xs font-medium text-slate-400 mb-1.5">Comisión Tarjeta (%)</label>
+            <div class="relative">
+              <input type="number" id="comisionTarjeta" inputmode="decimal" placeholder="1.50" step="any"
+                class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-3 pr-8 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
+              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tarjeta 2: Conversión a Crypto -->
+    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6 shadow-lg shadow-black/20">
+      <h2 class="text-blue-400 font-semibold text-base mb-4 flex items-center gap-2">
+        <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-400/10 text-blue-400 text-xs font-bold">2</span>
+        Conversión a Crypto (Binance)
+      </h2>
+
+      <div class="space-y-4">
+        <div>
+          <label for="usdtNetos" class="block text-xs font-medium text-slate-400 mb-1.5">USDT a Recibir Netos</label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">₮</span>
+            <input type="number" id="usdtNetos" inputmode="decimal" placeholder="97.50" step="any"
+              class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-8 pr-3 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
+          </div>
+        </div>
+
+        <div>
+          <label for="tasaP2P" class="block text-xs font-medium text-slate-400 mb-1.5">Tasa de Venta P2P (Bs/USDT)</label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">Bs</span>
+            <input type="number" id="tasaP2P" inputmode="decimal" placeholder="135.00" step="any"
+              class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-9 pr-3 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Resultados -->
+    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg shadow-black/20">
+      <h2 class="text-blue-400 font-semibold text-base mb-4">Resultado del Arbitraje</h2>
+
+      <div class="space-y-3 text-sm">
+        <div class="flex justify-between items-center py-2 border-b border-slate-800">
+          <span class="text-slate-400">Bs Invertidos</span>
+          <span id="bsInvertidos" class="font-medium text-slate-100">Bs 0,00</span>
+        </div>
+        <div class="flex justify-between items-center py-2 border-b border-slate-800">
+          <span class="text-slate-400">Bs Obtenidos</span>
+          <span id="bsObtenidos" class="font-medium text-slate-100">Bs 0,00</span>
+        </div>
+        <div class="flex justify-between items-center py-2 border-b border-slate-800">
+          <span class="text-slate-400">Pérdida en Comisiones (USD)</span>
+          <span id="perdidaComisiones" class="font-medium text-red-400">- $0,00</span>
+        </div>
+      </div>
+
+      <div class="mt-4 pt-4 grid grid-cols-1 gap-3">
+        <div class="rounded-xl bg-slate-800/60 p-4 text-center">
+          <p class="text-xs text-slate-400 mb-1">Ganancia Neta (Bs)</p>
+          <p id="gananciaBs" class="text-2xl font-bold">Bs 0,00</p>
+        </div>
+        <div class="rounded-xl bg-slate-800/60 p-4 text-center">
+          <p class="text-xs text-slate-400 mb-1">Ganancia Neta (USD)</p>
+          <p id="gananciaUSD" class="text-2xl font-bold">$0,00</p>
+        </div>
+        <div class="rounded-xl bg-blue-400/10 border border-blue-400/30 p-4 text-center">
+          <p class="text-xs text-slate-400 mb-1">Rentabilidad de la Operación</p>
+          <p id="gananciaPct" class="text-2xl font-bold">0,00%</p>
+        </div>
+      </div>
+    </section>
+
+    <p class="text-center text-slate-600 text-xs mt-6">Cálculo referencial. Verifica siempre las tasas antes de operar.</p>
+  </div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  const inputs = ['montoUSD','tasaBanco','comisionBanco','comisionTarjeta','usdtNetos','tasaP2P'].map($);
+
+  const fmtBs = (n) => 'Bs ' + n.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmtUSD = (n) => '$' + Math.abs(n).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  function num(el) {
+    const v = parseFloat(el.value);
+    return isNaN(v) ? 0 : v;
+  }
+
+  function setColor(el, value) {
+    el.classList.remove('text-emerald-400', 'text-red-400', 'text-slate-100');
+    if (value > 0) el.classList.add('text-emerald-400');
+    else if (value < 0) el.classList.add('text-red-400');
+    else el.classList.add('text-slate-100');
+  }
+
+  function calcular() {
+    const montoUSD = num($('montoUSD'));
+    const tasaBanco = num($('tasaBanco'));
+    const comisionBanco = num($('comisionBanco'));
+    const comisionTarjeta = num($('comisionTarjeta'));
+    const usdtNetos = num($('usdtNetos'));
+    const tasaP2P = num($('tasaP2P'));
+
+    // 1. Bs Invertidos
+    const bsInvertidos = montoUSD * tasaBanco * (1 + (comisionBanco / 100));
+
+    // 2. Bs Obtenidos
+    const bsObtenidos = usdtNetos * tasaP2P;
+
+    // 3. Ganancia Neta (Bs)
+    const gananciaBs = bsObtenidos - bsInvertidos;
+
+    // 4. Ganancia Neta (USD)
+    const gananciaUSD = tasaBanco !== 0 ? gananciaBs / tasaBanco : 0;
+
+    // 5. Pérdida en Comisiones (USD)
+    const perdidaComisiones =
+      ((montoUSD * (1 + (comisionTarjeta / 100))) - montoUSD) +
+      (montoUSD * (comisionBanco / 100)) +
+      (montoUSD - usdtNetos);
+
+    // 6. Rentabilidad (%) = Ganancia Neta (USD) sobre el capital invertido en USD
+    const gananciaPct = montoUSD !== 0 ? (gananciaUSD / montoUSD) * 100 : 0;
+
+    // Render
+    $('bsInvertidos').textContent = fmtBs(bsInvertidos);
+    $('bsObtenidos').textContent = fmtBs(bsObtenidos);
+    $('perdidaComisiones').textContent = '- ' + fmtUSD(perdidaComisiones);
+
+    $('gananciaBs').textContent = (gananciaBs >= 0 ? '' : '-') + fmtBs(Math.abs(gananciaBs));
+    $('gananciaUSD').textContent = (gananciaUSD >= 0 ? '' : '-') + fmtUSD(gananciaUSD);
+    $('gananciaPct').textContent = (gananciaPct >= 0 ? '' : '-') + Math.abs(gananciaPct).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
+
+    setColor($('gananciaBs'), gananciaBs);
+    setColor($('gananciaUSD'), gananciaUSD);
+    setColor($('gananciaPct'), gananciaPct);
+  }
+
+  inputs.forEach(el => el.addEventListener('input', calcular));
+  calcular();
+</script>
+
+</body>
+</html>
