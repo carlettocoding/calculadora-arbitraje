@@ -256,14 +256,13 @@
     setColor($('gananciaPct'), gananciaPct);
   }
 
-  // FUNCIÓN REESTRUCTURADA: Usa un proxy CORS compatible y estable tanto para navegadores de PC como móviles
+  // FUNCIÓN PERFECCIONADA: Petición 100% directa al JSON estático sin proxies inestables
   async function consultarTasasEnTiempoReal() {
     const statusEl = $('bcvStatus');
     const urlOriginal = 'https://rates.dolarvzla.com/bcv.json';
-    const urlConProxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(urlOriginal);
 
     try {
-      const respuesta = await fetch(urlConProxy);
+      const respuesta = await fetch(urlOriginal);
       if (!respuesta.ok) throw new Error();
       
       const datos = await respuesta.json();
@@ -289,7 +288,9 @@
   inputs.forEach(el => el.addEventListener('input', calcular));
 
   resetRender();
-  consultarTasasEnTiempoReal();
+
+  // OBLIGATORIO: Le damos 500 milisegundos de espera para que la red procese el Service Worker y el fetch pase limpio
+  setTimeout(consultarTasasEnTiempoReal, 500);
 </script>
 
 <!-- Lógica de detección del Sistema Operativo para mostrar instrucciones -->
@@ -339,11 +340,9 @@
         .then(reg => {
           console.log('Service Worker registrado con éxito', reg);
           
-          // Escucha si hay una nueva versión lista para instalar en segundo plano
           reg.addEventListener('updatefound', () => {
             const newWorker = reg.installing;
             newWorker.addEventListener('statechange', () => {
-              // Si el archivo nuevo terminó de instalarse, refresca la página solo una vez de forma automática
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                 console.log('Nueva versión detectada. Recargando la aplicación...');
                 window.location.reload();
