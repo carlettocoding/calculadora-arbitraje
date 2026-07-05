@@ -257,35 +257,59 @@
     setColor($('gananciaPct'), gananciaPct);
   }
 
-  // FUNCIÓN OPTIMIZADA: Intenta fetch directo con www., si falla usa un proxy público anticorrupción de CORS
+  // FUNCIÓN MULTICANAL: Consulta secuencialmente 3 servidores de tasas diferentes
   async function consultarTasasEnTiempoReal() {
     const statusEl = $('bcvStatus');
-    const urlDirecta = 'https://www.rates.dolarvzla.com/index.json';[cite: 1]
-    const urlProxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(urlDirecta);
+    
+    // Lista de proveedores de tasas públicos e independientes en formato JSON
+    const fuentes = [
+      'https://www.rates.dolarvzla.com/index.json', // Tu proveedor base corregido[cite: 1]
+      'https://ve.dolarapi.com/v1/dolares/oficial', // Espejo oficial DolarApi alternativo
+      'https://open.er-api.com/v6/latest/USD'      // API global de conversión de divisas de respaldo
+    ];
 
-    try {
-      // Intento 1: Petición directa con URL corregida (www.)[cite: 1]
-      let respuesta = await fetch(urlDirecta);
-      
-      // Intento 2: Si la directa falla o da error, usamos la contingencia de proxy
-      if (!respuesta.ok) {
-        respuesta = await fetch(urlProxy);
+    for (let url of fuentes) {
+      try {
+        // Configuramos un tiempo límite (timeout) de 4 segundos por si un servidor se queda colgado sin responder
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+        // Agregamos un proxy público intermedio solo en caso de requerir saltar bloqueos de origen cruzado
+        const urlFinal = url.includes('dolarvzla') ? 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) : url;
+
+        const respuesta = await fetch(urlFinal, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (!respuesta.ok) continue; // Si este servidor específico falla, salta al siguiente en el ciclo for
+        const datos = await respuesta.json();
+
+        let tasaBCV = 0;
+
+        // Estructura según el proveedor que haya respondido con éxito:
+        if (url.includes('dolarvzla') && datos.bcv) {
+          tasaBCV = parseFloat(datos.bcv);[cite: 1]
+        } else if (url.includes('dolarapi') && datos.promedio) {
+          tasaBCV = parseFloat(datos.promedio);
+        } else if (url.includes('er-api') && datos.rates && datos.rates.VES) {
+          tasaBCV = parseFloat(datos.rates.VES); // Tasa oficial global reportada
+        }
+
+        if (tasaBCV > 0) {
+          $('tasaBanco').value = tasaBCV.toFixed(2);
+          statusEl.textContent = "● BCV Actualizado";
+          statusEl.className = "text-[10px] text-emerald-400 font-medium";
+          calcular();[cite: 1]
+          return; // Finaliza la búsqueda con éxito, rompiendo la función
+        }
+      } catch (e) {
+        // Captura el fallo silenciosamente y continúa probando la siguiente alternativa
+        continue;
       }
-      
-      if (!respuesta.ok) throw new Error();
-      const datos = await respuesta.json();
-      
-      if (datos && datos.bcv) {
-        const tasaBCV = parseFloat(datos.bcv);
-        $('tasaBanco').value = tasaBCV.toFixed(2);
-        statusEl.textContent = "● BCV Actualizado";
-        statusEl.className = "text-[10px] text-emerald-400 font-medium";
-        calcular();[cite: 1]
-      }
-    } catch (error) {
-      statusEl.textContent = "⚠️ Error de conexión BCV";
-      statusEl.className = "text-[10px] text-red-400 font-medium animate-none";
     }
+
+    // Si el ciclo for termina y ninguna de las 3 opciones pudo responder
+    statusEl.textContent = "⚠️ Usando tasa base (offline)";
+    statusEl.className = "text-[10px] text-red-400 font-medium animate-none";
   }
 
   inputs.forEach(el => el.addEventListener('input', calcular));
