@@ -103,7 +103,7 @@
     </section>
 
     <!-- Resultados -->
-    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg shadow-black/20">
+    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg shadow-black/20 mb-6">
       <h2 class="text-blue-400 font-semibold text-base mb-4">Resultado del Arbitraje</h2>
 
       <div class="space-y-3 text-sm">
@@ -135,6 +135,25 @@
           <p id="gananciaPct" class="text-2xl font-bold">0,00%</p>
         </div>
       </div>
+    </section>
+
+    <!-- APARTADO NUEVO: Tarjeta de Instrucciones de Instalación PWA -->
+    <section id="pwaInstructionsCard" class="hidden bg-slate-900 border border-blue-500/30 rounded-2xl p-5 shadow-lg shadow-black/40 relative overflow-hidden">
+      <div class="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+      <div class="flex justify-between items-start mb-2">
+        <h3 class="text-blue-400 font-bold text-sm tracking-tight flex items-center gap-2">
+          📲 ¡Instala esta App en tu teléfono!
+        </h3>
+        <button id="closeInstructionsBtn" class="text-slate-500 hover:text-slate-300 text-xs px-2 py-1 bg-slate-800 rounded-lg transition">
+          Ocultar
+        </button>
+      </div>
+      <p class="text-xs text-slate-400 mb-3 leading-relaxed">Úsala a pantalla completa, más rápido y sin necesidad de abrir el navegador.</p>
+      
+      <!-- El contenido de esta lista se inyectará dinámicamente con JavaScript según el sistema operativo -->
+      <ol id="instructionsList" class="text-xs text-slate-300 space-y-2 list-decimal list-inside bg-slate-950/50 p-3 rounded-xl border border-slate-800/80">
+        <!-- Instrucciones dinámicas -->
+      </ol>
     </section>
 
     <p class="text-center text-slate-600 text-xs mt-6">Cálculo referencial. Verifica siempre las tasas antes de operar.</p>
@@ -196,6 +215,52 @@
 
   inputs.forEach(el => el.addEventListener('input', calcular));
   calcular();
+</script>
+
+<!-- Lógica de detección del Sistema Operativo para mostrar instrucciones -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // Verifica si la app ya está corriendo instalada en modo standalone
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    
+    // Si ya está instalada, no mostramos el banner de instrucciones
+    if (isStandalone) return;
+
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    const list = $('instructionsList');
+    const card = $('pwaInstructionsCard');
+    let showCard = false;
+
+    // Validación para detectar iOS (iPhone/iPad)
+    if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+      list.innerHTML = `
+        <li>Abre esta página en el navegador <strong>Safari</strong>.</li>
+        <li>Presiona el botón de <strong>Compartir</strong> (el icono del cuadrado con una flecha hacia arriba).</li>
+        <li>Desliza hacia abajo y selecciona <strong>"Agregar al inicio"</strong>.</li>
+      `;
+      showCard = true;
+    } 
+    // Validación para detectar Android
+    else if (/android/i.test(userAgent)) {
+      list.innerHTML = `
+        <li>Abre esta página en <strong>Google Chrome</strong>.</li>
+        <li>Presiona los <strong>tres puntos</strong> en la esquina superior derecha.</li>
+        <li>Toca en <strong>"Instalar aplicación"</strong> o "Agregar a la pantalla de inicio".</li>
+      `;
+      showCard = true;
+    }
+
+    // Si detectamos un móvil y el usuario no ha cerrado manualmente las instrucciones antes
+    if (showCard && localStorage.getItem('hidePwaInstructions') !== 'true') {
+      card.classList.remove('hidden');
+    }
+
+    // Acción para cerrar el apartado y recordar la preferencia
+    $('closeInstructionsBtn').addEventListener('click', () => {
+      card.classList.add('hidden');
+      localStorage.setItem('hidePwaInstructions', 'true');
+    });
+  });
 </script>
 
 <!-- Script de Registro del Service Worker para PWA -->
