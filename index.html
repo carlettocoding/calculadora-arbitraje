@@ -4,6 +4,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="icon.png">
+  
+  <!-- Vinculación del Manifiesto PWA -->
+  <link rel="manifest" href="manifest.json">
+  
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Calculadora de Arbitraje Cambiario</title>
@@ -17,11 +21,13 @@
 
   <div class="max-w-md mx-auto px-4 py-6 pb-16">
 
+    <!-- Encabezado -->
     <header class="mb-6 text-center">
       <h1 class="text-2xl font-bold text-blue-400 tracking-tight">Arbitraje Cambiario</h1>
       <p class="text-slate-400 text-sm mt-1">Bs → USD → USDT → Bs</p>
     </header>
 
+    <!-- Tarjeta 1: Compra en Banco -->
     <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-4 shadow-lg shadow-black/20">
       <h2 class="text-blue-400 font-semibold text-base mb-4 flex items-center gap-2">
         <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-400/10 text-blue-400 text-xs font-bold">1</span>
@@ -68,6 +74,7 @@
       </div>
     </section>
 
+    <!-- Tarjeta 2: Conversión a Crypto -->
     <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6 shadow-lg shadow-black/20">
       <h2 class="text-blue-400 font-semibold text-base mb-4 flex items-center gap-2">
         <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-400/10 text-blue-400 text-xs font-bold">2</span>
@@ -95,6 +102,7 @@
       </div>
     </section>
 
+    <!-- Resultados -->
     <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg shadow-black/20">
       <h2 class="text-blue-400 font-semibold text-base mb-4">Resultado del Arbitraje</h2>
 
@@ -140,9 +148,8 @@
   const fmtBs = (n) => 'Bs ' + n.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const fmtUSD = (n) => '$' + Math.abs(n).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  // Modificado para limpiar el texto y cambiar comas por puntos antes de calcular
   function num(el) {
-    let valorTexto = el.value.replace(/,/g, '.'); // Reemplaza comas por puntos
+    let valorTexto = el.value.replace(/,/g, '.'); // Convierte comas a puntos internamente
     const v = parseFloat(valorTexto);
     return isNaN(v) ? 0 : v;
   }
@@ -162,28 +169,18 @@
     const usdtNetos = num($('usdtNetos'));
     const tasaP2P = num($('tasaP2P'));
 
-    // 1. Bs Invertidos
     const bsInvertidos = montoUSD * tasaBanco * (1 + (comisionBanco / 100));
-
-    // 2. Bs Obtenidos
     const bsObtenidos = usdtNetos * tasaP2P;
-
-    // 3. Ganancia Neta (Bs)
     const gananciaBs = bsObtenidos - bsInvertidos;
-
-    // 4. Ganancia Neta (USD)
     const gananciaUSD = tasaBanco !== 0 ? gananciaBs / tasaBanco : 0;
 
-    // 5. Pérdida en Comisiones (USD)
     const perdidaComisiones =
       ((montoUSD * (1 + (comisionTarjeta / 100))) - montoUSD) +
       (montoUSD * (comisionBanco / 100)) +
       (montoUSD - usdtNetos);
 
-    // 6. Rentabilidad (%) = Ganancia Neta (USD) sobre el capital invertido en USD
     const gananciaPct = montoUSD !== 0 ? (gananciaUSD / montoUSD) * 100 : 0;
 
-    // Render
     $('bsInvertidos').textContent = fmtBs(bsInvertidos);
     $('bsObtenidos').textContent = fmtBs(bsObtenidos);
     $('perdidaComisiones').textContent = '- ' + fmtUSD(perdidaComisiones);
@@ -199,6 +196,17 @@
 
   inputs.forEach(el => el.addEventListener('input', calcular));
   calcular();
+</script>
+
+<!-- Script de Registro del Service Worker para PWA -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('Service Worker registrado con éxito', reg))
+        .catch(err => console.error('Error al registrar el Service Worker', err));
+    });
+  }
 </script>
 
 </body>
