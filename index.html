@@ -554,14 +554,23 @@
     });
   });
 
-  $('convCopyBtn').addEventListener('click', async () => {
+$('convCopyBtn').addEventListener('click', async () => {
     const resText = $('convResultadoFinal').textContent;
     if (resText === 'Bs 0,00' || resText === '$ 0,00' || resText === '$0,00' || resText === '€0,00' || resText === '€ 0,00') return;
     
-    try { await navigator.clipboard.writeText(resText); } 
+    // Capturamos los datos actuales para armar el resumen sin emojis
+    const simbolo = convMoneda === 'USD' ? '$' : '€';
+    const divisaVal = $('convInputDivisa').value;
+    const tasaVal = fmtBs(getTasaConvertidor());
+    const tipoTasa = convUseBcv ? 'Oficial (BCV)' : 'Paralelo';
+    
+    // Armamos el texto multilínea plano
+    const textoCopiar = `Conversion: ${simbolo}${divisaVal}\nTasa aplicada: ${tasaVal} ${tipoTasa}\nTotal: ${resText}`;
+
+    try { await navigator.clipboard.writeText(textoCopiar); } 
     catch (err) {
       const temp = document.createElement('textarea');
-      temp.value = resText; document.body.appendChild(temp);
+      temp.value = textoCopiar; document.body.appendChild(temp);
       temp.select(); document.execCommand('copy'); document.body.removeChild(temp);
     }
     const textEl = $('convCopyText'); const original = textEl.textContent;
