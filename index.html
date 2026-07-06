@@ -103,6 +103,7 @@
                 class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-7 pr-3 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
             </div>
             <div class="flex gap-2 mt-2">
+              <button type="button" data-monto="10" class="quick-amount flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">$10</button>
               <button type="button" data-monto="50" class="quick-amount flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">$50</button>
               <button type="button" data-monto="100" class="quick-amount flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">$100</button>
               <button type="button" data-monto="500" class="quick-amount flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">$500</button>
@@ -199,11 +200,11 @@
             <span id="desgloseComTarjeta" class="font-medium text-red-400">-$0,00</span>
           </div>
           <div class="flex justify-between items-center py-1.5 border-b border-slate-800">
-            <span class="text-slate-400">├ Spread Cripto (USDT perdidos)</span>
+            <span class="text-slate-400">├ Diferencia Cripto (USDT)</span>
             <span id="desgloseSpreadCripto" class="font-medium text-red-400">-$0,00</span>
           </div>
           <div class="flex justify-between items-center py-2 pt-2.5">
-            <span class="text-slate-300 font-semibold">└ Total perdido</span>
+            <span id="labelTotalPerdida" class="text-slate-300 font-semibold">└ Total perdido</span>
             <span id="desgloseTotalPerdida" class="font-bold text-red-400">-$0,00</span>
           </div>
         </div>
@@ -315,14 +316,18 @@
         </div>
 
         <div class="flex gap-2 mt-4">
+          <button type="button" data-conv-monto="10" class="quick-conv flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">10</button>
           <button type="button" data-conv-monto="20" class="quick-conv flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">20</button>
           <button type="button" data-conv-monto="50" class="quick-conv flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">50</button>
           <button type="button" data-conv-monto="100" class="quick-conv flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">100</button>
           <button type="button" data-conv-monto="200" class="quick-conv flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">200</button>
         </div>
         
-        <p class="text-center text-[11px] text-slate-500 mt-4 flex justify-center gap-1">
-          Tasa aplicada: <span id="convTasaAplicada" class="font-semibold text-slate-300">Cargando...</span>
+        <div id="convDiferenciaContainer" class="hidden mt-4 p-3 rounded-xl bg-slate-800/50 border border-slate-700/50 text-center text-xs"></div>
+
+        <p class="text-center text-[11px] text-slate-500 mt-4 flex flex-col items-center gap-1">
+          <span>Tasa aplicada: <span id="convTasaAplicada" class="font-semibold text-slate-300">Cargando...</span></span>
+          <span id="convLastUpdateTime" class="text-[10px]"></span>
         </p>
 
       </section>
@@ -365,6 +370,7 @@
   let globalTasaP2P = 0;      
   let globalTasaBcvEUR = 0;   
   let globalTasaP2pEUR = 0;   
+  let lastUpdateString = "";
 
   // Lógica Pestañas (Con memoria localStorage)
   const tabArbitraje = $('tabArbitraje');
@@ -464,7 +470,6 @@
   function limpiarNumero(val) {
     if (!val) return 0;
     let texto = val.trim();
-    // Si contiene comas y puntos, elimina los puntos de miles y cambia la coma decimal por punto
     if (texto.includes(',') && texto.includes('.')) {
       if (texto.indexOf('.') < texto.indexOf(',')) {
         texto = texto.replace(/\./g, '').replace(',', '.');
@@ -485,14 +490,17 @@
     $('convTasaAplicada').textContent = tasaActual > 0 ? fmtBs(tasaActual) : 'Sin conexión';
     if (tasaActual <= 0) return;
 
+    let divisaAmount = 0;
+
     if (fuente === 'DIVISA') {
-      const divisa = limpiarNumero(convInputDivisa.value);
+      divisaAmount = limpiarNumero(convInputDivisa.value);
       if (convInputDivisa.value.trim() === '') {
         convInputBs.value = '';
         convResultadoFinal.textContent = 'Bs 0,00';
+        $('convDiferenciaContainer').classList.add('hidden');
         return;
       }
-      const bs = divisa * tasaActual;
+      const bs = divisaAmount * tasaActual;
       convInputBs.value = bs.toFixed(2).replace('.', ',');
       convResultadoFinal.textContent = fmtBs(bs);
     } else if (fuente === 'BS') {
@@ -500,11 +508,32 @@
       if (convInputBs.value.trim() === '') {
         convInputDivisa.value = '';
         convResultadoFinal.textContent = simbolo + '0,00';
+        $('convDiferenciaContainer').classList.add('hidden');
         return;
       }
-      const divisa = bs / tasaActual;
-      convInputDivisa.value = divisa.toFixed(2);
-      convResultadoFinal.textContent = simbolo + Math.abs(divisa).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      divisaAmount = bs / tasaActual;
+      convInputDivisa.value = divisaAmount.toFixed(2);
+      convResultadoFinal.textContent = simbolo + Math.abs(divisaAmount).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // Calcular Diferencia entre tasas
+    const diffContainer = $('convDiferenciaContainer');
+    const tasaBCV = convMoneda === 'USD' ? globalTasaBCV : globalTasaBcvEUR;
+    const tasaP2P = convMoneda === 'USD' ? globalTasaP2P : globalTasaP2pEUR;
+    
+    if (divisaAmount > 0 && tasaBCV > 0 && tasaP2P > 0) {
+      const bsOficial = divisaAmount * tasaBCV;
+      const bsParalelo = divisaAmount * tasaP2P;
+      const diffBs = Math.abs(bsParalelo - bsOficial);
+      
+      diffContainer.classList.remove('hidden');
+      if (convUseBcv) {
+        diffContainer.innerHTML = `<span class="text-slate-400">Con tasa Paralelo, serían </span><span class="text-emerald-400 font-semibold">+${fmtBs(diffBs)}</span>`;
+      } else {
+        diffContainer.innerHTML = `<span class="text-slate-400">Con tasa Oficial (BCV), serían </span><span class="text-red-400 font-semibold">-${fmtBs(diffBs)}</span>`;
+      }
+    } else {
+      diffContainer.classList.add('hidden');
     }
   }
 
@@ -600,7 +629,10 @@
     $('desgloseComBanco').textContent = '-$0,00';
     $('desgloseComTarjeta').textContent = '-$0,00';
     $('desgloseSpreadCripto').textContent = '-$0,00';
+    $('desgloseSpreadCripto').className = "font-medium text-red-400";
     $('desgloseTotalPerdida').textContent = '-$0,00';
+    $('desgloseTotalPerdida').className = "font-bold text-red-400";
+    $('labelTotalPerdida').textContent = "└ Total perdido";
     $('desgloseProcentaje').textContent = '';
     ultimoCalculo = null;
   }
@@ -648,8 +680,27 @@
 
     $('desgloseComBanco').textContent = '-' + fmtUSD(comisionBancoUSD);
     $('desgloseComTarjeta').textContent = '-' + fmtUSD(comisionTarjetaUSD);
-    $('desgloseSpreadCripto').textContent = '-' + fmtUSD(usdtPerdidosEnCripto);
-    $('desgloseTotalPerdida').textContent = '-' + fmtUSD(perdidaComisiones);
+    
+    const spreadCriptoEl = $('desgloseSpreadCripto');
+    if (usdtPerdidosEnCripto < 0) {
+      spreadCriptoEl.textContent = '+' + fmtUSD(Math.abs(usdtPerdidosEnCripto));
+      spreadCriptoEl.className = "font-medium text-emerald-400";
+    } else {
+      spreadCriptoEl.textContent = '-' + fmtUSD(usdtPerdidosEnCripto);
+      spreadCriptoEl.className = "font-medium text-red-400";
+    }
+
+    const totalPerdidaEl = $('desgloseTotalPerdida');
+    if (perdidaComisiones < 0) {
+      totalPerdidaEl.textContent = '+' + fmtUSD(Math.abs(perdidaComisiones));
+      totalPerdidaEl.className = "font-bold text-emerald-400";
+      $('labelTotalPerdida').textContent = "└ Total ganancia extra";
+    } else {
+      totalPerdidaEl.textContent = '-' + fmtUSD(perdidaComisiones);
+      totalPerdidaEl.className = "font-bold text-red-400";
+      $('labelTotalPerdida').textContent = "└ Total perdido";
+    }
+
     const pctPerdida = montoUSD !== 0 ? (perdidaComisiones / montoUSD) * 100 : 0;
     $('desgloseProcentaje').textContent = `${pctPerdida.toFixed(2)}% del capital invertido`;
 
@@ -661,7 +712,7 @@
       $('perdidaComisiones').textContent = '- ' + fmtUSD(perdidaComisiones);
     } else if (perdidaComisiones < 0) {
       $('labelComisiones').textContent = 'Ganancia en Comisiones (USD)';
-      $('perdidaComisiones').textContent = '+ ' + fmtUSD(perdidaComisiones);
+      $('perdidaComisiones').textContent = '+ ' + fmtUSD(Math.abs(perdidaComisiones));
     } else {
       $('labelComisiones').textContent = 'Pérdida en Comisiones (USD)';
       $('perdidaComisiones').textContent = fmtUSD(0);
@@ -802,9 +853,8 @@
       bcvStatusEl.textContent = "● BCV Actualizado";
       bcvStatusEl.className = "text-[10px] text-emerald-400 font-medium";
       lastUpdateTime = new Date();
-      actualizarTimerTasas();
-      actualizarVolatilidad('bcv', valorBCV, $('bcvVolatilidad'));
       huboExito = true;
+      actualizarVolatilidad('bcv', valorBCV, $('bcvVolatilidad'));
     } else {
       bcvStatusEl.textContent = "⚠️ Tasa manual (sin conexión)";
       bcvStatusEl.className = "text-[10px] text-red-400 font-medium animate-none";
@@ -823,6 +873,8 @@
     }
 
     if (huboExito) {
+      lastUpdateString = new Date().toLocaleString('es-VE', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      actualizarTimerTasas();
       calcular();
       calcularConversor(lastEdited);
     }
@@ -835,7 +887,7 @@
   $('copyBtn').addEventListener('click', async () => {
     if (!ultimoCalculo) return;
     const c = ultimoCalculo;
-    const resumen = `📊 Arbitraje Cambiario\nMonto invertido: $${c.montoUSD.toFixed(2)}\nBs Invertidos: ${fmtBs(c.bsInvertidos)}\nBs Obtenidos: ${fmtBs(c.bsObtenidos)}\nGanancia Neta: ${fmtBs(c.gananciaBs)} (${fmtUSD(c.gananciaUSD)})\nRentabilidad: ${c.gananciaPct.toFixed(2)}%`;
+    const resumen = `📊 Arbitraje Cambiario\nMonto invertido: $${c.montoUSD.toFixed(2)}\nBs Invertidos: ${fmtBs(c.bsInvertidos)} (Tasa: ${fmtBs(c.tasaBanco)})\nBs Obtenidos: ${fmtBs(c.bsObtenidos)} (Tasa: ${fmtBs(c.tasaP2P)})\nGanancia Neta: ${fmtBs(c.gananciaBs)} (${fmtUSD(c.gananciaUSD)})\nRentabilidad: ${c.gananciaPct.toFixed(2)}%`;
     try { await navigator.clipboard.writeText(resumen); } 
     catch (err) {
       const temp = document.createElement('textarea');
@@ -873,16 +925,27 @@
 
   function actualizarTimerTasas() {
     if (!lastUpdateTime) return;
-    const ahora = new Date(); const minutosTranscurridos = Math.floor((ahora - lastUpdateTime) / 60000);
+    const ahora = new Date(); 
+    const minutosTranscurridos = Math.floor((ahora - lastUpdateTime) / 60000);
     const timeEl = $('lastUpdateTime');
-    if (minutosTranscurridos === 0) timeEl.textContent = 'Actualizado hace segundos';
-    else if (minutosTranscurridos < 60) timeEl.textContent = `Actualizado hace ${minutosTranscurridos} min`;
-    else timeEl.textContent = `Actualizado hace ${Math.floor(minutosTranscurridos / 60)}h`;
+    
+    let timeText = "";
+    if (minutosTranscurridos === 0) timeText = 'Actualizado hace segundos';
+    else if (minutosTranscurridos < 60) timeText = `Actualizado hace ${minutosTranscurridos} min`;
+    else timeText = `Actualizado hace ${Math.floor(minutosTranscurridos / 60)}h`;
+    
+    timeEl.textContent = `${timeText}${lastUpdateString ? ` (${lastUpdateString})` : ''}`;
     timeEl.className = minutosTranscurridos > 30 ? "text-[11px] text-red-400 mt-0.5" : "text-[11px] text-slate-500 mt-0.5";
+    
     const bcvStatusEl = $('bcvStatus');
     if (minutosTranscurridos > 30 && !bcvStatusEl.textContent.includes('⚠️')) {
       bcvStatusEl.textContent = '⚠️ Tasas hace ' + (minutosTranscurridos > 60 ? Math.floor(minutosTranscurridos / 60) + 'h' : minutosTranscurridos + ' min');
       bcvStatusEl.className = "text-[10px] text-red-400 font-medium animate-pulse";
+    }
+
+    const convTimeEl = $('convLastUpdateTime');
+    if(convTimeEl && lastUpdateString) {
+      convTimeEl.textContent = `Última act: ${lastUpdateString}`;
     }
   }
 
