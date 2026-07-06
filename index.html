@@ -6,22 +6,18 @@
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="icon" href="favicon.png" type="image/png">
   
-  <link rel="manifest" href="manifest.json">
+  <link class="marcar-pwa" rel="manifest" href="manifest.json">
   
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#60a5fa">
-<title>Calculadora de Arbitraje Cambiario</title>
+<title>Calculadora PRO</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
-  /* Evita el zoom automático de iOS al enfocar inputs (mínimo 16px) */
   input { font-size: 16px; }
-
-  /* Transición suave entre temas */
   body, section, input, button { transition: background-color .25s ease, color .25s ease, border-color .25s ease; }
 
-  /* ===== Modo Claro ===== */
   html.light body,
   html.light .bg-slate-950 { background-color: #f8fafc !important; }
   html.light .bg-slate-950\/50 { background-color: #eef2f7 !important; }
@@ -39,11 +35,13 @@
   html.light .placeholder-slate-600::placeholder { color: #cbd5e1 !important; }
   html.light .shadow-black\/20,
   html.light .shadow-black\/40 { --tw-shadow-color: rgb(100 116 139 / 0.15) !important; }
+
+  .fade-in { animation: fadeIn 0.2s ease-in-out forwards; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen antialiased">
 <script>
-  // Aplica el tema guardado lo antes posible para evitar parpadeo visual
   if (localStorage.getItem('arbitrajeTema') === 'light') {
     document.documentElement.classList.add('light');
   }
@@ -51,33 +49,23 @@
 
   <div class="max-w-md mx-auto px-4 py-6 pb-16 relative">
 
-    <header class="mb-6 flex items-center justify-between">
+    <header class="mb-4 flex items-center justify-between">
       <div class="flex-1 text-center">
-        <h1 class="text-2xl font-bold text-blue-400 tracking-tight">Arbitraje Cambiario</h1>
-        <p class="text-slate-400 text-sm mt-1">Bs → USD → USDT → Bs</p>
+        <h1 class="text-2xl font-bold text-blue-400 tracking-tight">Calculadora PRO</h1>
       </div>
       <button id="themeToggleBtn" aria-label="Cambiar tema" class="absolute right-4 top-4 w-9 h-9 flex items-center justify-center rounded-full bg-slate-800 border border-slate-700 text-slate-300 hover:text-blue-400 transition">
         <span id="themeIcon">🌙</span>
       </button>
     </header>
 
-    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 shadow-lg shadow-black/20">
-      <p class="text-xs text-slate-400 font-medium mb-2.5">⚡ Presets de Comisiones</p>
-      <div class="grid grid-cols-2 gap-2">
-        <button class="preset-btn text-xs font-medium bg-slate-800 hover:bg-blue-500/20 border border-slate-700 hover:border-blue-400 text-slate-300 hover:text-blue-400 py-2 px-2.5 rounded-lg transition" data-banco="0.50" data-tarjeta="1.50" title="Banco 0.50% • Tarjeta 1.50%">
-          ⚡ Típica
-        </button>
-        <button class="preset-btn text-xs font-medium bg-slate-800 hover:bg-blue-500/20 border border-slate-700 hover:border-blue-400 text-slate-300 hover:text-blue-400 py-2 px-2.5 rounded-lg transition" data-banco="0.50" data-tarjeta="2.50" title="Banco 0.50% • Tarjeta 2.50%">
-          🛡️ Bajo Riesgo
-        </button>
-        <button class="preset-btn text-xs font-medium bg-slate-800 hover:bg-blue-500/20 border border-slate-700 hover:border-blue-400 text-slate-300 hover:text-blue-400 py-2 px-2.5 rounded-lg transition" data-banco="0.50" data-tarjeta="3.50" title="Banco 0.50% • Tarjeta 3.50%">
-          ⚖️ Balanceado
-        </button>
-        <button class="preset-btn text-xs font-medium bg-slate-800 hover:bg-blue-500/20 border border-slate-700 hover:border-blue-400 text-slate-300 hover:text-blue-400 py-2 px-2.5 rounded-lg transition" data-banco="0.50" data-tarjeta="5.00" title="Banco 0.50% • Tarjeta 5.00%">
-          🔺 Comisión Alta
-        </button>
-      </div>
-    </section>
+    <div class="flex bg-slate-900 border border-slate-800 rounded-xl p-1 mb-6 shadow-lg shadow-black/20 relative z-10">
+      <button id="tabArbitraje" class="flex-1 text-sm font-semibold py-2.5 rounded-lg bg-slate-800 text-blue-400 shadow-sm transition-all duration-200">
+        Arbitraje
+      </button>
+      <button id="tabConversor" class="flex-1 text-sm font-semibold py-2.5 rounded-lg text-slate-400 hover:text-slate-300 transition-all duration-200">
+        Conversor
+      </button>
+    </div>
 
     <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 shadow-lg shadow-black/20 flex items-center justify-between gap-3">
       <div class="min-w-0">
@@ -85,196 +73,272 @@
         <p id="lastUpdateTime" class="text-[11px] text-slate-500 mt-0.5">Aún no se han actualizado</p>
       </div>
       <button id="refreshRatesBtn" class="shrink-0 flex items-center gap-2 text-sm font-medium bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 px-4 py-2.5 rounded-xl transition">
-        <span id="refreshIcon">🔄</span> Actualizar Tasas
+        <span id="refreshIcon">🔄</span> Actualizar
       </button>
     </section>
-    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-4 shadow-lg shadow-black/20">
-      <h2 class="text-blue-400 font-semibold text-base mb-4 flex items-center gap-2">
-        <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-400/10 text-blue-400 text-xs font-bold">1</span>
-        Compra en Banco
-      </h2>
 
-      <div class="space-y-4">
-        <div>
-          <label for="montoUSD" class="block text-xs font-medium text-slate-400 mb-1.5">Monto a Comprar (USD)</label>
-          <div class="relative">
-            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
-            <input type="text" id="montoUSD" inputmode="decimal" pattern="[0-9,.]*" placeholder="100.00"
-              class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-7 pr-3 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
-          </div>
-          <div class="flex gap-2 mt-2">
-            <button type="button" data-monto="50" class="quick-amount flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">$50</button>
-            <button type="button" data-monto="100" class="quick-amount flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">$100</button>
-            <button type="button" data-monto="500" class="quick-amount flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">$500</button>
-            <button type="button" data-monto="1000" class="quick-amount flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">$1000</button>
-          </div>
+    <div id="viewArbitraje" class="fade-in">
+      <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 shadow-lg shadow-black/20">
+        <p class="text-xs text-slate-400 font-medium mb-2.5">⚡ Presets de Comisiones</p>
+        <div class="grid grid-cols-2 gap-2">
+          <button class="preset-btn text-xs font-medium bg-slate-800 hover:bg-blue-500/20 border border-slate-700 hover:border-blue-400 text-slate-300 hover:text-blue-400 py-2 px-2.5 rounded-lg transition" data-banco="0.50" data-tarjeta="1.50">⚡ Típica</button>
+          <button class="preset-btn text-xs font-medium bg-slate-800 hover:bg-blue-500/20 border border-slate-700 hover:border-blue-400 text-slate-300 hover:text-blue-400 py-2 px-2.5 rounded-lg transition" data-banco="0.50" data-tarjeta="2.50">🛡️ Bajo Riesgo</button>
+          <button class="preset-btn text-xs font-medium bg-slate-800 hover:bg-blue-500/20 border border-slate-700 hover:border-blue-400 text-slate-300 hover:text-blue-400 py-2 px-2.5 rounded-lg transition" data-banco="0.50" data-tarjeta="3.50">⚖️ Balanceado</button>
+          <button class="preset-btn text-xs font-medium bg-slate-800 hover:bg-blue-500/20 border border-slate-700 hover:border-blue-400 text-slate-300 hover:text-blue-400 py-2 px-2.5 rounded-lg transition" data-banco="0.50" data-tarjeta="5.00">🔺 Comisión Alta</button>
         </div>
+      </section>
 
-        <div>
-          <div class="flex justify-between items-center mb-1.5">
-            <label for="tasaBanco" class="block text-xs font-medium text-slate-400">Tasa Banco (Bs)</label>
-            <span class="flex items-center gap-1.5">
-              <span id="bcvVolatilidad" class="text-[10px] font-semibold"></span>
-              <span id="bcvStatus" class="text-[10px] text-amber-400 font-medium animate-pulse">Cargando BCV...</span>
-            </span>
-          </div>
-          <div class="relative">
-            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">Bs</span>
-            <input type="text" id="tasaBanco" inputmode="decimal" pattern="[0-9,.]*" placeholder="130.00"
-              class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-9 pr-3 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
-          </div>
-        </div>
+      <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-4 shadow-lg shadow-black/20">
+        <h2 class="text-blue-400 font-semibold text-base mb-4 flex items-center gap-2">
+          <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-400/10 text-blue-400 text-xs font-bold">1</span>
+          Compra en Banco
+        </h2>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="space-y-4">
           <div>
-            <label for="comisionBanco" class="block text-xs font-medium text-slate-400 mb-1.5">Comisión Banco (%)</label>
+            <label for="montoUSD" class="block text-xs font-medium text-slate-400 mb-1.5">Monto a Comprar (USD)</label>
             <div class="relative">
-              <input type="text" id="comisionBanco" inputmode="decimal" pattern="[0-9,.]*" placeholder="0.50"
-                class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-3 pr-8 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
-              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">%</span>
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
+              <input type="text" id="montoUSD" inputmode="decimal" pattern="[0-9,.]*" placeholder="100.00"
+                class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-7 pr-3 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
+            </div>
+            <div class="flex gap-2 mt-2">
+              <button type="button" data-monto="50" class="quick-amount flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">$50</button>
+              <button type="button" data-monto="100" class="quick-amount flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">$100</button>
+              <button type="button" data-monto="500" class="quick-amount flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">$500</button>
+              <button type="button" data-monto="1000" class="quick-amount flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">$1000</button>
             </div>
           </div>
+
           <div>
-            <label for="comisionTarjeta" class="block text-xs font-medium text-slate-400 mb-1.5">Comisión Tarjeta (%)</label>
+            <div class="flex justify-between items-center mb-1.5">
+              <label for="tasaBanco" class="block text-xs font-medium text-slate-400">Tasa Banco (Bs)</label>
+              <span class="flex items-center gap-1.5">
+                <span id="bcvVolatilidad" class="text-[10px] font-semibold"></span>
+                <span id="bcvStatus" class="text-[10px] text-amber-400 font-medium animate-pulse">Cargando BCV...</span>
+              </span>
+            </div>
             <div class="relative">
-              <input type="text" id="comisionTarjeta" inputmode="decimal" pattern="[0-9,.]*" placeholder="1.50"
-                class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-3 pr-8 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
-              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">%</span>
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">Bs</span>
+              <input type="text" id="tasaBanco" inputmode="decimal" pattern="[0-9,.]*" placeholder="130.00"
+                class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-9 pr-3 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label for="comisionBanco" class="block text-xs font-medium text-slate-400 mb-1.5">Comisión Banco (%)</label>
+              <div class="relative">
+                <input type="text" id="comisionBanco" inputmode="decimal" pattern="[0-9,.]*" placeholder="0.50"
+                  class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-3 pr-8 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">%</span>
+              </div>
+            </div>
+            <div>
+              <label for="comisionTarjeta" class="block text-xs font-medium text-slate-400 mb-1.5">Comisión Tarjeta (%)</label>
+              <div class="relative">
+                <input type="text" id="comisionTarjeta" inputmode="decimal" pattern="[0-9,.]*" placeholder="1.50"
+                  class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-3 pr-8 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">%</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6 shadow-lg shadow-black/20">
-      <h2 class="text-blue-400 font-semibold text-base mb-4 flex items-center gap-2">
-        <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-400/10 text-blue-400 text-xs font-bold">2</span>
-        Conversión a Crypto (Binance)
-      </h2>
+      <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6 shadow-lg shadow-black/20">
+        <h2 class="text-blue-400 font-semibold text-base mb-4 flex items-center gap-2">
+          <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-400/10 text-blue-400 text-xs font-bold">2</span>
+          Conversión a Crypto (Binance)
+        </h2>
 
-      <div class="space-y-4">
-        <div>
-          <label for="usdtNetos" class="block text-xs font-medium text-slate-400 mb-1.5">USDT a Recibir Netos</label>
-          <div class="relative">
-            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">₮</span>
-            <input type="text" id="usdtNetos" inputmode="decimal" pattern="[0-9,.]*" placeholder="97.50"
-              class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-8 pr-3 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
+        <div class="space-y-4">
+          <div>
+            <label for="usdtNetos" class="block text-xs font-medium text-slate-400 mb-1.5">USDT a Recibir Netos</label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">₮</span>
+              <input type="text" id="usdtNetos" inputmode="decimal" pattern="[0-9,.]*" placeholder="97.50"
+                class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-8 pr-3 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between items-center mb-1.5">
+              <label for="tasaP2P" class="block text-xs font-medium text-slate-400">Tasa de Venta P2P (Bs/USDT)</label>
+              <span class="flex items-center gap-1.5">
+                <span id="p2pVolatilidad" class="text-[10px] font-semibold"></span>
+                <span id="p2pStatus" class="text-[10px] text-amber-400 font-medium animate-pulse">Cargando P2P...</span>
+              </span>
+            </div>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">Bs</span>
+              <input type="text" id="tasaP2P" inputmode="decimal" pattern="[0-9,.]*" placeholder="135.00"
+                class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-9 pr-3 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 shadow-lg shadow-black/20">
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-slate-400 flex items-center gap-1.5">📏 Diferencial Cambiario (Spread)</span>
+          <span id="spreadValor" class="text-sm font-bold text-slate-100">Bs 0,00 (0,00%)</span>
+        </div>
+        <p id="spreadNota" class="text-[10px] text-slate-500 mt-1"></p>
+      </section>
+
+      <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 shadow-lg shadow-black/20">
+        <p class="text-xs text-slate-400 font-medium mb-3">💰 Desglose de Costos</p>
+        <div class="space-y-2 text-xs">
+          <div class="flex justify-between items-center py-1.5 border-b border-slate-800">
+            <span class="text-slate-400">├ Comisión Banco</span>
+            <span id="desgloseComBanco" class="font-medium text-red-400">-$0,00</span>
+          </div>
+          <div class="flex justify-between items-center py-1.5 border-b border-slate-800">
+            <span class="text-slate-400">├ Comisión Tarjeta</span>
+            <span id="desgloseComTarjeta" class="font-medium text-red-400">-$0,00</span>
+          </div>
+          <div class="flex justify-between items-center py-1.5 border-b border-slate-800">
+            <span class="text-slate-400">├ Spread Cripto (USDT perdidos)</span>
+            <span id="desgloseSpreadCripto" class="font-medium text-red-400">-$0,00</span>
+          </div>
+          <div class="flex justify-between items-center py-2 pt-2.5">
+            <span class="text-slate-300 font-semibold">└ Total perdido</span>
+            <span id="desgloseTotalPerdida" class="font-bold text-red-400">-$0,00</span>
+          </div>
+        </div>
+        <p id="desgloseProcentaje" class="text-[10px] text-slate-500 mt-2.5 text-center"></p>
+      </section>
+
+      <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg shadow-black/20 mb-4">
+        <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+          <h2 class="text-blue-400 font-semibold text-base">Resultado del Arbitraje</h2>
+          <div class="flex gap-2">
+            <button id="copyBtn" class="text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+              📋 <span id="copyBtnText">Copiar</span>
+            </button>
+            <button id="screenshotBtn" class="text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+              📸 <span>Capturar</span>
+            </button>
           </div>
         </div>
 
-        <div>
-          <div class="flex justify-between items-center mb-1.5">
-            <label for="tasaP2P" class="block text-xs font-medium text-slate-400">Tasa de Venta P2P (Bs/USDT)</label>
-            <span class="flex items-center gap-1.5">
-              <span id="p2pVolatilidad" class="text-[10px] font-semibold"></span>
-              <span id="p2pStatus" class="text-[10px] text-amber-400 font-medium animate-pulse">Cargando P2P...</span>
-            </span>
+        <div class="space-y-3 text-sm">
+          <div class="flex justify-between items-center py-2 border-b border-slate-800">
+            <span class="text-slate-400">Bs Invertidos</span>
+            <span id="bsInvertidos" class="font-medium text-slate-100">Bs 0,00</span>
           </div>
-          <div class="relative">
-            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">Bs</span>
-            <input type="text" id="tasaP2P" inputmode="decimal" pattern="[0-9,.]*" placeholder="135.00"
-              class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-9 pr-3 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
+          <div class="flex justify-between items-center py-2 border-b border-slate-800">
+            <span class="text-slate-400">Bs Obtenidos</span>
+            <span id="bsObtenidos" class="font-medium text-slate-100">Bs 0,00</span>
+          </div>
+          <div class="flex justify-between items-center py-2 border-b border-slate-800">
+            <span id="labelComisiones" class="text-slate-400">Pérdida en Comisiones (USD)</span>
+            <span id="perdidaComisiones" class="font-medium text-red-400">$0,00</span>
           </div>
         </div>
-      </div>
-    </section>
 
-    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 shadow-lg shadow-black/20">
-      <div class="flex items-center justify-between">
-        <span class="text-xs text-slate-400 flex items-center gap-1.5">📏 Diferencial Cambiario (Spread)</span>
-        <span id="spreadValor" class="text-sm font-bold text-slate-100">Bs 0,00 (0,00%)</span>
-      </div>
-      <p id="spreadNota" class="text-[10px] text-slate-500 mt-1"></p>
-    </section>
+        <div class="mt-4 pt-4 grid grid-cols-1 gap-3">
+          <div class="rounded-xl bg-slate-800/60 p-4 text-center">
+            <p class="text-xs text-slate-400 mb-1">Ganancia Neta (Bs)</p>
+            <p id="gananciaBs" class="text-2xl font-bold">Bs 0,00</p>
+          </div>
+          <div class="rounded-xl bg-slate-800/60 p-4 text-center">
+            <p class="text-xs text-slate-400 mb-1">Ganancia Neta (USD)</p>
+            <p id="gananciaUSD" class="text-2xl font-bold">$0,00</p>
+          </div>
+          <div class="rounded-xl bg-blue-400/10 border border-blue-400/30 p-4 text-center">
+            <p class="text-xs text-slate-400 mb-1">Rentabilidad de la Operación</p>
+            <p id="gananciaPct" class="text-2xl font-bold">0,00%</p>
+          </div>
+        </div>
 
-    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 shadow-lg shadow-black/20">
-      <p class="text-xs text-slate-400 font-medium mb-3">💰 Desglose de Costos</p>
-      <div class="space-y-2 text-xs">
-        <div class="flex justify-between items-center py-1.5 border-b border-slate-800">
-          <span class="text-slate-400">├ Comisión Banco</span>
-          <span id="desgloseComBanco" class="font-medium text-red-400">-$0,00</span>
-        </div>
-        <div class="flex justify-between items-center py-1.5 border-b border-slate-800">
-          <span class="text-slate-400">├ Comisión Tarjeta</span>
-          <span id="desgloseComTarjeta" class="font-medium text-red-400">-$0,00</span>
-        </div>
-        <div class="flex justify-between items-center py-1.5 border-b border-slate-800">
-          <span class="text-slate-400">├ Spread Cripto (USDT perdidos)</span>
-          <span id="desgloseSpreadCripto" class="font-medium text-red-400">-$0,00</span>
-        </div>
-        <div class="flex justify-between items-center py-2 pt-2.5">
-          <span class="text-slate-300 font-semibold">└ Total perdido</span>
-          <span id="desgloseTotalPerdida" class="font-bold text-red-400">-$0,00</span>
-        </div>
-      </div>
-      <p id="desgloseProcentaje" class="text-[10px] text-slate-500 mt-2.5 text-center"></p>
-    </section>
+        <div id="viabilidadBadge" class="mt-4 text-center text-xs font-semibold py-2.5 rounded-xl border hidden"></div>
 
-    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg shadow-black/20 mb-4">
-      <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
-        <h2 class="text-blue-400 font-semibold text-base">Resultado del Arbitraje</h2>
-        <div class="flex gap-2">
-          <button id="copyBtn" class="text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 px-3 py-1.5 rounded-lg transition flex items-center gap-1">
-            📋 <span id="copyBtnText">Copiar</span>
-          </button>
-          <button id="screenshotBtn" class="text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 px-3 py-1.5 rounded-lg transition flex items-center gap-1">
-            📸 <span>Capturar</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="space-y-3 text-sm">
-        <div class="flex justify-between items-center py-2 border-b border-slate-800">
-          <span class="text-slate-400">Bs Invertidos</span>
-          <span id="bsInvertidos" class="font-medium text-slate-100">Bs 0,00</span>
-        </div>
-        <div class="flex justify-between items-center py-2 border-b border-slate-800">
-          <span class="text-slate-400">Bs Obtenidos</span>
-          <span id="bsObtenidos" class="font-medium text-slate-100">Bs 0,00</span>
-        </div>
-        <div class="flex justify-between items-center py-2 border-b border-slate-800">
-          <span id="labelComisiones" class="text-slate-400">Pérdida en Comisiones (USD)</span>
-          <span id="perdidaComisiones" class="font-medium text-red-400">$0,00</span>
-        </div>
-      </div>
-
-      <div class="mt-4 pt-4 grid grid-cols-1 gap-3">
-        <div class="rounded-xl bg-slate-800/60 p-4 text-center">
-          <p class="text-xs text-slate-400 mb-1">Ganancia Neta (Bs)</p>
-          <p id="gananciaBs" class="text-2xl font-bold">Bs 0,00</p>
-        </div>
-        <div class="rounded-xl bg-slate-800/60 p-4 text-center">
-          <p class="text-xs text-slate-400 mb-1">Ganancia Neta (USD)</p>
-          <p id="gananciaUSD" class="text-2xl font-bold">$0,00</p>
-        </div>
-        <div class="rounded-xl bg-blue-400/10 border border-blue-400/30 p-4 text-center">
-          <p class="text-xs text-slate-400 mb-1">Rentabilidad de la Operación</p>
-          <p id="gananciaPct" class="text-2xl font-bold">0,00%</p>
-        </div>
-      </div>
-
-      <div id="viabilidadBadge" class="mt-4 text-center text-xs font-semibold py-2.5 rounded-xl border"></div>
-
-      <button id="saveHistorialBtn" class="w-full mt-4 text-sm font-medium bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 py-2.5 rounded-xl transition flex items-center justify-center gap-2">
-        💾 Guardar en historial
-      </button>
-    </section>
-
-    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg shadow-black/20 mb-6">
-      <button id="toggleHistorialBtn" class="w-full flex justify-between items-center text-left">
-        <h2 class="text-blue-400 font-semibold text-base">📜 Historial de Cálculos</h2>
-        <span id="historialChevron" class="text-slate-500 transition-transform">▾</span>
-      </button>
-      <div id="historialPanel" class="hidden mt-4">
-        <div id="historialLista" class="space-y-2 max-h-72 overflow-y-auto"></div>
-        <p id="historialVacio" class="text-xs text-slate-500 text-center py-4">Aún no has guardado ningún cálculo.</p>
-        <button id="clearHistorialBtn" class="hidden w-full mt-3 text-xs font-medium text-red-400 hover:text-red-300 border border-red-500/30 bg-red-500/5 hover:bg-red-500/10 py-2 rounded-lg transition">
-          Vaciar historial
+        <button id="saveHistorialBtn" class="w-full mt-4 text-sm font-medium bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 py-2.5 rounded-xl transition flex items-center justify-center gap-2">
+          💾 Guardar en historial
         </button>
-      </div>
-    </section>
+      </section>
 
-    <section id="pwaInstructionsCard" class="hidden bg-slate-900 border border-blue-500/30 rounded-2xl p-5 shadow-lg shadow-black/40 relative overflow-hidden">
+      <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg shadow-black/20 mb-6">
+        <button id="toggleHistorialBtn" class="w-full flex justify-between items-center text-left">
+          <h2 class="text-blue-400 font-semibold text-base">📜 Historial de Cálculos</h2>
+          <span id="historialChevron" class="text-slate-500 transition-transform">▾</span>
+        </button>
+        <div id="historialPanel" class="hidden mt-4">
+          <div id="historialLista" class="space-y-2 max-h-72 overflow-y-auto"></div>
+          <p id="historialVacio" class="text-xs text-slate-500 text-center py-4">Aún no has guardado ningún cálculo.</p>
+          <button id="clearHistorialBtn" class="hidden w-full mt-3 text-xs font-medium text-red-400 hover:text-red-300 border border-red-500/30 bg-red-500/5 hover:bg-red-500/10 py-2 rounded-lg transition">
+            Vaciar historial
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <div id="viewConversor" class="hidden fade-in">
+      <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-4 shadow-lg shadow-black/20">
+        
+        <div class="flex bg-slate-950 rounded-lg p-1 mb-3 border border-slate-800/50">
+          <button id="convUsdBtn" class="flex-1 text-sm font-medium py-2 rounded-md bg-blue-500/20 text-blue-400 border border-blue-500/30 transition">🇺🇸 Dólares (USD)</button>
+          <button id="convEurBtn" class="flex-1 text-sm font-medium py-2 rounded-md text-slate-400 hover:text-slate-300 transition border border-transparent">🇪🇺 Euros (EUR)</button>
+        </div>
+
+        <div class="flex bg-slate-950 rounded-lg p-1 mb-5 border border-slate-800/50">
+          <button id="convTasaBcvBtn" class="flex-1 text-sm font-medium py-2 rounded-md bg-blue-500/20 text-blue-400 border border-blue-500/30 transition">Oficial (BCV)</button>
+          <button id="convTasaP2pBtn" class="flex-1 text-sm font-medium py-2 rounded-md text-slate-400 hover:text-slate-300 transition border border-transparent">Paralelo</button>
+        </div>
+
+        <div class="flex items-center justify-between gap-3 relative">
+          
+          <div class="flex-1">
+            <label id="convLabelDivisa" class="block text-xs font-medium text-slate-400 mb-1.5">Dólares (USD)</label>
+            <div class="relative">
+              <span id="convSimboloDivisa" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium">$</span>
+              <input type="text" id="convInputDivisa" inputmode="decimal" pattern="[0-9,.]* " placeholder="100"
+                class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-7 pr-3 py-3 text-lg font-semibold text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
+            </div>
+          </div>
+
+          <div class="flex items-center justify-center pt-5">
+            <span class="text-slate-500 text-xl font-light">⇄</span>
+          </div>
+
+          <div class="flex-1">
+            <label class="block text-xs font-medium text-slate-400 mb-1.5">Bolívares (Bs)</label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium">Bs</span>
+              <input type="text" id="convInputBs" inputmode="decimal" pattern="[0-9,.]*" placeholder="0,00"
+                class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-9 pr-2 py-3 text-lg font-semibold text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
+            </div>
+          </div>
+
+        </div>
+
+        <div class="flex gap-2 mt-4">
+          <button type="button" data-conv-monto="20" class="quick-conv flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">20</button>
+          <button type="button" data-conv-monto="50" class="quick-conv flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">50</button>
+          <button type="button" data-conv-monto="100" class="quick-conv flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">100</button>
+          <button type="button" data-conv-monto="200" class="quick-conv flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">200</button>
+        </div>
+        
+        <p class="text-center text-[11px] text-slate-500 mt-4 flex justify-center gap-1">
+          Tasa aplicada: <span id="convTasaAplicada" class="font-semibold text-slate-300">Cargando...</span>
+        </p>
+
+      </section>
+
+      <section class="bg-slate-900 border border-blue-500/30 rounded-2xl p-6 shadow-lg shadow-black/20 text-center relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-blue-400"></div>
+        <p class="text-xs text-slate-400 mb-1 font-medium">Equivale a</p>
+        <p id="convResultadoFinal" class="text-4xl font-bold text-slate-100 tracking-tight break-words">Bs 0,00</p>
+        
+        <button id="convCopyBtn" class="mt-4 mx-auto text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 px-4 py-2 rounded-lg transition flex items-center justify-center gap-2">
+          📋 <span id="convCopyText">Copiar resultado</span>
+        </button>
+      </section>
+    </div>
+
+    <section id="pwaInstructionsCard" class="hidden mt-6 bg-slate-900 border border-blue-500/30 rounded-2xl p-5 shadow-lg shadow-black/40 relative overflow-hidden">
       <div class="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
       <div class="flex justify-between items-start mb-2">
         <h3 class="text-blue-400 font-bold text-sm tracking-tight flex items-center gap-2">
@@ -287,7 +351,7 @@
       <p class="text-xs text-slate-400 mb-3 leading-relaxed">Úsala a pantalla completa, más rápido y sin necesidad de abrir el navegador.</p>
       
       <ol id="instructionsList" class="text-xs text-slate-300 space-y-2 list-decimal list-inside bg-slate-950/50 p-3 rounded-xl border border-slate-800/80">
-        </ol>
+      </ol>
     </section>
 
     <p class="text-center text-slate-600 text-xs mt-6">Cálculo referencial. Verifica siempre las tasas antes de operar.</p>
@@ -296,19 +360,45 @@
 <script>
   const $ = (id) => document.getElementById(id);
 
-  const inputs = ['montoUSD','tasaBanco','comisionBanco','comisionTarjeta','usdtNetos','tasaP2P'].map($);
+  // ===== VARIABLES GLOBALES DE TASAS =====
+  let globalTasaBCV = 0;      
+  let globalTasaP2P = 0;      
+  let globalTasaBcvEUR = 0;   
+  let globalTasaP2pEUR = 0;   
 
+  // Lógica Pestañas (Con memoria localStorage)
+  const tabArbitraje = $('tabArbitraje');
+  const tabConversor = $('tabConversor');
+  const viewArbitraje = $('viewArbitraje');
+  const viewConversor = $('viewConversor');
+
+  function setActiveTab(tab) {
+    localStorage.setItem('activeTab', tab);
+    if (tab === 'arbitraje') {
+      tabArbitraje.className = "flex-1 text-sm font-semibold py-2.5 rounded-lg bg-slate-800 text-blue-400 shadow-sm transition-all duration-200";
+      tabConversor.className = "flex-1 text-sm font-semibold py-2.5 rounded-lg text-slate-400 hover:text-slate-300 transition-all duration-200";
+      viewArbitraje.classList.remove('hidden');
+      viewConversor.classList.add('hidden');
+    } else {
+      tabConversor.className = "flex-1 text-sm font-semibold py-2.5 rounded-lg bg-slate-800 text-blue-400 shadow-sm transition-all duration-200";
+      tabArbitraje.className = "flex-1 text-sm font-semibold py-2.5 rounded-lg text-slate-400 hover:text-slate-300 transition-all duration-200";
+      viewConversor.classList.remove('hidden');
+      viewArbitraje.classList.add('hidden');
+    }
+  }
+
+  tabArbitraje.addEventListener('click', () => setActiveTab('arbitraje'));
+  tabConversor.addEventListener('click', () => setActiveTab('conversor'));
+
+  const inputs = ['montoUSD','tasaBanco','comisionBanco','comisionTarjeta','usdtNetos','tasaP2P'].map($);
   const fmtBs = (n) => 'Bs ' + n.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const fmtUSD = (n) => '$' + Math.abs(n).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  // ===== Guarda el último cálculo para copiar/guardar en historial =====
   let ultimoCalculo = null;
-
-  // ===== Control de tiempo de actualización de tasas =====
   let lastUpdateTime = null;
   let updateCheckInterval = null;
 
-  // ===== Tema Claro / Oscuro =====
+  // Tema
   function aplicarIconoTema() {
     const esClaro = document.documentElement.classList.contains('light');
     $('themeIcon').textContent = esClaro ? '☀️' : '🌙';
@@ -321,7 +411,143 @@
   });
   aplicarIconoTema();
 
-  // ===== Botones de montos rápidos =====
+
+  // ==========================================
+  // LÓGICA DEL CONVERTIDOR BIDIRECCIONAL (MEJORADA)
+  // ==========================================
+  let convUseBcv = true;    
+  let convMoneda = 'USD'; 
+  let lastEdited = 'DIVISA'; 
+
+  const convTasaBcvBtn = $('convTasaBcvBtn');
+  const convTasaP2pBtn = $('convTasaP2pBtn');
+  const convUsdBtn = $('convUsdBtn');
+  const convEurBtn = $('convEurBtn');
+  
+  const convInputDivisa = $('convInputDivisa');
+  const convInputBs = $('convInputBs');
+  const convResultadoFinal = $('convResultadoFinal');
+
+  function getTasaConvertidor() {
+    if (convMoneda === 'USD') {
+      return convUseBcv ? globalTasaBCV : globalTasaP2P;
+    } else {
+      return convUseBcv ? globalTasaBcvEUR : globalTasaP2pEUR;
+    }
+  }
+
+  function updateConversorUI() {
+    if (convUseBcv) {
+      convTasaBcvBtn.className = "flex-1 text-sm font-medium py-2 rounded-md bg-blue-500/20 text-blue-400 border border-blue-500/30 transition";
+      convTasaP2pBtn.className = "flex-1 text-sm font-medium py-2 rounded-md text-slate-400 hover:text-slate-300 transition border border-transparent";
+    } else {
+      convTasaP2pBtn.className = "flex-1 text-sm font-medium py-2 rounded-md bg-blue-500/20 text-blue-400 border border-blue-500/30 transition";
+      convTasaBcvBtn.className = "flex-1 text-sm font-medium py-2 rounded-md text-slate-400 hover:text-slate-300 transition border border-transparent";
+    }
+
+    if (convMoneda === 'USD') {
+      convUsdBtn.className = "flex-1 text-sm font-medium py-2 rounded-md bg-blue-500/20 text-blue-400 border border-blue-500/30 transition";
+      convEurBtn.className = "flex-1 text-sm font-medium py-2 rounded-md text-slate-400 hover:text-slate-300 transition border border-transparent";
+      $('convLabelDivisa').textContent = 'Dólares (USD)';
+      $('convSimboloDivisa').textContent = '$';
+    } else {
+      convEurBtn.className = "flex-1 text-sm font-medium py-2 rounded-md bg-blue-500/20 text-blue-400 border border-blue-500/30 transition";
+      convUsdBtn.className = "flex-1 text-sm font-medium py-2 rounded-md text-slate-400 hover:text-slate-300 transition border border-transparent";
+      $('convLabelDivisa').textContent = 'Euros (EUR)';
+      $('convSimboloDivisa').textContent = '€';
+    }
+
+    calcularConversor(lastEdited);
+  }
+
+  // Robustez de parseo de números mixtos (comas y puntos)
+  function limpiarNumero(val) {
+    if (!val) return 0;
+    let texto = val.trim();
+    // Si contiene comas y puntos, elimina los puntos de miles y cambia la coma decimal por punto
+    if (texto.includes(',') && texto.includes('.')) {
+      if (texto.indexOf('.') < texto.indexOf(',')) {
+        texto = texto.replace(/\./g, '').replace(',', '.');
+      } else {
+        texto = texto.replace(/,/g, '');
+      }
+    } else {
+      texto = texto.replace(',', '.');
+    }
+    return parseFloat(texto) || 0;
+  }
+
+  function calcularConversor(fuente = lastEdited) {
+    lastEdited = fuente;
+    const tasaActual = getTasaConvertidor();
+    const simbolo = convMoneda === 'USD' ? '$' : '€';
+    
+    $('convTasaAplicada').textContent = tasaActual > 0 ? fmtBs(tasaActual) : 'Sin conexión';
+    if (tasaActual <= 0) return;
+
+    if (fuente === 'DIVISA') {
+      const divisa = limpiarNumero(convInputDivisa.value);
+      if (convInputDivisa.value.trim() === '') {
+        convInputBs.value = '';
+        convResultadoFinal.textContent = 'Bs 0,00';
+        return;
+      }
+      const bs = divisa * tasaActual;
+      convInputBs.value = bs.toFixed(2).replace('.', ',');
+      convResultadoFinal.textContent = fmtBs(bs);
+    } else if (fuente === 'BS') {
+      const bs = limpiarNumero(convInputBs.value);
+      if (convInputBs.value.trim() === '') {
+        convInputDivisa.value = '';
+        convResultadoFinal.textContent = simbolo + '0,00';
+        return;
+      }
+      const divisa = bs / tasaActual;
+      convInputDivisa.value = divisa.toFixed(2);
+      convResultadoFinal.textContent = simbolo + Math.abs(divisa).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+  }
+
+  // Event Listeners Convertidor
+  convTasaBcvBtn.addEventListener('click', () => { convUseBcv = true; updateConversorUI(); });
+  convTasaP2pBtn.addEventListener('click', () => { convUseBcv = false; updateConversorUI(); });
+  convUsdBtn.addEventListener('click', () => { convMoneda = 'USD'; updateConversorUI(); });
+  convEurBtn.addEventListener('click', () => { convMoneda = 'EUR'; updateConversorUI(); });
+
+  convInputDivisa.addEventListener('input', () => calcularConversor('DIVISA'));
+  convInputBs.addEventListener('input', () => calcularConversor('BS'));
+
+  // Botones rápidos del conversor
+  document.querySelectorAll('.quick-conv').forEach(btn => {
+    btn.addEventListener('click', () => {
+      convInputDivisa.value = btn.dataset.convMonto;
+      calcularConversor('DIVISA');
+    });
+  });
+
+  $('convCopyBtn').addEventListener('click', async () => {
+    const resText = $('convResultadoFinal').textContent;
+    if (resText === 'Bs 0,00' || resText === '$ 0,00' || resText === '$0,00' || resText === '€0,00' || resText === '€ 0,00') return;
+    
+    try { await navigator.clipboard.writeText(resText); } 
+    catch (err) {
+      const temp = document.createElement('textarea');
+      temp.value = resText; document.body.appendChild(temp);
+      temp.select(); document.execCommand('copy'); document.body.removeChild(temp);
+    }
+    const textEl = $('convCopyText'); const original = textEl.textContent;
+    textEl.textContent = '¡Copiado!';
+    $('convCopyBtn').classList.add('text-emerald-400', 'border-emerald-500/30');
+    setTimeout(() => {
+      textEl.textContent = original;
+      $('convCopyBtn').classList.remove('text-emerald-400', 'border-emerald-500/30');
+    }, 1800);
+  });
+
+
+  // ==========================================
+  // ARBITRAJE Y FETCH GENERAL
+  // ==========================================
   document.querySelectorAll('.quick-amount').forEach(btn => {
     btn.addEventListener('click', () => {
       $('montoUSD').value = btn.dataset.monto;
@@ -329,7 +555,6 @@
     });
   });
 
-  // ===== Presets de Configuración =====
   document.querySelectorAll('.preset-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       $('comisionBanco').value = btn.dataset.banco;
@@ -341,12 +566,8 @@
 
   function num(el) {
     let texto = el.value.trim();
-    if (texto === "") {
-      texto = el.getAttribute('placeholder') || "0";
-    }
-    let valorTexto = texto.replace(/,/g, '.'); 
-    const v = parseFloat(valorTexto);
-    return isNaN(v) ? 0 : v;
+    if (texto === "") texto = el.getAttribute('placeholder') || "0";
+    return limpiarNumero(texto);
   }
 
   function setColor(el, value) {
@@ -376,9 +597,6 @@
     $('gananciaPct').textContent = '0,00%';
     $('gananciaPct').className = "text-2xl font-bold text-slate-100";
     $('viabilidadBadge').className = "hidden";
-    $('spreadValor').textContent = 'Bs 0,00 (0,00%)';
-    $('spreadValor').className = "text-sm font-bold text-slate-100";
-    $('spreadNota').textContent = '';
     $('desgloseComBanco').textContent = '-$0,00';
     $('desgloseComTarjeta').textContent = '-$0,00';
     $('desgloseSpreadCripto').textContent = '-$0,00';
@@ -395,7 +613,6 @@
     const usdtNetos = num($('usdtNetos'));
     const tasaP2P = num($('tasaP2P'));
 
-    // ===== Spread: diferencial entre Tasa P2P y Tasa Banco (no depende del monto) =====
     const spreadBs = tasaP2P - tasaBanco;
     const spreadPct = tasaBanco !== 0 ? (spreadBs / tasaBanco) * 100 : 0;
 
@@ -404,38 +621,15 @@
     spreadEl.textContent = (spreadBs >= 0 ? '' : '-') + fmtBs(Math.abs(spreadBs)) + ` (${spreadPct >= 0 ? '+' : '-'}${Math.abs(spreadPct).toFixed(2)}%)`;
     spreadEl.className = "text-sm font-bold " + (spreadPct > 0 ? "text-emerald-400" : spreadPct < 0 ? "text-red-400" : "text-slate-100");
 
-    if (spreadPct >= 4) {
-      notaEl.textContent = "Margen amplio: buen colchón antes de comisiones.";
-    } else if (spreadPct > 0) {
-      notaEl.textContent = "Margen ajustado: las comisiones pueden consumirlo casi todo.";
-    } else {
-      notaEl.textContent = "Sin margen: la tasa P2P está igual o por debajo de la Tasa Banco.";
-    }
+    if (spreadPct >= 4) notaEl.textContent = "Margen amplio: buen colchón antes de comisiones.";
+    else if (spreadPct > 0) notaEl.textContent = "Margen ajustado: las comisiones pueden consumirlo casi todo.";
+    else notaEl.textContent = "Sin margen: la tasa P2P está igual o por debajo de la Tasa Banco.";
 
-    // ===== Si no hay monto, se resetean Resultados/Desglose y se detiene aquí =====
     if ($('montoUSD').value.trim() === "") {
-      $('bsInvertidos').textContent = fmtBs(0);
-      $('bsObtenidos').textContent = fmtBs(0);
-      $('labelComisiones').textContent = 'Pérdida en Comisiones (USD)';
-      $('perdidaComisiones').textContent = fmtUSD(0);
-      $('perdidaComisiones').className = "font-medium text-slate-100";
-      $('gananciaBs').textContent = fmtBs(0);
-      $('gananciaBs').className = "text-2xl font-bold text-slate-100";
-      $('gananciaUSD').textContent = fmtUSD(0);
-      $('gananciaUSD').className = "text-2xl font-bold text-slate-100";
-      $('gananciaPct').textContent = '0,00%';
-      $('gananciaPct').className = "text-2xl font-bold text-slate-100";
-      $('viabilidadBadge').className = "hidden";
-      $('desgloseComBanco').textContent = '-$0,00';
-      $('desgloseComTarjeta').textContent = '-$0,00';
-      $('desgloseSpreadCripto').textContent = '-$0,00';
-      $('desgloseTotalPerdida').textContent = '-$0,00';
-      $('desgloseProcentaje').textContent = '';
-      ultimoCalculo = null;
+      resetRender();
       return;
     }
 
-    // ===== Cálculos principales (dependen del monto) =====
     const bsInvertidos = montoUSD * tasaBanco * (1 + (comisionBanco / 100));
     const bsObtenidos = usdtNetos * tasaP2P;
     const gananciaBs = bsObtenidos - bsInvertidos;
@@ -448,7 +642,6 @@
 
     const gananciaPct = montoUSD !== 0 ? (gananciaUSD / montoUSD) * 100 : 0;
 
-    // ===== Desglose de Comisiones =====
     const comisionBancoUSD = montoUSD * (comisionBanco / 100);
     const comisionTarjetaUSD = montoUSD * (comisionTarjeta / 100);
     const usdtPerdidosEnCripto = montoUSD - usdtNetos;
@@ -460,7 +653,6 @@
     const pctPerdida = montoUSD !== 0 ? (perdidaComisiones / montoUSD) * 100 : 0;
     $('desgloseProcentaje').textContent = `${pctPerdida.toFixed(2)}% del capital invertido`;
 
-    // ===== Render de Resultados =====
     $('bsInvertidos').textContent = fmtBs(bsInvertidos);
     $('bsObtenidos').textContent = fmtBs(bsObtenidos);
 
@@ -484,9 +676,8 @@
     setColor($('gananciaUSD'), gananciaUSD);
     setColor($('gananciaPct'), gananciaPct);
 
-    // ===== Badge de viabilidad de la operación =====
     const badge = $('viabilidadBadge');
-    badge.className = "mt-4 text-center text-xs font-semibold py-2.5 rounded-xl border";
+    badge.className = "mt-4 text-center text-xs font-semibold py-2.5 rounded-xl border block";
     if (gananciaPct > 3) {
       badge.textContent = '✓ Operación rentable';
       badge.classList.add('bg-emerald-500/10', 'border-emerald-500/30', 'text-emerald-400');
@@ -498,14 +689,12 @@
       badge.classList.add('bg-amber-500/10', 'border-amber-500/30', 'text-amber-400');
     }
 
-    // ===== Guarda el cálculo actual para copiar/guardar en historial =====
     ultimoCalculo = {
       montoUSD, tasaBanco, comisionBanco, comisionTarjeta, usdtNetos, tasaP2P,
       bsInvertidos, bsObtenidos, gananciaBs, gananciaUSD, gananciaPct, perdidaComisiones
     };
   }
 
-  // ===== Indicador de volatilidad: compara con la primera tasa vista hoy =====
   function actualizarVolatilidad(clave, valorActual, elemento) {
     const hoy = new Date().toDateString();
     const claveFecha = `arbitraje_${clave}_fecha`;
@@ -530,7 +719,6 @@
     }
   }
 
-  // Hace un fetch con límite de tiempo para que nunca se quede "colgado"
   async function fetchConTimeout(url, ms = 8000) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), ms);
@@ -556,51 +744,60 @@
     let valorBCV = null;
     let valorP2P = null;
 
-    // ===== Intento 1: endpoint combinado =====
     try {
       const respuesta = await fetchConTimeout('https://ve.dolarapi.com/v1/dolares');
-      if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);
-      const datos = await respuesta.json();
+      if (respuesta.ok) {
+        const datos = await respuesta.json();
+        const dataOficial = Array.isArray(datos) ? datos.find(item => item.fuente === 'oficial') : null;
+        if (dataOficial && dataOficial.promedio) valorBCV = parseFloat(dataOficial.promedio);
 
-      const dataOficial = Array.isArray(datos) ? datos.find(item => item.fuente === 'oficial') : null;
-      if (dataOficial && dataOficial.promedio) valorBCV = parseFloat(dataOficial.promedio);
+        const dataParalelo = Array.isArray(datos) ? datos.find(item => item.fuente === 'paralelo') : null;
+        if (dataParalelo && dataParalelo.promedio) valorP2P = parseFloat(dataParalelo.promedio);
+      }
+    } catch (error) { }
 
-      const dataParalelo = Array.isArray(datos) ? datos.find(item => item.fuente === 'paralelo') : null;
-      if (dataParalelo && dataParalelo.promedio) valorP2P = parseFloat(dataParalelo.promedio);
-
-    } catch (error) {
-      console.error('[Arbitraje] Falló el endpoint combinado /v1/dolares:', error.message || error);
-    }
-
-    // ===== Intento 2 (respaldo): endpoints individuales, solo para lo que faltó =====
     if (valorBCV === null) {
       try {
         const r = await fetchConTimeout('https://ve.dolarapi.com/v1/dolares/oficial');
-        if (r.ok) {
-          const d = await r.json();
-          if (d && d.promedio) valorBCV = parseFloat(d.promedio);
-        }
-      } catch (error) {
-        console.error('[Arbitraje] Falló el respaldo /v1/dolares/oficial:', error.message || error);
-      }
+        if (r.ok) { const d = await r.json(); if (d && d.promedio) valorBCV = parseFloat(d.promedio); }
+      } catch (error) { }
     }
-
     if (valorP2P === null) {
       try {
         const r = await fetchConTimeout('https://ve.dolarapi.com/v1/dolares/paralelo');
-        if (r.ok) {
-          const d = await r.json();
-          if (d && d.promedio) valorP2P = parseFloat(d.promedio);
-        }
-      } catch (error) {
-        console.error('[Arbitraje] Falló el respaldo /v1/dolares/paralelo:', error.message || error);
-      }
+        if (r.ok) { const d = await r.json(); if (d && d.promedio) valorP2P = parseFloat(d.promedio); }
+      } catch (error) { }
     }
 
-    // ===== Aplicar resultados =====
+    try {
+      const respEur = await fetchConTimeout('https://ve.dolarapi.com/v1/euros');
+      if (respEur.ok) {
+        const datosEur = await respEur.json();
+        const eurOficial = Array.isArray(datosEur) ? datosEur.find(item => item.fuente === 'oficial') : null;
+        if (eurOficial && eurOficial.promedio) globalTasaBcvEUR = parseFloat(eurOficial.promedio);
+
+        const eurParalelo = Array.isArray(datosEur) ? datosEur.find(item => item.fuente === 'paralelo') : null;
+        if (eurParalelo && eurParalelo.promedio) globalTasaP2pEUR = parseFloat(eurParalelo.promedio);
+      }
+    } catch (error) { }
+
+    if (globalTasaBcvEUR === 0) {
+      try {
+        const r = await fetchConTimeout('https://ve.dolarapi.com/v1/euros/oficial');
+        if (r.ok) { const d = await r.json(); if (d && d.promedio) globalTasaBcvEUR = parseFloat(d.promedio); }
+      } catch (error) { }
+    }
+    if (globalTasaP2pEUR === 0) {
+      try {
+        const r = await fetchConTimeout('https://ve.dolarapi.com/v1/euros/paralelo');
+        if (r.ok) { const d = await r.json(); if (d && d.promedio) globalTasaP2pEUR = parseFloat(d.promedio); }
+      } catch (error) { }
+    }
+
     let huboExito = false;
 
     if (valorBCV !== null && !isNaN(valorBCV) && valorBCV > 0) {
+      globalTasaBCV = valorBCV;
       $('tasaBanco').value = valorBCV.toFixed(2);
       bcvStatusEl.textContent = "● BCV Actualizado";
       bcvStatusEl.className = "text-[10px] text-emerald-400 font-medium";
@@ -614,6 +811,7 @@
     }
 
     if (valorP2P !== null && !isNaN(valorP2P) && valorP2P > 0) {
+      globalTasaP2P = valorP2P;
       $('tasaP2P').value = valorP2P.toFixed(2);
       p2pStatusEl.textContent = "● Paralelo Sincronizado";
       p2pStatusEl.className = "text-[10px] text-emerald-400 font-medium";
@@ -624,305 +822,155 @@
       p2pStatusEl.className = "text-[10px] text-red-400 font-medium animate-none";
     }
 
-    if (huboExito) calcular();
+    if (huboExito) {
+      calcular();
+      calcularConversor(lastEdited);
+    }
 
     return huboExito;
   }
 
   inputs.forEach(el => el.addEventListener('input', calcular));
 
-  // ===== Copiar resumen al portapapeles =====
   $('copyBtn').addEventListener('click', async () => {
     if (!ultimoCalculo) return;
     const c = ultimoCalculo;
-    const resumen =
-`📊 Arbitraje Cambiario
-Monto invertido: $${c.montoUSD.toFixed(2)}
-Bs Invertidos: ${fmtBs(c.bsInvertidos)}
-Bs Obtenidos: ${fmtBs(c.bsObtenidos)}
-Ganancia Neta: ${fmtBs(c.gananciaBs)} (${fmtUSD(c.gananciaUSD)})
-Rentabilidad: ${c.gananciaPct.toFixed(2)}%`;
-
-    try {
-      await navigator.clipboard.writeText(resumen);
-    } catch (err) {
+    const resumen = `📊 Arbitraje Cambiario\nMonto invertido: $${c.montoUSD.toFixed(2)}\nBs Invertidos: ${fmtBs(c.bsInvertidos)}\nBs Obtenidos: ${fmtBs(c.bsObtenidos)}\nGanancia Neta: ${fmtBs(c.gananciaBs)} (${fmtUSD(c.gananciaUSD)})\nRentabilidad: ${c.gananciaPct.toFixed(2)}%`;
+    try { await navigator.clipboard.writeText(resumen); } 
+    catch (err) {
       const temp = document.createElement('textarea');
-      temp.value = resumen;
-      document.body.appendChild(temp);
-      temp.select();
-      document.execCommand('copy');
-      document.body.removeChild(temp);
+      temp.value = resumen; document.body.appendChild(temp); temp.select(); document.execCommand('copy'); document.body.removeChild(temp);
     }
-    const textEl = $('copyBtnText');
-    const original = textEl.textContent;
-    textEl.textContent = '¡Copiado!';
-    $('copyBtn').classList.add('text-emerald-400', 'border-emerald-500/30');
-    setTimeout(() => {
-      textEl.textContent = original;
-      $('copyBtn').classList.remove('text-emerald-400', 'border-emerald-500/30');
-    }, 1800);
+    const textEl = $('copyBtnText'); const original = textEl.textContent;
+    textEl.textContent = '¡Copiado!'; $('copyBtn').classList.add('text-emerald-400', 'border-emerald-500/30');
+    setTimeout(() => { textEl.textContent = original; $('copyBtn').classList.remove('text-emerald-400', 'border-emerald-500/30'); }, 1800);
   });
 
-  // ===== Captura de Pantalla =====
   $('screenshotBtn').addEventListener('click', async () => {
-    const btn = $('screenshotBtn');
-    const original = btn.innerHTML;
-    btn.innerHTML = '📸 Procesando...';
-    btn.disabled = true;
-
+    const btn = $('screenshotBtn'); const original = btn.innerHTML;
+    btn.innerHTML = '📸 Procesando...'; btn.disabled = true;
     try {
-      const resultadoSection = document.querySelector('section:has(#gananciaBs)');
+      const resultadoSection = document.querySelector('#viewArbitraje section:has(#gananciaBs)');
       if (!resultadoSection) return;
-
-      const canvas = await html2canvas(resultadoSection, {
-        backgroundColor: '#0f172a',
-        scale: 2,
-        logging: false,
-        useCORS: true
-      });
-
+      const canvas = await html2canvas(resultadoSection, { backgroundColor: '#0f172a', scale: 2, logging: false, useCORS: true });
       canvas.toBlob(blob => {
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
+        const a = document.createElement('a'); a.href = url;
         a.download = `arbitraje-${new Date().toLocaleString('es-VE', { year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(/[\/\s:]/g, '-')}.png`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        btn.innerHTML = '✓ ¡Descargado!';
-        setTimeout(() => {
-          btn.innerHTML = original;
-          btn.disabled = false;
-        }, 1500);
+        document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+        btn.innerHTML = '✓ ¡Descargado!'; setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 1500);
       });
-    } catch (error) {
-      console.error('Error en captura:', error);
-      btn.innerHTML = '❌ Error';
-      setTimeout(() => {
-        btn.innerHTML = original;
-        btn.disabled = false;
-      }, 1500);
-    }
+    } catch (error) { btn.innerHTML = '❌ Error'; setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 1500); }
   });
 
-  // ===== Actualizar Tasas Manualmente =====
   $('refreshRatesBtn').addEventListener('click', async () => {
-    const btn = $('refreshRatesBtn');
-    const icon = $('refreshIcon');
+    const btn = $('refreshRatesBtn'); const icon = $('refreshIcon');
     if (btn.disabled) return;
-    btn.disabled = true;
-    btn.classList.add('opacity-60');
-    icon.textContent = '⏳';
+    btn.disabled = true; btn.classList.add('opacity-60'); icon.textContent = '⏳';
     await consultarTasasEnTiempoReal();
-    icon.textContent = '🔄';
-    btn.classList.remove('opacity-60');
-    btn.disabled = false;
+    icon.textContent = '🔄'; btn.classList.remove('opacity-60'); btn.disabled = false;
   });
 
-  // ===== Control de tiempo de actualización (Alerta si tasas están estancadas) =====
   function actualizarTimerTasas() {
     if (!lastUpdateTime) return;
-    const ahora = new Date();
-    const minutosTranscurridos = Math.floor((ahora - lastUpdateTime) / 60000);
-
+    const ahora = new Date(); const minutosTranscurridos = Math.floor((ahora - lastUpdateTime) / 60000);
     const timeEl = $('lastUpdateTime');
-    if (minutosTranscurridos === 0) {
-      timeEl.textContent = 'Actualizado hace segundos';
-    } else if (minutosTranscurridos < 60) {
-      timeEl.textContent = `Actualizado hace ${minutosTranscurridos} min`;
-    } else {
-      const horasTranscurridas = Math.floor(minutosTranscurridos / 60);
-      timeEl.textContent = `Actualizado hace ${horasTranscurridas}h`;
-    }
-    timeEl.className = minutosTranscurridos > 30
-      ? "text-[11px] text-red-400 mt-0.5"
-      : "text-[11px] text-slate-500 mt-0.5";
-
-    // Alerta si tasas hace > 30 minutos
+    if (minutosTranscurridos === 0) timeEl.textContent = 'Actualizado hace segundos';
+    else if (minutosTranscurridos < 60) timeEl.textContent = `Actualizado hace ${minutosTranscurridos} min`;
+    else timeEl.textContent = `Actualizado hace ${Math.floor(minutosTranscurridos / 60)}h`;
+    timeEl.className = minutosTranscurridos > 30 ? "text-[11px] text-red-400 mt-0.5" : "text-[11px] text-slate-500 mt-0.5";
     const bcvStatusEl = $('bcvStatus');
     if (minutosTranscurridos > 30 && !bcvStatusEl.textContent.includes('⚠️')) {
-      bcvStatusEl.textContent = '⚠️ Tasas hace ' + (minutosTranscurridos > 60 ? 
-        Math.floor(minutosTranscurridos / 60) + 'h' : minutosTranscurridos + ' min');
+      bcvStatusEl.textContent = '⚠️ Tasas hace ' + (minutosTranscurridos > 60 ? Math.floor(minutosTranscurridos / 60) + 'h' : minutosTranscurridos + ' min');
       bcvStatusEl.className = "text-[10px] text-red-400 font-medium animate-pulse";
     }
   }
 
-  // Actualizar timer cada minuto
   clearInterval(updateCheckInterval);
   updateCheckInterval = setInterval(actualizarTimerTasas, 60000);
+
   const HISTORIAL_KEY = 'arbitrajeHistorial';
   const MAX_HISTORIAL = 15;
-
-  function leerHistorial() {
-    try {
-      return JSON.parse(localStorage.getItem(HISTORIAL_KEY)) || [];
-    } catch { return []; }
-  }
-
-  function guardarHistorial(lista) {
-    localStorage.setItem(HISTORIAL_KEY, JSON.stringify(lista));
-  }
+  function leerHistorial() { try { return JSON.parse(localStorage.getItem(HISTORIAL_KEY)) || []; } catch { return []; } }
+  function guardarHistorial(lista) { localStorage.setItem(HISTORIAL_KEY, JSON.stringify(lista)); }
 
   function renderHistorial() {
-    const lista = leerHistorial();
-    const cont = $('historialLista');
-    const vacio = $('historialVacio');
-    const clearBtn = $('clearHistorialBtn');
-
-    if (lista.length === 0) {
-      cont.innerHTML = '';
-      vacio.classList.remove('hidden');
-      clearBtn.classList.add('hidden');
-      return;
-    }
-
-    vacio.classList.add('hidden');
-    clearBtn.classList.remove('hidden');
-
+    const lista = leerHistorial(); const cont = $('historialLista'); const vacio = $('historialVacio'); const clearBtn = $('clearHistorialBtn');
+    if (lista.length === 0) { cont.innerHTML = ''; vacio.classList.remove('hidden'); clearBtn.classList.add('hidden'); return; }
+    vacio.classList.add('hidden'); clearBtn.classList.remove('hidden');
     cont.innerHTML = lista.map(item => {
-      const positivo = item.gananciaUSD >= 0;
-      const colorClase = positivo ? 'text-emerald-400' : 'text-red-400';
-      return `
-        <div class="flex items-center justify-between gap-2 bg-slate-800/60 rounded-xl p-3 text-xs">
-          <div class="cursor-pointer flex-1" data-load="${item.id}">
-            <p class="font-semibold text-slate-100">$${item.montoUSD.toFixed(2)} <span class="text-slate-500 font-normal">→</span> <span class="${colorClase} font-bold">${positivo ? '+' : ''}${fmtUSD(item.gananciaUSD)}</span></p>
-            <p class="text-slate-500 mt-0.5">${item.fecha} · Rentabilidad ${item.gananciaPct.toFixed(2)}%</p>
-          </div>
-          <button data-delete="${item.id}" class="text-slate-600 hover:text-red-400 px-2 py-1 transition">✕</button>
-        </div>`;
+      const positivo = item.gananciaUSD >= 0; const colorClase = positivo ? 'text-emerald-400' : 'text-red-400';
+      return `<div class="flex items-center justify-between gap-2 bg-slate-800/60 rounded-xl p-3 text-xs"><div class="cursor-pointer flex-1" data-load="${item.id}"><p class="font-semibold text-slate-100">$${item.montoUSD.toFixed(2)} <span class="text-slate-500 font-normal">→</span> <span class="${colorClase} font-bold">${positivo ? '+' : ''}${fmtUSD(item.gananciaUSD)}</span></p><p class="text-slate-500 mt-0.5">${item.fecha} · Rentabilidad ${item.gananciaPct.toFixed(2)}%</p></div><button data-delete="${item.id}" class="text-slate-600 hover:text-red-400 px-2 py-1 transition">✕</button></div>`;
     }).join('');
-
-    cont.querySelectorAll('[data-load]').forEach(el => {
-      el.addEventListener('click', () => cargarDesdeHistorial(el.dataset.load));
-    });
-    cont.querySelectorAll('[data-delete]').forEach(el => {
-      el.addEventListener('click', (ev) => {
-        ev.stopPropagation();
-        eliminarDeHistorial(el.dataset.delete);
-      });
-    });
+    cont.querySelectorAll('[data-load]').forEach(el => el.addEventListener('click', () => cargarDesdeHistorial(el.dataset.load)));
+    cont.querySelectorAll('[data-delete]').forEach(el => el.addEventListener('click', (ev) => { ev.stopPropagation(); eliminarDeHistorial(el.dataset.delete); }));
   }
 
   function cargarDesdeHistorial(id) {
-    const item = leerHistorial().find(i => i.id === id);
-    if (!item) return;
-    $('montoUSD').value = item.montoUSD;
-    $('tasaBanco').value = item.tasaBanco;
-    $('comisionBanco').value = item.comisionBanco;
-    $('comisionTarjeta').value = item.comisionTarjeta;
-    $('usdtNetos').value = item.usdtNetos;
-    $('tasaP2P').value = item.tasaP2P;
-    calcular();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const item = leerHistorial().find(i => i.id === id); if (!item) return;
+    $('montoUSD').value = item.montoUSD; $('tasaBanco').value = item.tasaBanco; $('comisionBanco').value = item.comisionBanco;
+    $('comisionTarjeta').value = item.comisionTarjeta; $('usdtNetos').value = item.usdtNetos; $('tasaP2P').value = item.tasaP2P;
+    calcular(); window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function eliminarDeHistorial(id) {
-    const nuevaLista = leerHistorial().filter(i => i.id !== id);
-    guardarHistorial(nuevaLista);
-    renderHistorial();
-  }
+  function eliminarDeHistorial(id) { guardarHistorial(leerHistorial().filter(i => i.id !== id)); renderHistorial(); }
 
   $('saveHistorialBtn').addEventListener('click', () => {
-    if (!ultimoCalculo) return;
-    const c = ultimoCalculo;
+    if (!ultimoCalculo) return; const c = ultimoCalculo;
     const nuevoItem = {
-      id: Date.now().toString(),
-      montoUSD: c.montoUSD, tasaBanco: c.tasaBanco, comisionBanco: c.comisionBanco,
-      comisionTarjeta: c.comisionTarjeta, usdtNetos: c.usdtNetos, tasaP2P: c.tasaP2P,
-      gananciaUSD: c.gananciaUSD, gananciaBs: c.gananciaBs, gananciaPct: c.gananciaPct,
+      id: Date.now().toString(), montoUSD: c.montoUSD, tasaBanco: c.tasaBanco, comisionBanco: c.comisionBanco, comisionTarjeta: c.comisionTarjeta, usdtNetos: c.usdtNetos, tasaP2P: c.tasaP2P, gananciaUSD: c.gananciaUSD, gananciaBs: c.gananciaBs, gananciaPct: c.gananciaPct,
       fecha: new Date().toLocaleString('es-VE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
     };
-    const lista = [nuevoItem, ...leerHistorial()].slice(0, MAX_HISTORIAL);
-    guardarHistorial(lista);
-    renderHistorial();
-
-    const btn = $('saveHistorialBtn');
-    const textoOriginal = btn.innerHTML;
-    btn.innerHTML = '✓ Guardado en historial';
-    setTimeout(() => { btn.innerHTML = textoOriginal; }, 1500);
+    guardarHistorial([nuevoItem, ...leerHistorial()].slice(0, MAX_HISTORIAL)); renderHistorial();
+    const btn = $('saveHistorialBtn'); const textoOriginal = btn.innerHTML;
+    btn.innerHTML = '✓ Guardado en historial'; setTimeout(() => { btn.innerHTML = textoOriginal; }, 1500);
   });
 
-  $('clearHistorialBtn').addEventListener('click', () => {
-    if (confirm('¿Vaciar todo el historial de cálculos?')) {
-      guardarHistorial([]);
-      renderHistorial();
-    }
-  });
-
-  $('toggleHistorialBtn').addEventListener('click', () => {
-    const panel = $('historialPanel');
-    const chevron = $('historialChevron');
-    panel.classList.toggle('hidden');
-    chevron.style.transform = panel.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
-  });
+  $('clearHistorialBtn').addEventListener('click', () => { if (confirm('¿Vaciar todo el historial de cálculos?')) { guardarHistorial([]); renderHistorial(); } });
+  $('toggleHistorialBtn').addEventListener('click', () => { const panel = $('historialPanel'); const chevron = $('historialChevron'); panel.classList.toggle('hidden'); chevron.style.transform = panel.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)'; });
 
   renderHistorial();
   resetRender();
+  
+  // Recuperar última pestaña usada
+  const savedTab = localStorage.getItem('activeTab') || 'arbitraje';
+  setActiveTab(savedTab);
+  
+  updateConversorUI(); 
 
   setTimeout(consultarTasasEnTiempoReal, 500);
 </script>
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-    if (isStandalone) return;
-
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone; if (isStandalone) return;
     const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-    const list = $('instructionsList');
-    const card = $('pwaInstructionsCard');
-    let showCard = false;
-
+    const list = $('instructionsList'); const card = $('pwaInstructionsCard'); let showCard = false;
     if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-      list.innerHTML = `
-        <li>Abre esta página en el navegador <strong>Safari</strong>.</li>
-        <li>Presiona el botón de <strong>Compartir</strong> (el icono del cuadrado con una flecha hacia arriba).</li>
-        <li>Desliza hacia abajo y selecciona <strong>"Agregar al inicio"</strong>.</li>
-      `;
+      list.innerHTML = `<li>Abre esta página en el navegador <strong>Safari</strong>.</li><li>Presiona el botón de <strong>Compartir</strong> (el icono del cuadrado con una flecha hacia arriba).</li><li>Desliza hacia abajo y selecciona <strong>"Agregar al inicio"</strong>.</li>`;
       showCard = true;
-    } 
-    else if (/android/i.test(userAgent)) {
-      list.innerHTML = `
-        <li>Abre esta página en <strong>Google Chrome</strong>.</li>
-        <li>Presiona los <strong>tres puntos</strong> en la esquina superior derecha.</li>
-        <li>Toca en <strong>"Instalar aplicación"</strong> o "Agregar a la pantalla de inicio".</li>
-      `;
+    } else if (/android/i.test(userAgent)) {
+      list.innerHTML = `<li>Abre esta página en <strong>Google Chrome</strong>.</li><li>Presiona los <strong>tres puntos</strong> en la esquina superior derecha.</li><li>Toca en <strong>"Instalar aplicación"</strong> o "Agregar a la pantalla de inicio".</li>`;
       showCard = true;
     }
-
-    if (showCard && localStorage.getItem('hidePwaInstructions') !== 'true') {
-      card.classList.remove('hidden');
-    }
-
-    $('closeInstructionsBtn').addEventListener('click', () => {
-      card.classList.add('hidden');
-      localStorage.setItem('hidePwaInstructions', 'true');
-    });
+    if (showCard && localStorage.getItem('hidePwaInstructions') !== 'true') card.classList.remove('hidden');
+    $('closeInstructionsBtn').addEventListener('click', () => { card.classList.add('hidden'); localStorage.setItem('hidePwaInstructions', 'true'); });
   });
 </script>
 
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js')
-        .then(reg => {
-          console.log('Service Worker registrado con éxito', reg);
-          
-          reg.addEventListener('updatefound', () => {
-            const newWorker = reg.installing;
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                console.log('Nueva versión detectada. Recargando la aplicación...');
-                window.location.reload();
-              }
-            });
+      navigator.serviceWorker.register('sw.js').then(reg => {
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) window.location.reload();
           });
-        })
-        .catch(err => console.error('Error al registrar el Service Worker', err));
+        });
+      }).catch(err => console.error('Error al registrar el Service Worker', err));
     });
   }
 </script>
-
 </body>
 </html>
