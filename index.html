@@ -6,7 +6,6 @@
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="icon" href="favicon.png" type="image/png">
   
-  <!-- Vinculación del Manifiesto PWA -->
   <link rel="manifest" href="manifest.json">
   
 <meta charset="UTF-8">
@@ -14,6 +13,7 @@
 <meta name="theme-color" content="#60a5fa">
 <title>Calculadora de Arbitraje Cambiario</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   /* Evita el zoom automático de iOS al enfocar inputs (mínimo 16px) */
   input { font-size: 16px; }
@@ -51,7 +51,6 @@
 
   <div class="max-w-md mx-auto px-4 py-6 pb-16 relative">
 
-    <!-- Encabezado -->
     <header class="mb-6 flex items-center justify-between">
       <div class="flex-1 text-center">
         <h1 class="text-2xl font-bold text-blue-400 tracking-tight">Arbitraje Cambiario</h1>
@@ -62,7 +61,33 @@
       </button>
     </header>
 
-    <!-- Tarjeta 1: Compra en Banco -->
+    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 shadow-lg shadow-black/20">
+      <p class="text-xs text-slate-400 font-medium mb-2.5">⚡ Presets de Comisiones</p>
+      <div class="grid grid-cols-2 gap-2">
+        <button class="preset-btn text-xs font-medium bg-slate-800 hover:bg-blue-500/20 border border-slate-700 hover:border-blue-400 text-slate-300 hover:text-blue-400 py-2 px-2.5 rounded-lg transition" data-banco="0.50" data-tarjeta="1.50" title="Banco 0.50% • Tarjeta 1.50%">
+          ⚡ Típica
+        </button>
+        <button class="preset-btn text-xs font-medium bg-slate-800 hover:bg-blue-500/20 border border-slate-700 hover:border-blue-400 text-slate-300 hover:text-blue-400 py-2 px-2.5 rounded-lg transition" data-banco="0.50" data-tarjeta="2.50" title="Banco 0.50% • Tarjeta 2.50%">
+          🛡️ Bajo Riesgo
+        </button>
+        <button class="preset-btn text-xs font-medium bg-slate-800 hover:bg-blue-500/20 border border-slate-700 hover:border-blue-400 text-slate-300 hover:text-blue-400 py-2 px-2.5 rounded-lg transition" data-banco="0.50" data-tarjeta="3.50" title="Banco 0.50% • Tarjeta 3.50%">
+          ⚖️ Balanceado
+        </button>
+        <button class="preset-btn text-xs font-medium bg-slate-800 hover:bg-blue-500/20 border border-slate-700 hover:border-blue-400 text-slate-300 hover:text-blue-400 py-2 px-2.5 rounded-lg transition" data-banco="0.50" data-tarjeta="5.00" title="Banco 0.50% • Tarjeta 5.00%">
+          🔺 Comisión Alta
+        </button>
+      </div>
+    </section>
+
+    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 shadow-lg shadow-black/20 flex items-center justify-between gap-3">
+      <div class="min-w-0">
+        <p class="text-xs text-slate-400">Tasas en tiempo real</p>
+        <p id="lastUpdateTime" class="text-[11px] text-slate-500 mt-0.5">Aún no se han actualizado</p>
+      </div>
+      <button id="refreshRatesBtn" class="shrink-0 flex items-center gap-2 text-sm font-medium bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 px-4 py-2.5 rounded-xl transition">
+        <span id="refreshIcon">🔄</span> Actualizar Tasas
+      </button>
+    </section>
     <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-4 shadow-lg shadow-black/20">
       <h2 class="text-blue-400 font-semibold text-base mb-4 flex items-center gap-2">
         <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-400/10 text-blue-400 text-xs font-bold">1</span>
@@ -121,7 +146,6 @@
       </div>
     </section>
 
-    <!-- Tarjeta 2: Conversión a Crypto -->
     <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6 shadow-lg shadow-black/20">
       <h2 class="text-blue-400 font-semibold text-base mb-4 flex items-center gap-2">
         <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-400/10 text-blue-400 text-xs font-bold">2</span>
@@ -155,7 +179,6 @@
       </div>
     </section>
 
-    <!-- Spread: gap entre Tasa Banco y Tasa P2P -->
     <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 shadow-lg shadow-black/20">
       <div class="flex items-center justify-between">
         <span class="text-xs text-slate-400 flex items-center gap-1.5">📏 Diferencial Cambiario (Spread)</span>
@@ -164,13 +187,40 @@
       <p id="spreadNota" class="text-[10px] text-slate-500 mt-1"></p>
     </section>
 
-    <!-- Resultados -->
+    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 shadow-lg shadow-black/20">
+      <p class="text-xs text-slate-400 font-medium mb-3">💰 Desglose de Costos</p>
+      <div class="space-y-2 text-xs">
+        <div class="flex justify-between items-center py-1.5 border-b border-slate-800">
+          <span class="text-slate-400">├ Comisión Banco</span>
+          <span id="desgloseComBanco" class="font-medium text-red-400">-$0,00</span>
+        </div>
+        <div class="flex justify-between items-center py-1.5 border-b border-slate-800">
+          <span class="text-slate-400">├ Comisión Tarjeta</span>
+          <span id="desgloseComTarjeta" class="font-medium text-red-400">-$0,00</span>
+        </div>
+        <div class="flex justify-between items-center py-1.5 border-b border-slate-800">
+          <span class="text-slate-400">├ Spread Cripto (USDT perdidos)</span>
+          <span id="desgloseSpreadCripto" class="font-medium text-red-400">-$0,00</span>
+        </div>
+        <div class="flex justify-between items-center py-2 pt-2.5">
+          <span class="text-slate-300 font-semibold">└ Total perdido</span>
+          <span id="desgloseTotalPerdida" class="font-bold text-red-400">-$0,00</span>
+        </div>
+      </div>
+      <p id="desgloseProcentaje" class="text-[10px] text-slate-500 mt-2.5 text-center"></p>
+    </section>
+
     <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg shadow-black/20 mb-4">
-      <div class="flex justify-between items-center mb-4">
+      <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
         <h2 class="text-blue-400 font-semibold text-base">Resultado del Arbitraje</h2>
-        <button id="copyBtn" class="text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 px-3 py-1.5 rounded-lg transition flex items-center gap-1">
-          📋 <span id="copyBtnText">Copiar</span>
-        </button>
+        <div class="flex gap-2">
+          <button id="copyBtn" class="text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+            📋 <span id="copyBtnText">Copiar</span>
+          </button>
+          <button id="screenshotBtn" class="text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+            📸 <span>Capturar</span>
+          </button>
+        </div>
       </div>
 
       <div class="space-y-3 text-sm">
@@ -210,7 +260,6 @@
       </button>
     </section>
 
-    <!-- Historial -->
     <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg shadow-black/20 mb-6">
       <button id="toggleHistorialBtn" class="w-full flex justify-between items-center text-left">
         <h2 class="text-blue-400 font-semibold text-base">📜 Historial de Cálculos</h2>
@@ -225,7 +274,6 @@
       </div>
     </section>
 
-    <!-- Tarjeta de Instrucciones de Instalación PWA -->
     <section id="pwaInstructionsCard" class="hidden bg-slate-900 border border-blue-500/30 rounded-2xl p-5 shadow-lg shadow-black/40 relative overflow-hidden">
       <div class="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
       <div class="flex justify-between items-start mb-2">
@@ -239,8 +287,7 @@
       <p class="text-xs text-slate-400 mb-3 leading-relaxed">Úsala a pantalla completa, más rápido y sin necesidad de abrir el navegador.</p>
       
       <ol id="instructionsList" class="text-xs text-slate-300 space-y-2 list-decimal list-inside bg-slate-950/50 p-3 rounded-xl border border-slate-800/80">
-        <!-- Instrucciones dinámicas -->
-      </ol>
+        </ol>
     </section>
 
     <p class="text-center text-slate-600 text-xs mt-6">Cálculo referencial. Verifica siempre las tasas antes de operar.</p>
@@ -256,6 +303,10 @@
 
   // ===== Guarda el último cálculo para copiar/guardar en historial =====
   let ultimoCalculo = null;
+
+  // ===== Control de tiempo de actualización de tasas =====
+  let lastUpdateTime = null;
+  let updateCheckInterval = null;
 
   // ===== Tema Claro / Oscuro =====
   function aplicarIconoTema() {
@@ -275,6 +326,16 @@
     btn.addEventListener('click', () => {
       $('montoUSD').value = btn.dataset.monto;
       $('montoUSD').dispatchEvent(new Event('input'));
+    });
+  });
+
+  // ===== Presets de Configuración =====
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $('comisionBanco').value = btn.dataset.banco;
+      $('comisionTarjeta').value = btn.dataset.tarjeta;
+      calcular();
+      btn.blur();
     });
   });
 
@@ -318,6 +379,11 @@
     $('spreadValor').textContent = 'Bs 0,00 (0,00%)';
     $('spreadValor').className = "text-sm font-bold text-slate-100";
     $('spreadNota').textContent = '';
+    $('desgloseComBanco').textContent = '-$0,00';
+    $('desgloseComTarjeta').textContent = '-$0,00';
+    $('desgloseSpreadCripto').textContent = '-$0,00';
+    $('desgloseTotalPerdida').textContent = '-$0,00';
+    $('desgloseProcentaje').textContent = '';
     ultimoCalculo = null;
   }
 
@@ -329,11 +395,10 @@
     const usdtNetos = num($('usdtNetos'));
     const tasaP2P = num($('tasaP2P'));
 
-    // ===== Spread: diferencial entre Tasa P2P y Tasa Banco =====
+    // ===== Spread: diferencial entre Tasa P2P y Tasa Banco (no depende del monto) =====
     const spreadBs = tasaP2P - tasaBanco;
     const spreadPct = tasaBanco !== 0 ? (spreadBs / tasaBanco) * 100 : 0;
 
-    // ===== Render del Spread (Se ejecuta siempre al cargar tasas) =====
     const spreadEl = $('spreadValor');
     const notaEl = $('spreadNota');
     spreadEl.textContent = (spreadBs >= 0 ? '' : '-') + fmtBs(Math.abs(spreadBs)) + ` (${spreadPct >= 0 ? '+' : '-'}${Math.abs(spreadPct).toFixed(2)}%)`;
@@ -347,6 +412,7 @@
       notaEl.textContent = "Sin margen: la tasa P2P está igual o por debajo de la Tasa Banco.";
     }
 
+    // ===== Si no hay monto, se resetean Resultados/Desglose y se detiene aquí =====
     if ($('montoUSD').value.trim() === "") {
       $('bsInvertidos').textContent = fmtBs(0);
       $('bsObtenidos').textContent = fmtBs(0);
@@ -360,10 +426,16 @@
       $('gananciaPct').textContent = '0,00%';
       $('gananciaPct').className = "text-2xl font-bold text-slate-100";
       $('viabilidadBadge').className = "hidden";
+      $('desgloseComBanco').textContent = '-$0,00';
+      $('desgloseComTarjeta').textContent = '-$0,00';
+      $('desgloseSpreadCripto').textContent = '-$0,00';
+      $('desgloseTotalPerdida').textContent = '-$0,00';
+      $('desgloseProcentaje').textContent = '';
       ultimoCalculo = null;
       return;
     }
 
+    // ===== Cálculos principales (dependen del monto) =====
     const bsInvertidos = montoUSD * tasaBanco * (1 + (comisionBanco / 100));
     const bsObtenidos = usdtNetos * tasaP2P;
     const gananciaBs = bsObtenidos - bsInvertidos;
@@ -376,6 +448,19 @@
 
     const gananciaPct = montoUSD !== 0 ? (gananciaUSD / montoUSD) * 100 : 0;
 
+    // ===== Desglose de Comisiones =====
+    const comisionBancoUSD = montoUSD * (comisionBanco / 100);
+    const comisionTarjetaUSD = montoUSD * (comisionTarjeta / 100);
+    const usdtPerdidosEnCripto = montoUSD - usdtNetos;
+
+    $('desgloseComBanco').textContent = '-' + fmtUSD(comisionBancoUSD);
+    $('desgloseComTarjeta').textContent = '-' + fmtUSD(comisionTarjetaUSD);
+    $('desgloseSpreadCripto').textContent = '-' + fmtUSD(usdtPerdidosEnCripto);
+    $('desgloseTotalPerdida').textContent = '-' + fmtUSD(perdidaComisiones);
+    const pctPerdida = montoUSD !== 0 ? (perdidaComisiones / montoUSD) * 100 : 0;
+    $('desgloseProcentaje').textContent = `${pctPerdida.toFixed(2)}% del capital invertido`;
+
+    // ===== Render de Resultados =====
     $('bsInvertidos').textContent = fmtBs(bsInvertidos);
     $('bsObtenidos').textContent = fmtBs(bsObtenidos);
 
@@ -445,51 +530,103 @@
     }
   }
 
+  // Hace un fetch con límite de tiempo para que nunca se quede "colgado"
+  async function fetchConTimeout(url, ms = 8000) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), ms);
+    try {
+      const respuesta = await fetch(url, { signal: controller.signal, cache: 'no-store' });
+      clearTimeout(timeoutId);
+      return respuesta;
+    } catch (err) {
+      clearTimeout(timeoutId);
+      throw err;
+    }
+  }
+
   async function consultarTasasEnTiempoReal() {
     const bcvStatusEl = $('bcvStatus');
     const p2pStatusEl = $('p2pStatus');
 
+    bcvStatusEl.textContent = "Cargando BCV...";
+    bcvStatusEl.className = "text-[10px] text-amber-400 font-medium animate-pulse";
+    p2pStatusEl.textContent = "Cargando P2P...";
+    p2pStatusEl.className = "text-[10px] text-amber-400 font-medium animate-pulse";
+
+    let valorBCV = null;
+    let valorP2P = null;
+
+    // ===== Intento 1: endpoint combinado =====
     try {
-      const respuesta = await fetch('https://ve.dolarapi.com/v1/dolares');
-      if (!respuesta.ok) throw new Error();
-      
+      const respuesta = await fetchConTimeout('https://ve.dolarapi.com/v1/dolares');
+      if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);
       const datos = await respuesta.json();
-      let huboExito = false;
 
-      const dataOficial = datos.find(item => item.fuente === 'oficial');
-      if (dataOficial && dataOficial.promedio) {
-        const valorBCV = parseFloat(dataOficial.promedio);
-        $('tasaBanco').value = valorBCV.toFixed(2);
-        bcvStatusEl.textContent = "● BCV Actualizado";
-        bcvStatusEl.className = "text-[10px] text-emerald-400 font-medium";
-        actualizarVolatilidad('bcv', valorBCV, $('bcvVolatilidad'));
-        huboExito = true;
-      } else {
-        bcvStatusEl.textContent = "⚠️ Tasa manual (Offline)";
-        bcvStatusEl.className = "text-[10px] text-red-400 font-medium animate-none";
-      }
+      const dataOficial = Array.isArray(datos) ? datos.find(item => item.fuente === 'oficial') : null;
+      if (dataOficial && dataOficial.promedio) valorBCV = parseFloat(dataOficial.promedio);
 
-      const dataParalelo = datos.find(item => item.fuente === 'paralelo');
-      if (dataParalelo && dataParalelo.promedio) {
-        const valorP2P = parseFloat(dataParalelo.promedio);
-        $('tasaP2P').value = valorP2P.toFixed(2);
-        p2pStatusEl.textContent = "● Paralelo Promedio Sincronizado";
-        p2pStatusEl.className = "text-[10px] text-emerald-400 font-medium";
-        actualizarVolatilidad('p2p', valorP2P, $('p2pVolatilidad'));
-        huboExito = true;
-      } else {
-        p2pStatusEl.textContent = "⚠️ Tasa manual (Offline)";
-        p2pStatusEl.className = "text-[10px] text-red-400 font-medium animate-none";
-      }
-
-      if (huboExito) calcular();
+      const dataParalelo = Array.isArray(datos) ? datos.find(item => item.fuente === 'paralelo') : null;
+      if (dataParalelo && dataParalelo.promedio) valorP2P = parseFloat(dataParalelo.promedio);
 
     } catch (error) {
-      bcvStatusEl.textContent = "⚠️ Tasa manual (Offline)";
+      console.error('[Arbitraje] Falló el endpoint combinado /v1/dolares:', error.message || error);
+    }
+
+    // ===== Intento 2 (respaldo): endpoints individuales, solo para lo que faltó =====
+    if (valorBCV === null) {
+      try {
+        const r = await fetchConTimeout('https://ve.dolarapi.com/v1/dolares/oficial');
+        if (r.ok) {
+          const d = await r.json();
+          if (d && d.promedio) valorBCV = parseFloat(d.promedio);
+        }
+      } catch (error) {
+        console.error('[Arbitraje] Falló el respaldo /v1/dolares/oficial:', error.message || error);
+      }
+    }
+
+    if (valorP2P === null) {
+      try {
+        const r = await fetchConTimeout('https://ve.dolarapi.com/v1/dolares/paralelo');
+        if (r.ok) {
+          const d = await r.json();
+          if (d && d.promedio) valorP2P = parseFloat(d.promedio);
+        }
+      } catch (error) {
+        console.error('[Arbitraje] Falló el respaldo /v1/dolares/paralelo:', error.message || error);
+      }
+    }
+
+    // ===== Aplicar resultados =====
+    let huboExito = false;
+
+    if (valorBCV !== null && !isNaN(valorBCV) && valorBCV > 0) {
+      $('tasaBanco').value = valorBCV.toFixed(2);
+      bcvStatusEl.textContent = "● BCV Actualizado";
+      bcvStatusEl.className = "text-[10px] text-emerald-400 font-medium";
+      lastUpdateTime = new Date();
+      actualizarTimerTasas();
+      actualizarVolatilidad('bcv', valorBCV, $('bcvVolatilidad'));
+      huboExito = true;
+    } else {
+      bcvStatusEl.textContent = "⚠️ Tasa manual (sin conexión)";
       bcvStatusEl.className = "text-[10px] text-red-400 font-medium animate-none";
-      p2pStatusEl.textContent = "⚠️ Tasa manual (Offline)";
+    }
+
+    if (valorP2P !== null && !isNaN(valorP2P) && valorP2P > 0) {
+      $('tasaP2P').value = valorP2P.toFixed(2);
+      p2pStatusEl.textContent = "● Paralelo Sincronizado";
+      p2pStatusEl.className = "text-[10px] text-emerald-400 font-medium";
+      actualizarVolatilidad('p2p', valorP2P, $('p2pVolatilidad'));
+      huboExito = true;
+    } else {
+      p2pStatusEl.textContent = "⚠️ Tasa manual (sin conexión)";
       p2pStatusEl.className = "text-[10px] text-red-400 font-medium animate-none";
     }
+
+    if (huboExito) calcular();
+
+    return huboExito;
   }
 
   inputs.forEach(el => el.addEventListener('input', calcular));
@@ -526,7 +663,95 @@ Rentabilidad: ${c.gananciaPct.toFixed(2)}%`;
     }, 1800);
   });
 
-  // ===== Historial de Cálculos =====
+  // ===== Captura de Pantalla =====
+  $('screenshotBtn').addEventListener('click', async () => {
+    const btn = $('screenshotBtn');
+    const original = btn.innerHTML;
+    btn.innerHTML = '📸 Procesando...';
+    btn.disabled = true;
+
+    try {
+      const resultadoSection = document.querySelector('section:has(#gananciaBs)');
+      if (!resultadoSection) return;
+
+      const canvas = await html2canvas(resultadoSection, {
+        backgroundColor: '#0f172a',
+        scale: 2,
+        logging: false,
+        useCORS: true
+      });
+
+      canvas.toBlob(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `arbitraje-${new Date().toLocaleString('es-VE', { year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(/[\/\s:]/g, '-')}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        btn.innerHTML = '✓ ¡Descargado!';
+        setTimeout(() => {
+          btn.innerHTML = original;
+          btn.disabled = false;
+        }, 1500);
+      });
+    } catch (error) {
+      console.error('Error en captura:', error);
+      btn.innerHTML = '❌ Error';
+      setTimeout(() => {
+        btn.innerHTML = original;
+        btn.disabled = false;
+      }, 1500);
+    }
+  });
+
+  // ===== Actualizar Tasas Manualmente =====
+  $('refreshRatesBtn').addEventListener('click', async () => {
+    const btn = $('refreshRatesBtn');
+    const icon = $('refreshIcon');
+    if (btn.disabled) return;
+    btn.disabled = true;
+    btn.classList.add('opacity-60');
+    icon.textContent = '⏳';
+    await consultarTasasEnTiempoReal();
+    icon.textContent = '🔄';
+    btn.classList.remove('opacity-60');
+    btn.disabled = false;
+  });
+
+  // ===== Control de tiempo de actualización (Alerta si tasas están estancadas) =====
+  function actualizarTimerTasas() {
+    if (!lastUpdateTime) return;
+    const ahora = new Date();
+    const minutosTranscurridos = Math.floor((ahora - lastUpdateTime) / 60000);
+
+    const timeEl = $('lastUpdateTime');
+    if (minutosTranscurridos === 0) {
+      timeEl.textContent = 'Actualizado hace segundos';
+    } else if (minutosTranscurridos < 60) {
+      timeEl.textContent = `Actualizado hace ${minutosTranscurridos} min`;
+    } else {
+      const horasTranscurridas = Math.floor(minutosTranscurridos / 60);
+      timeEl.textContent = `Actualizado hace ${horasTranscurridas}h`;
+    }
+    timeEl.className = minutosTranscurridos > 30
+      ? "text-[11px] text-red-400 mt-0.5"
+      : "text-[11px] text-slate-500 mt-0.5";
+
+    // Alerta si tasas hace > 30 minutos
+    const bcvStatusEl = $('bcvStatus');
+    if (minutosTranscurridos > 30 && !bcvStatusEl.textContent.includes('⚠️')) {
+      bcvStatusEl.textContent = '⚠️ Tasas hace ' + (minutosTranscurridos > 60 ? 
+        Math.floor(minutosTranscurridos / 60) + 'h' : minutosTranscurridos + ' min');
+      bcvStatusEl.className = "text-[10px] text-red-400 font-medium animate-pulse";
+    }
+  }
+
+  // Actualizar timer cada minuto
+  clearInterval(updateCheckInterval);
+  updateCheckInterval = setInterval(actualizarTimerTasas, 60000);
   const HISTORIAL_KEY = 'arbitrajeHistorial';
   const MAX_HISTORIAL = 15;
 
@@ -639,7 +864,6 @@ Rentabilidad: ${c.gananciaPct.toFixed(2)}%`;
   setTimeout(consultarTasasEnTiempoReal, 500);
 </script>
 
-<!-- Lógica de detección del Sistema Operativo para mostrar instrucciones -->
 <script>
   document.addEventListener("DOMContentLoaded", () => {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
@@ -678,7 +902,6 @@ Rentabilidad: ${c.gananciaPct.toFixed(2)}%`;
   });
 </script>
 
-<!-- Script de Registro y Actualización del Service Worker -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
