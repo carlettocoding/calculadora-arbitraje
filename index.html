@@ -679,7 +679,8 @@
 
   // Si el usuario edita manualmente el monto del conversor, se pierde el estado activo del preset
   convInputDivisa.addEventListener('input', () => setActiveButton('.quick-conv', null, QUICK_CONV_INACTIVE, QUICK_CONV_ACTIVE));
-
+  convInputBs.addEventListener('input', () => setActiveButton('.quick-conv', null, QUICK_CONV_INACTIVE, QUICK_CONV_ACTIVE));
+  
 $('convCopyBtn').addEventListener('click', async () => {
     const resText = $('convResultadoFinal').textContent;
     if (resText === 'Bs 0,00' || resText === '$ 0,00' || resText === '$0,00' || resText === '€0,00' || resText === '€ 0,00') return;
