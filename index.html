@@ -15,8 +15,32 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
+  :root {
+    --accent-r: 96;
+    --accent-g: 165;
+    --accent-b: 250;
+  }
+
   input { font-size: 16px; }
   body, section, input, button { transition: background-color .25s ease, color .25s ease, border-color .25s ease; }
+
+  /* Accent overrides */
+  .text-blue-400,
+  html.light .text-blue-400,
+  .hover\:text-blue-400:hover,
+  html.light .hover\:text-blue-400:hover { color: rgb(var(--accent-r), var(--accent-g), var(--accent-b)) !important; }
+
+  .bg-blue-500\/10 { background-color: rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.10) !important; }
+  .bg-blue-500\/20,
+  .hover\:bg-blue-500\/20:hover { background-color: rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.20) !important; }
+
+  .border-blue-500\/30 { border-color: rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.30) !important; }
+  .border-blue-400 { border-color: rgba(var(--accent-r), var(--accent-g), var(--accent-b), 1) !important; }
+
+  .focus\:ring-blue-400:focus {
+    --tw-ring-color: rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.5) !important;
+  }
+  .hover\:border-blue-400:hover { border-color: rgb(var(--accent-r), var(--accent-g), var(--accent-b)) !important; }
 
   html.light body,
   html.light .bg-slate-950 { background-color: #f8fafc !important; }
@@ -38,6 +62,47 @@
 
   .fade-in { animation: fadeIn 0.2s ease-in-out forwards; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Mesh and grid background styles */
+  body {
+    position: relative;
+    overflow-x: hidden;
+  }
+  
+  /* Cyber Grid Background */
+  body.bg-grid::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background-image: 
+      linear-gradient(to right, rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 24px 24px;
+    pointer-events: none;
+  }
+  html.light body.bg-grid::before {
+    background-image: 
+      linear-gradient(to right, rgba(15,23,42,0.02) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(15,23,42,0.02) 1px, transparent 1px);
+  }
+
+  /* Cosmic Aurora Background */
+  body.bg-cosmic::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background-image: 
+      radial-gradient(circle at 10% 15%, rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.08) 0%, transparent 40%),
+      radial-gradient(circle at 90% 85%, rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.06) 0%, transparent 40%);
+    pointer-events: none;
+  }
+  html.light body.bg-cosmic::after {
+    background-image: 
+      radial-gradient(circle at 10% 15%, rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.04) 0%, transparent 40%),
+      radial-gradient(circle at 90% 85%, rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.03) 0%, transparent 40%);
+  }
 </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen antialiased">
@@ -45,18 +110,91 @@
   if (localStorage.getItem('arbitrajeTema') === 'light') {
     document.documentElement.classList.add('light');
   }
+  
+  try {
+    const savedAccent = JSON.parse(localStorage.getItem('arbitrajeAccent') || '{"r":96,"g":165,"b":250,"color":"blue"}');
+    document.documentElement.style.setProperty('--accent-r', savedAccent.r);
+    document.documentElement.style.setProperty('--accent-g', savedAccent.g);
+    document.documentElement.style.setProperty('--accent-b', savedAccent.b);
+  } catch (e) {}
+
+  const savedBgStyle = localStorage.getItem('arbitrajeBgStyle') || 'cosmic';
+  document.addEventListener('DOMContentLoaded', () => {
+    document.body.classList.remove('bg-grid', 'bg-cosmic');
+    if (savedBgStyle === 'grid') {
+      document.body.classList.add('bg-grid');
+    } else if (savedBgStyle === 'cosmic') {
+      document.body.classList.add('bg-cosmic');
+    }
+  });
 </script>
 
   <div class="max-w-md mx-auto px-4 py-6 pb-16 relative">
 
-    <header class="mb-4 flex items-center justify-between">
+    <header class="mb-6 flex items-center justify-between relative">
+      <button id="settingsToggleBtn" aria-label="Personalización de diseño" class="absolute left-0 top-0 w-9 h-9 flex items-center justify-center rounded-full bg-slate-800 border border-slate-700 text-slate-300 hover:text-blue-400 transition">
+        <span>🎨</span>
+      </button>
       <div class="flex-1 text-center">
         <h1 class="text-2xl font-bold text-blue-400 tracking-tight">Calculadora PRO</h1>
       </div>
-      <button id="themeToggleBtn" aria-label="Cambiar tema" class="absolute right-4 top-4 w-9 h-9 flex items-center justify-center rounded-full bg-slate-800 border border-slate-700 text-slate-300 hover:text-blue-400 transition">
+      <button id="themeToggleBtn" aria-label="Cambiar tema" class="absolute right-0 top-0 w-9 h-9 flex items-center justify-center rounded-full bg-slate-800 border border-slate-700 text-slate-300 hover:text-blue-400 transition">
         <span id="themeIcon">🌙</span>
       </button>
     </header>
+
+    <!-- Panel de Personalización de Diseño (Colores de Acento y Fondos Premium) -->
+    <section id="settingsPanel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-6 shadow-lg shadow-black/20 fade-in relative z-20">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+          🎨 Personalizar Interfaz
+        </h3>
+        <button id="closeSettingsBtn" class="text-slate-500 hover:text-slate-300 text-xs transition">Cerrar</button>
+      </div>
+      
+      <!-- Selector de Color de Acento -->
+      <div class="mb-4">
+        <p class="text-[11px] text-slate-400 mb-2 font-medium">Color de Acento (Tema)</p>
+        <div class="grid grid-cols-5 gap-1.5">
+          <button class="accent-btn flex flex-col items-center gap-1 p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition" data-color="blue" data-r="96" data-g="165" data-b="250">
+            <span class="w-3.5 h-3.5 rounded-full bg-blue-400"></span>
+            <span class="text-[9px] text-slate-300 font-medium">Azul</span>
+          </button>
+          <button class="accent-btn flex flex-col items-center gap-1 p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition" data-color="emerald" data-r="52" data-g="211" data-b="153">
+            <span class="w-3.5 h-3.5 rounded-full bg-emerald-400"></span>
+            <span class="text-[9px] text-slate-300 font-medium">Verde</span>
+          </button>
+          <button class="accent-btn flex flex-col items-center gap-1 p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition" data-color="amber" data-r="245" data-g="158" data-b="11">
+            <span class="w-3.5 h-3.5 rounded-full bg-amber-500"></span>
+            <span class="text-[9px] text-slate-300 font-medium">Oro</span>
+          </button>
+          <button class="accent-btn flex flex-col items-center gap-1 p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition" data-color="purple" data-r="192" data-g="132" data-b="252">
+            <span class="w-3.5 h-3.5 rounded-full bg-purple-400"></span>
+            <span class="text-[9px] text-slate-300 font-medium">Púrpura</span>
+          </button>
+          <button class="accent-btn flex flex-col items-center gap-1 p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition" data-color="rose" data-r="251" data-g="113" data-b="133">
+            <span class="w-3.5 h-3.5 rounded-full bg-rose-400"></span>
+            <span class="text-[9px] text-slate-300 font-medium">Coral</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Selector de Fondo -->
+      <div>
+        <p class="text-[11px] text-slate-400 mb-2 font-medium">Estilo de Fondo Premium</p>
+        <div class="grid grid-cols-3 gap-2">
+          <button class="bg-style-btn text-[10px] font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 py-2 px-2.5 rounded-xl border border-slate-700 transition" data-style="flat">
+            🌑 Simple
+          </button>
+          <button class="bg-style-btn text-[10px] font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 py-2 px-2.5 rounded-xl border border-slate-700 transition" data-style="cosmic">
+            🌌 Aurora
+          </button>
+          <button class="bg-style-btn text-[10px] font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 py-2 px-2.5 rounded-xl border border-slate-700 transition" data-style="grid">
+            🌐 Rejilla
+          </button>
+        </div>
+      </div>
+    </section>
 
     <div class="flex bg-slate-900 border border-slate-800 rounded-xl p-1 mb-6 shadow-lg shadow-black/20 relative z-10">
       <button id="tabArbitraje" class="flex-1 text-sm font-semibold py-2.5 rounded-lg bg-slate-800 text-blue-400 shadow-sm transition-all duration-200">
@@ -256,6 +394,13 @@
             <span id="labelComisiones" class="text-slate-400">Pérdida en Comisiones (USD)</span>
             <span id="perdidaComisiones" class="font-medium text-red-400">$0,00</span>
           </div>
+          <div class="flex justify-between items-center py-2 border-b border-slate-800">
+            <div class="flex flex-col">
+              <span class="text-slate-400">Tasa de Equilibrio (Break-even)</span>
+              <span class="text-[10px] text-slate-500">Mínimo para no perder dinero</span>
+            </div>
+            <span id="breakEvenTasa" class="font-semibold text-blue-400">Bs 0,00</span>
+          </div>
         </div>
 
         <div class="mt-4 pt-4 grid grid-cols-1 gap-3">
@@ -273,6 +418,28 @@
           </div>
         </div>
 
+        <!-- Alerta Visual de la Brecha (Semáforo) -->
+        <div id="brechaVisualContainer" class="hidden mt-4 border-t border-slate-800/60 pt-4">
+          <div class="flex justify-between text-xs text-slate-400 mb-1.5">
+            <span>Indicador de Brecha (Spread/Retorno)</span>
+            <span id="brechaPorcentaje" class="font-bold text-blue-400">0,00%</span>
+          </div>
+          <!-- Barra de Progreso Multi-color -->
+          <div class="w-full bg-slate-950 rounded-full h-3 overflow-hidden flex border border-slate-800">
+            <!-- Zona Roja (-3% a 1%) -> 40% de la barra -->
+            <div class="h-full bg-red-500/80" style="width: 40%" title="Zona No Rentable / Pérdidas"></div>
+            <!-- Zona Amarilla (1% a 3%) -> 20% de la barra -->
+            <div class="h-full bg-amber-500/80" style="width: 20%" title="Zona de Retorno Marginal"></div>
+            <!-- Zona Verde (3% a 7%+) -> 40% de la barra -->
+            <div class="h-full bg-emerald-500/80" style="width: 40%" title="Zona Altamente Rentable"></div>
+          </div>
+          <!-- Cursor Dinámico en la barra -->
+          <div class="relative w-full h-4">
+            <div id="brechaCursor" class="absolute top-0 -mt-1 w-3 h-3 bg-white border-2 border-slate-950 rounded-full shadow-md transition-all duration-300" style="left: 0%"></div>
+          </div>
+          <p id="brechaDetalleText" class="text-[11px] text-slate-400 leading-normal text-center mt-1"></p>
+        </div>
+
         <div id="viabilidadBadge" class="mt-4 text-center text-xs font-semibold py-2.5 rounded-xl border hidden"></div>
 
         <button id="saveHistorialBtn" class="w-full mt-4 text-sm font-medium bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 py-2.5 rounded-xl transition flex items-center justify-center gap-2">
@@ -280,17 +447,91 @@
         </button>
       </section>
 
+      <!-- Calculadora Inversa -->
+      <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg shadow-black/20 mb-4">
+        <button id="toggleInversaBtn" class="w-full flex justify-between items-center text-left">
+          <h2 class="text-blue-400 font-semibold text-base flex items-center gap-1.5">
+            🔄 Calculadora Inversa (Retorno Meta)
+          </h2>
+          <span id="inversaChevron" class="text-slate-500 transition-transform">▾</span>
+        </button>
+        <div id="inversaPanel" class="hidden mt-4 space-y-4">
+          <p class="text-xs text-slate-400 leading-normal">
+            Define cuánto dinero deseas ganar netamente con esta operación y calcularemos el capital exacto que necesitas comprar en el banco.
+          </p>
+          
+          <div>
+            <label for="metaGananciaUSD" class="block text-xs font-medium text-slate-400 mb-1.5">Meta de Ganancia Neta (USD)</label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
+              <input type="text" id="metaGananciaUSD" inputmode="decimal" pattern="[0-9,.]*" placeholder="10.00"
+                class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-7 pr-3 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
+            </div>
+            <div class="flex gap-2 mt-2">
+              <button type="button" data-meta="5" class="quick-meta flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">$5</button>
+              <button type="button" data-meta="10" class="quick-meta flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">$10</button>
+              <button type="button" data-meta="20" class="quick-meta flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">$20</button>
+              <button type="button" data-meta="50" class="quick-meta flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">$50</button>
+            </div>
+          </div>
+
+          <div id="inversaResultados" class="bg-slate-950/50 rounded-xl p-4 border border-slate-800/80 space-y-3 text-xs hidden">
+            <div class="flex justify-between items-center py-1 border-b border-slate-800/30 pb-2">
+              <span class="text-slate-400">Capital Compra Requerido (USD):</span>
+              <span id="inversaUSDRequerido" class="font-bold text-slate-100">$0.00</span>
+            </div>
+            <div class="flex justify-between items-center py-1">
+              <span class="text-slate-400">USDT Netos a Recibir:</span>
+              <span id="inversaUSDTRequerido" class="font-medium text-slate-100">₮0.00</span>
+            </div>
+            <div class="flex justify-between items-center py-1">
+              <span class="text-slate-400">Capital a Invertir en Banco:</span>
+              <span id="inversaBsInvertir" class="font-medium text-slate-100">Bs 0.00</span>
+            </div>
+            <div class="flex justify-between items-center py-1 border-t border-slate-800/50 pt-2 font-semibold">
+              <span class="text-slate-300">Retorno Bruto en Binance:</span>
+              <span id="inversaBsRetorno" class="text-emerald-400">Bs 0.00</span>
+            </div>
+          </div>
+          <div id="inversaMensajeAviso" class="text-[11px] text-slate-500 text-center bg-slate-950/20 p-2.5 rounded-lg border border-slate-800/40">
+            Realiza un cálculo válido con monto arriba para habilitar las proyecciones inversas.
+          </div>
+        </div>
+      </section>
+
       <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg shadow-black/20 mb-6">
         <button id="toggleHistorialBtn" class="w-full flex justify-between items-center text-left">
           <h2 class="text-blue-400 font-semibold text-base">📜 Historial de Cálculos</h2>
           <span id="historialChevron" class="text-slate-500 transition-transform">▾</span>
         </button>
-        <div id="historialPanel" class="hidden mt-4">
+        <div id="historialPanel" class="hidden mt-4 space-y-4">
+          <!-- Estadísticas del Historial -->
+          <div id="historialStats" class="hidden grid grid-cols-2 gap-2 bg-slate-950/50 p-3 rounded-xl border border-slate-800/80">
+            <div class="text-center p-2 rounded-lg bg-slate-900 border border-slate-800/40">
+              <p class="text-[10px] text-slate-400 font-medium">Volumen Total</p>
+              <p id="statsVolumen" class="text-xs font-bold text-slate-100">$0.00</p>
+            </div>
+            <div class="text-center p-2 rounded-lg bg-slate-900 border border-slate-800/40">
+              <p class="text-[10px] text-slate-400 font-medium">Ganancia Total</p>
+              <p id="statsGanancia" class="text-xs font-bold text-emerald-400">+$0.00</p>
+            </div>
+            <div class="text-center p-2 rounded-lg bg-slate-900 border border-slate-800/40 col-span-2 flex justify-between px-3 py-1">
+              <span class="text-[10px] text-slate-400 font-medium">Rentabilidad Promedio:</span>
+              <span id="statsRentabilidad" class="text-xs font-bold text-blue-400">0.00%</span>
+            </div>
+          </div>
+
           <div id="historialLista" class="space-y-2 max-h-72 overflow-y-auto"></div>
           <p id="historialVacio" class="text-xs text-slate-500 text-center py-4">Aún no has guardado ningún cálculo.</p>
-          <button id="clearHistorialBtn" class="hidden w-full mt-3 text-xs font-medium text-red-400 hover:text-red-300 border border-red-500/30 bg-red-500/5 hover:bg-red-500/10 py-2 rounded-lg transition">
-            Vaciar historial
-          </button>
+          
+          <div id="historialAcciones" class="hidden flex gap-2 pt-2 border-t border-slate-800/50">
+            <button id="exportCsvBtn" class="flex-1 text-xs font-medium text-slate-300 hover:text-blue-400 border border-slate-700 bg-slate-800/40 hover:bg-slate-800 py-2.5 rounded-lg transition flex items-center justify-center gap-1.5">
+              📥 <span>Exportar CSV</span>
+            </button>
+            <button id="clearHistorialBtn" class="flex-1 text-xs font-medium text-red-400 hover:text-red-300 border border-red-500/30 bg-red-500/5 hover:bg-red-500/10 py-2.5 rounded-lg transition">
+              Vaciar historial
+            </button>
+          </div>
         </div>
       </section>
     </div>
@@ -492,6 +733,40 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Modal de Confirmación de Eliminación -->
+    <div id="deleteConfirmModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl relative fade-in text-sm text-center">
+        <div class="w-12 h-12 rounded-full bg-red-500/10 text-red-400 flex items-center justify-center mx-auto mb-4 text-xl">
+          ⚠️
+        </div>
+        <h3 id="deleteModalTitle" class="text-slate-100 font-bold text-lg mb-2">
+          ¿Eliminar registro?
+        </h3>
+        <p id="deleteModalDesc" class="text-xs text-slate-400 mb-6 leading-relaxed">
+          Esta acción no se puede deshacer. El registro seleccionado se borrará permanentemente del historial de cálculos.
+        </p>
+        <div class="flex gap-3">
+          <button id="cancelDeleteBtn" class="flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 py-3 rounded-xl transition">
+            Cancelar
+          </button>
+          <button id="confirmDeleteBtn" class="flex-1 text-xs font-semibold bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl transition shadow-lg shadow-red-500/10">
+            Sí, eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast de Actualización de PWA -->
+    <div id="updateToast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900/95 backdrop-blur-md border border-blue-500/50 text-slate-100 px-4 py-3 rounded-xl shadow-2xl shadow-black/80 flex items-center justify-between gap-3 z-[100] text-xs w-[calc(100%-2rem)] max-w-sm fade-in">
+      <div class="flex-1">
+        <p class="font-bold text-blue-400">⚡ ¡Nueva versión instalada!</p>
+        <p class="text-[11px] text-slate-300 mt-0.5">Se han actualizado las funciones y tasas de arbitraje.</p>
+      </div>
+      <button id="btnReloadApp" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1.5 px-3 rounded-lg transition shrink-0">
+        Recargar
+      </button>
     </div>
 
     <p class="text-center text-slate-600 text-xs mt-6">Cálculo referencial. Verifica siempre las tasas antes de operar.</p>
@@ -869,6 +1144,7 @@ $('convCopyBtn').addEventListener('click', async () => {
     $('labelComisiones').textContent = 'Pérdida en Comisiones (USD)';
     $('perdidaComisiones').textContent = fmtUSD(0);
     $('perdidaComisiones').className = "font-medium text-slate-100";
+    $('breakEvenTasa').textContent = fmtBs(0);
     $('gananciaBs').textContent = fmtBs(0);
     $('gananciaBs').className = "text-2xl font-bold text-slate-100";
     $('gananciaUSD').textContent = fmtUSD(0);
@@ -884,6 +1160,13 @@ $('convCopyBtn').addEventListener('click', async () => {
     $('desgloseTotalPerdida').className = "font-bold text-red-400";
     $('labelTotalPerdida').textContent = "└ Total perdido";
     $('desgloseProcentaje').textContent = '';
+    
+    // Reset visual spread meter and inverse calculator
+    $('brechaVisualContainer').classList.add('hidden');
+    $('inversaResultados').classList.add('hidden');
+    $('inversaMensajeAviso').classList.remove('hidden');
+    $('inversaMensajeAviso').textContent = 'Realiza un cálculo válido con monto arriba para habilitar las proyecciones inversas.';
+    
     ultimoCalculo = null;
   }
 
@@ -957,6 +1240,9 @@ $('convCopyBtn').addEventListener('click', async () => {
     $('bsInvertidos').textContent = fmtBs(bsInvertidos);
     $('bsObtenidos').textContent = fmtBs(bsObtenidos);
 
+    const breakEven = usdtNetos > 0 ? (bsInvertidos / usdtNetos) : 0;
+    $('breakEvenTasa').textContent = breakEven > 0 ? fmtBs(breakEven) : 'Bs 0,00';
+
     if (perdidaComisiones > 0) {
       $('labelComisiones').textContent = 'Pérdida en Comisiones (USD)';
       $('perdidaComisiones').textContent = '- ' + fmtUSD(perdidaComisiones);
@@ -990,10 +1276,82 @@ $('convCopyBtn').addEventListener('click', async () => {
       badge.classList.add('bg-amber-500/10', 'border-amber-500/30', 'text-amber-400');
     }
 
+    // Actualizar indicador visual de brecha (Semáforo)
+    $('brechaVisualContainer').classList.remove('hidden');
+    $('brechaPorcentaje').textContent = (gananciaPct >= 0 ? '+' : '') + gananciaPct.toFixed(2) + '%';
+    $('brechaPorcentaje').className = `font-bold ${gananciaPct >= 3 ? 'text-emerald-400' : (gananciaPct >= 1 ? 'text-amber-400' : 'text-red-400')}`;
+
+    // Mapear gananciaPct (rango de -3% a +7%, extensión de 10) al porcentaje del slider (0% a 100%)
+    let sliderPercent = ((gananciaPct + 3) / 10) * 100;
+    sliderPercent = Math.max(0, Math.min(100, sliderPercent));
+    $('brechaCursor').style.left = `calc(${sliderPercent}% - 6px)`;
+
+    const brechaDetalle = $('brechaDetalleText');
+    if (gananciaPct < 0) {
+      brechaDetalle.innerHTML = `<span class="text-red-400 font-semibold">Brecha negativa:</span> Pérdida directa de capital. No se recomienda operar en este escenario.`;
+    } else if (gananciaPct >= 0 && gananciaPct < 1) {
+      brechaDetalle.innerHTML = `<span class="text-red-400 font-semibold">Brecha muy estrecha:</span> Retorno de ${gananciaPct.toFixed(2)}%. Las comisiones consumirán tus ganancias.`;
+    } else if (gananciaPct >= 1 && gananciaPct < 3) {
+      brechaDetalle.innerHTML = `<span class="text-amber-400 font-semibold">Brecha moderada (Rentabilidad marginal):</span> Retorno de ${gananciaPct.toFixed(2)}%. Viable pero requiere precaución.`;
+    } else {
+      brechaDetalle.innerHTML = `<span class="text-emerald-400 font-semibold">Brecha óptima:</span> ¡Excelente spread de ${gananciaPct.toFixed(2)}%! Operación altamente rentable.`;
+    }
+
     ultimoCalculo = {
       montoUSD, tasaBanco, comisionBanco, comisionTarjeta, usdtNetos, tasaP2P,
       bsInvertidos, bsObtenidos, gananciaBs, gananciaUSD, gananciaPct, perdidaComisiones
     };
+
+    // Actualizar cálculos inversos automáticamente si hay una meta ingresada
+    calcularInverso();
+  }
+
+  function calcularInverso() {
+    const metaInput = $('metaGananciaUSD');
+    if (!metaInput) return;
+    
+    const metaStr = metaInput.value.replace(',', '.');
+    const metaUSD = parseFloat(metaStr);
+
+    if (isNaN(metaUSD) || metaUSD <= 0) {
+      $('inversaResultados').classList.add('hidden');
+      $('inversaMensajeAviso').classList.remove('hidden');
+      $('inversaMensajeAviso').textContent = 'Ingresa una meta de ganancia mayor a 0 para proyectar.';
+      return;
+    }
+
+    if (!ultimoCalculo || ultimoCalculo.montoUSD === 0 || ultimoCalculo.tasaBanco === 0) {
+      $('inversaResultados').classList.add('hidden');
+      $('inversaMensajeAviso').classList.remove('hidden');
+      $('inversaMensajeAviso').textContent = 'Realiza un cálculo válido con monto arriba para habilitar las proyecciones inversas.';
+      return;
+    }
+
+    const { tasaBanco, comisionBanco, usdtNetos, montoUSD, tasaP2P } = ultimoCalculo;
+    const conversionRatio = usdtNetos / montoUSD;
+
+    // margenNetoBs = (conversionRatio * tasaP2P) - (tasaBanco * (1 + (comisionBanco / 100)))
+    const margenNetoBs = (conversionRatio * tasaP2P) - (tasaBanco * (1 + (comisionBanco / 100)));
+
+    if (margenNetoBs <= 0) {
+      $('inversaResultados').classList.add('hidden');
+      $('inversaMensajeAviso').classList.remove('hidden');
+      $('inversaMensajeAviso').innerHTML = `<span class="text-red-400 font-semibold">⚠️ Margen Negativo o Nulo:</span> La operación actual tiene pérdida o ganancia cero. Es imposible obtener ganancias con estas tasas.`;
+      return;
+    }
+
+    const reqUSD = (metaUSD * tasaBanco) / margenNetoBs;
+    const reqUSDT = reqUSD * conversionRatio;
+    const bsInvertir = reqUSD * tasaBanco * (1 + (comisionBanco / 100));
+    const bsRetorno = reqUSDT * tasaP2P;
+
+    $('inversaUSDRequerido').textContent = fmtUSD(reqUSD);
+    $('inversaUSDTRequerido').textContent = '₮' + reqUSDT.toFixed(2);
+    $('inversaBsInvertir').textContent = fmtBs(bsInvertir);
+    $('inversaBsRetorno').textContent = fmtBs(bsRetorno);
+
+    $('inversaResultados').classList.remove('hidden');
+    $('inversaMensajeAviso').classList.add('hidden');
   }
 
   function actualizarVolatilidad(clave, valorActual, elemento) {
@@ -1369,15 +1727,56 @@ $('convCopyBtn').addEventListener('click', async () => {
   }
 
   function renderHistorial() {
-    const lista = leerHistorial(); const cont = $('historialLista'); const vacio = $('historialVacio'); const clearBtn = $('clearHistorialBtn');
-    if (lista.length === 0) { cont.innerHTML = ''; vacio.classList.remove('hidden'); clearBtn.classList.add('hidden'); return; }
-    vacio.classList.add('hidden'); clearBtn.classList.remove('hidden');
+    const lista = leerHistorial();
+    const cont = $('historialLista');
+    const vacio = $('historialVacio');
+    const statsDiv = $('historialStats');
+    const accionesDiv = $('historialAcciones');
+
+    if (lista.length === 0) {
+      cont.innerHTML = '';
+      vacio.classList.remove('hidden');
+      if (statsDiv) statsDiv.classList.add('hidden');
+      if (accionesDiv) accionesDiv.classList.add('hidden');
+      return;
+    }
+
+    vacio.classList.add('hidden');
+    if (statsDiv) statsDiv.classList.remove('hidden');
+    if (accionesDiv) accionesDiv.classList.remove('hidden');
+
+    // Calcular estadísticas premium
+    let totalVolumen = 0;
+    let totalGananciaUSD = 0;
+    let totalGananciaBs = 0;
+    let sumaRentabilidad = 0;
+
+    lista.forEach(item => {
+      totalVolumen += item.montoUSD || 0;
+      totalGananciaUSD += item.gananciaUSD || 0;
+      totalGananciaBs += item.gananciaBs || 0;
+      sumaRentabilidad += item.gananciaPct || 0;
+    });
+
+    const rentabilidadPromedio = lista.length > 0 ? (sumaRentabilidad / lista.length) : 0;
+
+    $('statsVolumen').textContent = fmtUSD(totalVolumen);
+    $('statsGanancia').textContent = (totalGananciaUSD >= 0 ? '+' : '') + fmtUSD(totalGananciaUSD);
+    $('statsGanancia').className = `text-xs font-bold ${totalGananciaUSD >= 0 ? 'text-emerald-400' : 'text-red-400'}`;
+    $('statsRentabilidad').textContent = (rentabilidadPromedio >= 0 ? '+' : '') + rentabilidadPromedio.toFixed(2) + '%';
+    $('statsRentabilidad').className = `text-xs font-bold ${rentabilidadPromedio >= 0 ? 'text-blue-400' : 'text-red-400'}`;
+
     cont.innerHTML = lista.map(item => {
-      const positivo = item.gananciaUSD >= 0; const colorClase = positivo ? 'text-emerald-400' : 'text-red-400';
+      const positivo = item.gananciaUSD >= 0;
+      const colorClase = positivo ? 'text-emerald-400' : 'text-red-400';
       return `<div class="flex items-center justify-between gap-2 bg-slate-800/60 rounded-xl p-3 text-xs"><div class="cursor-pointer flex-1" data-load="${item.id}"><p class="font-semibold text-slate-100">$${item.montoUSD.toFixed(2)} <span class="text-slate-500 font-normal">→</span> <span class="${colorClase} font-bold">${positivo ? '+' : ''}${fmtUSD(item.gananciaUSD)}</span></p><p class="text-slate-500 mt-0.5">${item.fecha} · Rentabilidad ${item.gananciaPct.toFixed(2)}%</p></div><button data-delete="${item.id}" class="text-slate-600 hover:text-red-400 px-2 py-1 transition">✕</button></div>`;
     }).join('');
+
     cont.querySelectorAll('[data-load]').forEach(el => el.addEventListener('click', () => mostrarDetalleHistorial(el.dataset.load)));
-    cont.querySelectorAll('[data-delete]').forEach(el => el.addEventListener('click', (ev) => { ev.stopPropagation(); eliminarDeHistorial(el.dataset.delete); }));
+    cont.querySelectorAll('[data-delete]').forEach(el => el.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      eliminarDeHistorial(el.dataset.delete);
+    }));
   }
 
   function cargarDesdeHistorial(id) {
@@ -1389,7 +1788,74 @@ $('convCopyBtn').addEventListener('click', async () => {
     calcular(); window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function eliminarDeHistorial(id) { guardarHistorial(leerHistorial().filter(i => i.id !== id)); renderHistorial(); }
+  let deleteItemId = null;
+  let isClearingAll = false;
+
+  function eliminarDeHistorial(id) {
+    deleteItemId = id;
+    isClearingAll = false;
+    $('deleteModalTitle').textContent = '¿Eliminar registro?';
+    $('deleteModalDesc').textContent = 'Esta acción no se puede deshacer. El registro seleccionado se borrará permanentemente del historial de cálculos.';
+    $('confirmDeleteBtn').textContent = 'Sí, eliminar';
+    $('deleteConfirmModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function solicitarVaciarHistorial() {
+    deleteItemId = null;
+    isClearingAll = true;
+    $('deleteModalTitle').textContent = '¿Vaciar historial?';
+    $('deleteModalDesc').textContent = 'Esta acción no se puede deshacer. Todos los cálculos guardados en tu historial se borrarán permanentemente.';
+    $('confirmDeleteBtn').textContent = 'Sí, vaciar todo';
+    $('deleteConfirmModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function cerrarModalConfirmarEliminar() {
+    $('deleteConfirmModal').classList.add('hidden');
+    document.body.style.overflow = '';
+    deleteItemId = null;
+    isClearingAll = false;
+  }
+
+  function exportarHistorialACSV() {
+    const lista = leerHistorial();
+    if (lista.length === 0) return;
+    
+    // Header
+    const headers = ['Fecha', 'Monto Compra (USD)', 'Tasa Banco (Bs)', 'Comision Banco (%)', 'Comision Tarjeta (%)', 'Bs Invertidos', 'USDT Recibidos', 'Tasa P2P (Bs)', 'Bs Obtenidos', 'Ganancia (Bs)', 'Ganancia (USD)', 'Rentabilidad (%)'];
+    
+    // Rows
+    const rows = lista.map(item => {
+      const bsInvertidos = item.bsInvertidos || (item.montoUSD * item.tasaBanco * (1 + (item.comisionBanco / 100)));
+      const bsObtenidos = item.bsObtenidos || (item.usdtNetos * item.tasaP2P);
+      return [
+        `"${item.fecha}"`,
+        item.montoUSD.toFixed(2),
+        item.tasaBanco.toFixed(2),
+        item.comisionBanco.toFixed(2),
+        item.comisionTarjeta.toFixed(2),
+        bsInvertidos.toFixed(2),
+        item.usdtNetos.toFixed(2),
+        item.tasaP2P.toFixed(2),
+        bsObtenidos.toFixed(2),
+        item.gananciaBs.toFixed(2),
+        item.gananciaUSD.toFixed(2),
+        item.gananciaPct.toFixed(2)
+      ];
+    });
+    
+    const csvContent = "\uFEFF" + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `arbitraje_historial_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
 
   $('saveHistorialBtn').addEventListener('click', () => {
     if (!ultimoCalculo) return; const c = ultimoCalculo;
@@ -1402,8 +1868,26 @@ $('convCopyBtn').addEventListener('click', async () => {
     btn.innerHTML = '✓ Guardado en historial'; setTimeout(() => { btn.innerHTML = textoOriginal; }, 1500);
   });
 
-  $('clearHistorialBtn').addEventListener('click', () => { if (confirm('¿Vaciar todo el historial de cálculos?')) { guardarHistorial([]); renderHistorial(); } });
+  $('clearHistorialBtn').addEventListener('click', solicitarVaciarHistorial);
+  $('exportCsvBtn').addEventListener('click', exportarHistorialACSV);
   $('toggleHistorialBtn').addEventListener('click', () => { const panel = $('historialPanel'); const chevron = $('historialChevron'); panel.classList.toggle('hidden'); chevron.style.transform = panel.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)'; });
+
+  // Eventos de la Calculadora Inversa
+  $('toggleInversaBtn').addEventListener('click', () => {
+    const panel = $('inversaPanel');
+    const chevron = $('inversaChevron');
+    panel.classList.toggle('hidden');
+    chevron.style.transform = panel.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+  });
+
+  $('metaGananciaUSD').addEventListener('input', calcularInverso);
+
+  document.querySelectorAll('.quick-meta').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $('metaGananciaUSD').value = btn.dataset.meta;
+      calcularInverso();
+    });
+  });
 
   // Eventos del Modal de Detalle
   $('closeDetailModalBtn').addEventListener('click', cerrarModalDetalle);
@@ -1434,6 +1918,102 @@ $('convCopyBtn').addEventListener('click', async () => {
     textEl.textContent = '¡Copiado!';
     setTimeout(() => { textEl.textContent = original; }, 1800);
   });
+
+  // Eventos del Modal de Confirmación de Eliminación
+  $('cancelDeleteBtn').addEventListener('click', cerrarModalConfirmarEliminar);
+  $('deleteConfirmModal').addEventListener('click', (e) => {
+    if (e.target === $('deleteConfirmModal')) cerrarModalConfirmarEliminar();
+  });
+  $('confirmDeleteBtn').addEventListener('click', () => {
+    if (isClearingAll) {
+      guardarHistorial([]);
+      renderHistorial();
+      cerrarModalConfirmarEliminar();
+    } else if (deleteItemId) {
+      guardarHistorial(leerHistorial().filter(i => i.id !== deleteItemId));
+      renderHistorial();
+      cerrarModalConfirmarEliminar();
+    }
+  });
+
+  // ==========================================
+  // EVENTOS DEL PANEL DE PERSONALIZACIÓN
+  // ==========================================
+  const settingsPanel = $('settingsPanel');
+  $('settingsToggleBtn').addEventListener('click', () => {
+    settingsPanel.classList.toggle('hidden');
+  });
+
+  $('closeSettingsBtn').addEventListener('click', () => {
+    settingsPanel.classList.add('hidden');
+  });
+
+  // Manejador de botones de Color de Acento
+  const accentBtns = document.querySelectorAll('.accent-btn');
+  function updateAccentBtnUI(activeColor) {
+    accentBtns.forEach(btn => {
+      if (btn.dataset.color === activeColor) {
+        btn.className = "accent-btn flex flex-col items-center gap-1 p-2 rounded-xl bg-blue-500/10 border border-blue-400 transition";
+      } else {
+        btn.className = "accent-btn flex flex-col items-center gap-1 p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700 transition";
+      }
+    });
+  }
+
+  accentBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const r = btn.dataset.r;
+      const g = btn.dataset.g;
+      const b = btn.dataset.b;
+      const color = btn.dataset.color;
+
+      document.documentElement.style.setProperty('--accent-r', r);
+      document.documentElement.style.setProperty('--accent-g', g);
+      document.documentElement.style.setProperty('--accent-b', b);
+
+      localStorage.setItem('arbitrajeAccent', JSON.stringify({ r: parseInt(r), g: parseInt(g), b: parseInt(b), color }));
+      updateAccentBtnUI(color);
+    });
+  });
+
+  // Manejador de botones de Estilo de Fondo
+  const bgStyleBtns = document.querySelectorAll('.bg-style-btn');
+  function updateBgStyleBtnUI(activeStyle) {
+    bgStyleBtns.forEach(btn => {
+      if (btn.dataset.style === activeStyle) {
+        btn.className = "bg-style-btn text-[10px] font-semibold bg-blue-500/10 border border-blue-400 text-blue-400 py-2 px-2.5 rounded-xl transition";
+      } else {
+        btn.className = "bg-style-btn text-[10px] font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 py-2 px-2.5 rounded-xl border border-slate-700 transition";
+      }
+    });
+  }
+
+  function applyBgStyle(style) {
+    document.body.classList.remove('bg-grid', 'bg-cosmic');
+    if (style === 'grid') {
+      document.body.classList.add('bg-grid');
+    } else if (style === 'cosmic') {
+      document.body.classList.add('bg-cosmic');
+    }
+  }
+
+  bgStyleBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const style = btn.dataset.style;
+      applyBgStyle(style);
+      localStorage.setItem('arbitrajeBgStyle', style);
+      updateBgStyleBtnUI(style);
+    });
+  });
+
+  // Inicializar estado activo de botones de diseño
+  try {
+    const activeAccent = JSON.parse(localStorage.getItem('arbitrajeAccent') || '{"color":"blue"}');
+    updateAccentBtnUI(activeAccent.color || 'blue');
+  } catch (e) {
+    updateAccentBtnUI('blue');
+  }
+  updateBgStyleBtnUI(localStorage.getItem('arbitrajeBgStyle') || 'cosmic');
 
   renderHistorial();
   resetRender();
@@ -1468,14 +2048,55 @@ $('convCopyBtn').addEventListener('click', async () => {
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('sw.js').then(reg => {
+        window.swRegistration = reg;
+
+        // Escuchar por actualizaciones del Service Worker
         reg.addEventListener('updatefound', () => {
           const newWorker = reg.installing;
+          if (!newWorker) return;
+          
           newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) window.location.reload();
+            if (newWorker.state === 'installed') {
+              if (navigator.serviceWorker.controller) {
+                // Nueva versión instalada y lista para ser usada (gracias a skipWaiting)
+                mostrarToastActualizacion();
+              }
+            }
           });
         });
+
+        // Comprobación manual inicial al cargar
+        reg.update().catch(() => {});
+
       }).catch(err => console.error('Error al registrar el Service Worker', err));
+
+      // Forzar verificación de actualización cuando la app regresa a primer plano (especial para iOS)
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && window.swRegistration) {
+          window.swRegistration.update().catch(() => {});
+        }
+      });
+
+      // Forzar verificación al reenfocar la ventana
+      window.addEventListener('focus', () => {
+        if (window.swRegistration) {
+          window.swRegistration.update().catch(() => {});
+        }
+      });
     });
+  }
+
+  function mostrarToastActualizacion() {
+    const toast = $('updateToast');
+    if (toast) {
+      toast.classList.remove('hidden');
+      const btn = $('btnReloadApp');
+      if (btn) {
+        btn.addEventListener('click', () => {
+          window.location.reload();
+        });
+      }
+    }
   }
 </script>
 </body>
