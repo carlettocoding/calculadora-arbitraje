@@ -399,6 +399,101 @@
       </ol>
     </section>
 
+    <!-- Modal de Detalle de Operación Histórica -->
+    <div id="detailModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto fade-in text-sm">
+        <button id="closeDetailModalBtn" aria-label="Cerrar" class="absolute right-4 top-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 transition">
+          ✕
+        </button>
+        
+        <h3 class="text-blue-400 font-bold text-lg mb-1 flex items-center gap-2">
+          📊 Detalle de Operación
+        </h3>
+        <p id="detailFecha" class="text-xs text-slate-500 mb-4"></p>
+
+        <div class="space-y-4">
+          <!-- Compra en Banco -->
+          <div class="border-b border-slate-800/80 pb-3">
+            <h4 class="text-slate-300 font-semibold mb-2 text-xs flex items-center gap-1.5 text-blue-400/80">
+              <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> 1. Compra en Banco
+            </h4>
+            <div class="grid grid-cols-2 gap-y-1 text-xs">
+              <span class="text-slate-400 font-medium">Monto Compra:</span>
+              <span id="detailMontoUSD" class="text-right font-semibold text-slate-100">$0.00</span>
+              <span class="text-slate-400 font-medium">Tasa Banco:</span>
+              <span id="detailTasaBanco" class="text-right font-medium text-slate-100">Bs 0.00</span>
+              <span class="text-slate-400 font-medium">Comisión Banco:</span>
+              <span id="detailComBancoPct" class="text-right font-medium text-slate-100">0.00%</span>
+              <span class="text-slate-400 font-medium">Comisión Tarjeta:</span>
+              <span id="detailComTarjetaPct" class="text-right font-medium text-slate-100">0.00%</span>
+              <span class="text-slate-300 font-semibold mt-1">Total Invertido:</span>
+              <span id="detailBsInvertidos" class="text-right font-semibold text-slate-100 mt-1">Bs 0.00</span>
+            </div>
+          </div>
+
+          <!-- Conversión a Crypto -->
+          <div class="border-b border-slate-800/80 pb-3">
+            <h4 class="text-slate-300 font-semibold mb-2 text-xs flex items-center gap-1.5 text-blue-400/80">
+              <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> 2. Conversión a Crypto
+            </h4>
+            <div class="grid grid-cols-2 gap-y-1 text-xs">
+              <span class="text-slate-400 font-medium">USDT Recibidos Netos:</span>
+              <span id="detailUsdtNetos" class="text-right font-semibold text-slate-100">₮0.00</span>
+              <span class="text-slate-400 font-medium">Tasa de Venta P2P:</span>
+              <span id="detailTasaP2P" class="text-right font-medium text-slate-100">Bs 0.00</span>
+              <span class="text-slate-300 font-semibold mt-1">Total Obtenido:</span>
+              <span id="detailBsObtenidos" class="text-right font-semibold text-slate-100 mt-1">Bs 0.00</span>
+            </div>
+          </div>
+
+          <!-- Comisiones / Desglose de Pérdida -->
+          <div class="border-b border-slate-800/80 pb-3">
+            <h4 class="text-slate-300 font-semibold mb-2 text-xs flex items-center gap-1.5 text-red-400/80">
+              <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> 3. Pérdida en Comisiones
+            </h4>
+            <div class="grid grid-cols-2 gap-y-1 text-xs">
+              <span class="text-slate-400 font-medium">Comisión Banco USD:</span>
+              <span id="detailComBancoVal" class="text-right font-medium text-red-400">-$0.00</span>
+              <span class="text-slate-400 font-medium">Comisión Tarjeta USD:</span>
+              <span id="detailComTarjetaVal" class="text-right font-medium text-red-400">-$0.00</span>
+              <span class="text-slate-400 font-medium">Diferencia Cripto (USDT):</span>
+              <span id="detailSpreadCriptoVal" class="text-right font-medium text-red-400">-$0.00</span>
+              <span class="text-slate-300 font-semibold mt-1">Pérdida Total USD:</span>
+              <span id="detailPerdidaComisiones" class="text-right font-semibold text-red-400 mt-1">-$0.00</span>
+            </div>
+          </div>
+
+          <!-- Resultado Final -->
+          <div class="bg-slate-800/60 rounded-xl p-4 border border-slate-800">
+            <div class="grid grid-cols-2 gap-y-2.5 items-center">
+              <span class="text-xs text-slate-400 font-medium">Ganancia Neta Bs:</span>
+              <span id="detailGananciaBs" class="text-right text-base font-bold text-slate-100">Bs 0.00</span>
+              <span class="text-xs text-slate-400 font-medium">Ganancia Neta USD:</span>
+              <span id="detailGananciaUSD" class="text-right text-base font-bold text-slate-100">$0.00</span>
+              <span class="text-xs text-slate-400 font-medium">Rentabilidad:</span>
+              <span id="detailGananciaPct" class="text-right text-base font-bold text-slate-100">0.00%</span>
+            </div>
+            <div id="detailViabilidadBadge" class="mt-3.5 text-center text-xs font-semibold py-2.5 rounded-xl border"></div>
+          </div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="mt-6 flex flex-col gap-2">
+          <button id="detailLoadBtn" class="w-full text-sm font-semibold bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-xl transition shadow-lg shadow-blue-500/10">
+            📥 Cargar en calculadora
+          </button>
+          <div class="grid grid-cols-2 gap-2">
+            <button id="detailCopyBtn" class="text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 py-3 rounded-xl transition flex items-center justify-center gap-1.5">
+              📋 <span id="detailCopyBtnText">Copiar resumen</span>
+            </button>
+            <button id="detailCloseBtn" class="text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 py-3 rounded-xl transition">
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <p class="text-center text-slate-600 text-xs mt-6">Cálculo referencial. Verifica siempre las tasas antes de operar.</p>
   </div>
 
@@ -1195,6 +1290,84 @@ $('convCopyBtn').addEventListener('click', async () => {
   function leerHistorial() { try { return JSON.parse(localStorage.getItem(HISTORIAL_KEY)) || []; } catch { return []; } }
   function guardarHistorial(lista) { localStorage.setItem(HISTORIAL_KEY, JSON.stringify(lista)); }
 
+  let selectedHistoryItem = null;
+
+  function mostrarDetalleHistorial(id) {
+    const item = leerHistorial().find(i => i.id === id); if (!item) return;
+    selectedHistoryItem = item;
+
+    $('detailFecha').textContent = item.fecha;
+    $('detailMontoUSD').textContent = fmtUSD(item.montoUSD);
+    $('detailTasaBanco').textContent = fmtBs(item.tasaBanco);
+    $('detailComBancoPct').textContent = item.comisionBanco.toFixed(2) + '%';
+    $('detailComTarjetaPct').textContent = item.comisionTarjeta.toFixed(2) + '%';
+
+    const bsInvertidos = item.bsInvertidos || (item.montoUSD * item.tasaBanco * (1 + (item.comisionBanco / 100)));
+    $('detailBsInvertidos').textContent = fmtBs(bsInvertidos);
+
+    $('detailUsdtNetos').textContent = '₮' + item.usdtNetos.toFixed(2);
+    $('detailTasaP2P').textContent = fmtBs(item.tasaP2P);
+
+    const bsObtenidos = item.bsObtenidos || (item.usdtNetos * item.tasaP2P);
+    $('detailBsObtenidos').textContent = fmtBs(bsObtenidos);
+
+    const comisionBancoUSD = item.montoUSD * (item.comisionBanco / 100);
+    const comisionTarjetaUSD = item.montoUSD * (item.comisionTarjeta / 100);
+    const usdtPerdidosEnCripto = item.montoUSD - item.usdtNetos;
+    const perdidaComisiones = item.perdidaComisiones !== undefined ? item.perdidaComisiones : (comisionBancoUSD + comisionTarjetaUSD + usdtPerdidosEnCripto);
+
+    $('detailComBancoVal').textContent = '-' + fmtUSD(comisionBancoUSD);
+    $('detailComTarjetaVal').textContent = '-' + fmtUSD(comisionTarjetaUSD);
+
+    const spreadCriptoEl = $('detailSpreadCriptoVal');
+    if (usdtPerdidosEnCripto < 0) {
+      spreadCriptoEl.textContent = '+' + fmtUSD(Math.abs(usdtPerdidosEnCripto));
+      spreadCriptoEl.className = "text-right font-medium text-emerald-400";
+    } else {
+      spreadCriptoEl.textContent = '-' + fmtUSD(usdtPerdidosEnCripto);
+      spreadCriptoEl.className = "text-right font-medium text-red-400";
+    }
+
+    const totalPerdidaEl = $('detailPerdidaComisiones');
+    if (perdidaComisiones < 0) {
+      totalPerdidaEl.textContent = '+' + fmtUSD(Math.abs(perdidaComisiones));
+      totalPerdidaEl.className = "text-right font-bold text-emerald-400";
+    } else {
+      totalPerdidaEl.textContent = '-' + fmtUSD(perdidaComisiones);
+      totalPerdidaEl.className = "text-right font-bold text-red-400";
+    }
+
+    $('detailGananciaBs').textContent = (item.gananciaBs >= 0 ? '' : '-') + fmtBs(Math.abs(item.gananciaBs));
+    $('detailGananciaUSD').textContent = (item.gananciaUSD >= 0 ? '' : '-') + fmtUSD(item.gananciaUSD);
+    $('detailGananciaPct').textContent = (item.gananciaPct >= 0 ? '' : '-') + Math.abs(item.gananciaPct).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
+
+    setColor($('detailGananciaBs'), item.gananciaBs);
+    setColor($('detailGananciaUSD'), item.gananciaUSD);
+    setColor($('detailGananciaPct'), item.gananciaPct);
+
+    const badge = $('detailViabilidadBadge');
+    badge.className = "mt-3.5 text-center text-xs font-semibold py-2.5 rounded-xl border block";
+    if (item.gananciaPct > 3) {
+      badge.textContent = '✓ Operación rentable';
+      badge.classList.add('bg-emerald-500/10', 'border-emerald-500/30', 'text-emerald-400');
+    } else if (item.gananciaPct < -1) {
+      badge.textContent = '✗ Mejor esperar mejores tasas';
+      badge.classList.add('bg-red-500/10', 'border-red-500/30', 'text-red-400');
+    } else {
+      badge.textContent = '→ Ganancia marginal, evalúa con cuidado';
+      badge.classList.add('bg-amber-500/10', 'border-amber-500/30', 'text-amber-400');
+    }
+
+    $('detailModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function cerrarModalDetalle() {
+    $('detailModal').classList.add('hidden');
+    document.body.style.overflow = '';
+    selectedHistoryItem = null;
+  }
+
   function renderHistorial() {
     const lista = leerHistorial(); const cont = $('historialLista'); const vacio = $('historialVacio'); const clearBtn = $('clearHistorialBtn');
     if (lista.length === 0) { cont.innerHTML = ''; vacio.classList.remove('hidden'); clearBtn.classList.add('hidden'); return; }
@@ -1203,7 +1376,7 @@ $('convCopyBtn').addEventListener('click', async () => {
       const positivo = item.gananciaUSD >= 0; const colorClase = positivo ? 'text-emerald-400' : 'text-red-400';
       return `<div class="flex items-center justify-between gap-2 bg-slate-800/60 rounded-xl p-3 text-xs"><div class="cursor-pointer flex-1" data-load="${item.id}"><p class="font-semibold text-slate-100">$${item.montoUSD.toFixed(2)} <span class="text-slate-500 font-normal">→</span> <span class="${colorClase} font-bold">${positivo ? '+' : ''}${fmtUSD(item.gananciaUSD)}</span></p><p class="text-slate-500 mt-0.5">${item.fecha} · Rentabilidad ${item.gananciaPct.toFixed(2)}%</p></div><button data-delete="${item.id}" class="text-slate-600 hover:text-red-400 px-2 py-1 transition">✕</button></div>`;
     }).join('');
-    cont.querySelectorAll('[data-load]').forEach(el => el.addEventListener('click', () => cargarDesdeHistorial(el.dataset.load)));
+    cont.querySelectorAll('[data-load]').forEach(el => el.addEventListener('click', () => mostrarDetalleHistorial(el.dataset.load)));
     cont.querySelectorAll('[data-delete]').forEach(el => el.addEventListener('click', (ev) => { ev.stopPropagation(); eliminarDeHistorial(el.dataset.delete); }));
   }
 
@@ -1231,6 +1404,36 @@ $('convCopyBtn').addEventListener('click', async () => {
 
   $('clearHistorialBtn').addEventListener('click', () => { if (confirm('¿Vaciar todo el historial de cálculos?')) { guardarHistorial([]); renderHistorial(); } });
   $('toggleHistorialBtn').addEventListener('click', () => { const panel = $('historialPanel'); const chevron = $('historialChevron'); panel.classList.toggle('hidden'); chevron.style.transform = panel.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)'; });
+
+  // Eventos del Modal de Detalle
+  $('closeDetailModalBtn').addEventListener('click', cerrarModalDetalle);
+  $('detailCloseBtn').addEventListener('click', cerrarModalDetalle);
+  $('detailModal').addEventListener('click', (e) => {
+    if (e.target === $('detailModal')) cerrarModalDetalle();
+  });
+
+  $('detailLoadBtn').addEventListener('click', () => {
+    if (selectedHistoryItem) {
+      cargarDesdeHistorial(selectedHistoryItem.id);
+      cerrarModalDetalle();
+    }
+  });
+
+  $('detailCopyBtn').addEventListener('click', async () => {
+    if (!selectedHistoryItem) return;
+    const c = selectedHistoryItem;
+    const bsInvertidos = c.bsInvertidos || (c.montoUSD * c.tasaBanco * (1 + (c.comisionBanco / 100)));
+    const bsObtenidos = c.bsObtenidos || (c.usdtNetos * c.tasaP2P);
+    const resumen = `📊 Arbitraje Cambiario (Historial)\nFecha: ${c.fecha}\nMonto invertido: $${c.montoUSD.toFixed(2)}\nBs Invertidos: ${fmtBs(bsInvertidos)} (Tasa: ${fmtBs(c.tasaBanco)})\nBs Obtenidos: ${fmtBs(bsObtenidos)} (Tasa: ${fmtBs(c.tasaP2P)})\nGanancia Neta: ${fmtBs(c.gananciaBs)} (${fmtUSD(c.gananciaUSD)})\nRentabilidad: ${c.gananciaPct.toFixed(2)}%`;
+    try { await navigator.clipboard.writeText(resumen); } 
+    catch (err) {
+      const temp = document.createElement('textarea');
+      temp.value = resumen; document.body.appendChild(temp); temp.select(); document.execCommand('copy'); document.body.removeChild(temp);
+    }
+    const textEl = $('detailCopyBtnText'); const original = textEl.textContent;
+    textEl.textContent = '¡Copiado!';
+    setTimeout(() => { textEl.textContent = original; }, 1800);
+  });
 
   renderHistorial();
   resetRender();
