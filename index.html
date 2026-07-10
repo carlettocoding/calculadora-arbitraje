@@ -865,7 +865,7 @@
   </div>
 
   <!-- Toast de Actualización de PWA -->
-  <div id="updateToast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900/95 backdrop-blur-md border border-blue-500/50 text-slate-100 px-4 py-3 rounded-xl shadow-2xl shadow-black/80 flex items-center justify-between gap-3 z-[100] text-xs w-[calc(100%-2rem)] max-w-sm fade-in">
+  <div id="updateToast" class="hidden fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 bg-slate-900/95 backdrop-blur-md border border-blue-500/50 text-slate-100 px-4 py-3 rounded-xl shadow-2xl shadow-black/80 flex items-center justify-between gap-3 z-[100] text-xs w-[calc(100%-2rem)] max-w-sm fade-in">
     <div class="flex-1">
       <p class="font-bold text-blue-400">⚡ ¡Nueva versión instalada!</p>
       <p class="text-[11px] text-slate-300 mt-0.5">Se han actualizado las funciones y tasas de arbitraje.</p>
@@ -2521,6 +2521,11 @@ $('convCopyBtn').addEventListener('click', async () => {
         });
       }
     }
+  }
+
+  // Permitir pruebas del toast mediante un parámetro en la URL (?testUpdate=true)
+  if (new URLSearchParams(window.location.search).get('testUpdate') === 'true') {
+    setTimeout(mostrarToastActualizacion, 1000);
   }
 </script>
 </body>
