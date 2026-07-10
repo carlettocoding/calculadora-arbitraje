@@ -743,136 +743,136 @@
       </ol>
     </section>
 
-    <!-- Modal de Detalle de Operación Histórica -->
-    <div id="detailModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto fade-in text-sm">
-        <button id="closeDetailModalBtn" aria-label="Cerrar" class="absolute right-4 top-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 transition">
-          ✕
-        </button>
-        
-        <h3 class="text-blue-400 font-bold text-lg mb-1 flex items-center gap-2">
-          📊 Detalle de Operación
-        </h3>
-        <p id="detailFecha" class="text-xs text-slate-500 mb-4"></p>
-
-        <div class="space-y-4">
-          <!-- Compra en Banco -->
-          <div class="border-b border-slate-800/80 pb-3">
-            <h4 class="text-slate-300 font-semibold mb-2 text-xs flex items-center gap-1.5 text-blue-400/80">
-              <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> 1. Compra en Banco
-            </h4>
-            <div class="grid grid-cols-2 gap-y-1 text-xs">
-              <span class="text-slate-400 font-medium">Monto Compra:</span>
-              <span id="detailMontoUSD" class="text-right font-semibold text-slate-100">$0.00</span>
-              <span class="text-slate-400 font-medium">Tasa Banco:</span>
-              <span id="detailTasaBanco" class="text-right font-medium text-slate-100">Bs 0.00</span>
-              <span class="text-slate-400 font-medium">Comisión Banco:</span>
-              <span id="detailComBancoPct" class="text-right font-medium text-slate-100">0.00%</span>
-              <span class="text-slate-400 font-medium">Comisión Tarjeta:</span>
-              <span id="detailComTarjetaPct" class="text-right font-medium text-slate-100">0.00%</span>
-              <span class="text-slate-300 font-semibold mt-1">Total Invertido:</span>
-              <span id="detailBsInvertidos" class="text-right font-semibold text-slate-100 mt-1">Bs 0.00</span>
-            </div>
-          </div>
-
-          <!-- Conversión a Crypto -->
-          <div class="border-b border-slate-800/80 pb-3">
-            <h4 class="text-slate-300 font-semibold mb-2 text-xs flex items-center gap-1.5 text-blue-400/80">
-              <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> 2. Conversión a Crypto
-            </h4>
-            <div class="grid grid-cols-2 gap-y-1 text-xs">
-              <span class="text-slate-400 font-medium">USDT Recibidos Netos:</span>
-              <span id="detailUsdtNetos" class="text-right font-semibold text-slate-100">₮0.00</span>
-              <span class="text-slate-400 font-medium">Tasa de Venta P2P:</span>
-              <span id="detailTasaP2P" class="text-right font-medium text-slate-100">Bs 0.00</span>
-              <span class="text-slate-300 font-semibold mt-1">Total Obtenido:</span>
-              <span id="detailBsObtenidos" class="text-right font-semibold text-slate-100 mt-1">Bs 0.00</span>
-            </div>
-          </div>
-
-          <!-- Comisiones / Desglose de Pérdida -->
-          <div class="border-b border-slate-800/80 pb-3">
-            <h4 class="text-slate-300 font-semibold mb-2 text-xs flex items-center gap-1.5 text-red-400/80">
-              <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> 3. Pérdida en Comisiones
-            </h4>
-            <div class="grid grid-cols-2 gap-y-1 text-xs">
-              <span class="text-slate-400 font-medium">Comisión Banco USD:</span>
-              <span id="detailComBancoVal" class="text-right font-medium text-red-400">-$0.00</span>
-              <span class="text-slate-400 font-medium">Comisión Tarjeta USD:</span>
-              <span id="detailComTarjetaVal" class="text-right font-medium text-red-400">-$0.00</span>
-              <span class="text-slate-400 font-medium">Diferencia Cripto (USDT):</span>
-              <span id="detailSpreadCriptoVal" class="text-right font-medium text-red-400">-$0.00</span>
-              <span class="text-slate-300 font-semibold mt-1">Pérdida Total USD:</span>
-              <span id="detailPerdidaComisiones" class="text-right font-semibold text-red-400 mt-1">-$0.00</span>
-            </div>
-          </div>
-
-          <!-- Resultado Final -->
-          <div class="bg-slate-800/60 rounded-xl p-4 border border-slate-800">
-            <div class="grid grid-cols-2 gap-y-2.5 items-center">
-              <span class="text-xs text-slate-400 font-medium">Ganancia Neta Bs:</span>
-              <span id="detailGananciaBs" class="text-right text-base font-bold text-slate-100">Bs 0.00</span>
-              <span class="text-xs text-slate-400 font-medium">Ganancia Neta USD:</span>
-              <span id="detailGananciaUSD" class="text-right text-base font-bold text-slate-100">$0.00</span>
-              <span class="text-xs text-slate-400 font-medium">Rentabilidad:</span>
-              <span id="detailGananciaPct" class="text-right text-base font-bold text-slate-100">0.00%</span>
-            </div>
-            <div id="detailViabilidadBadge" class="mt-3.5 text-center text-xs font-semibold py-2.5 rounded-xl border"></div>
-          </div>
-        </div>
-
-        <!-- Acciones -->
-        <div class="mt-6 flex flex-col gap-2">
-          <button id="detailLoadBtn" class="w-full text-sm font-semibold bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-xl transition shadow-lg shadow-blue-500/10">
-            📥 Cargar en calculadora
-          </button>
-          <div class="grid grid-cols-2 gap-2">
-            <button id="detailCopyBtn" class="text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 py-3 rounded-xl transition flex items-center justify-center gap-1.5">
-              📋 <span id="detailCopyBtnText">Copiar resumen</span>
-            </button>
-            <button id="detailCloseBtn" class="text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 py-3 rounded-xl transition">
-              Cerrar
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal de Confirmación de Eliminación -->
-    <div id="deleteConfirmModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl relative fade-in text-sm text-center">
-        <div class="w-12 h-12 rounded-full bg-red-500/10 text-red-400 flex items-center justify-center mx-auto mb-4 text-xl">
-          ⚠️
-        </div>
-        <h3 id="deleteModalTitle" class="text-slate-100 font-bold text-lg mb-2">
-          ¿Eliminar registro?
-        </h3>
-        <p id="deleteModalDesc" class="text-xs text-slate-400 mb-6 leading-relaxed">
-          Esta acción no se puede deshacer. El registro seleccionado se borrará permanentemente del historial de cálculos.
-        </p>
-        <div class="flex gap-3">
-          <button id="cancelDeleteBtn" class="flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 py-3 rounded-xl transition">
-            Cancelar
-          </button>
-          <button id="confirmDeleteBtn" class="flex-1 text-xs font-semibold bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl transition shadow-lg shadow-red-500/10">
-            Sí, eliminar
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Toast de Actualización de PWA -->
-    <div id="updateToast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900/95 backdrop-blur-md border border-blue-500/50 text-slate-100 px-4 py-3 rounded-xl shadow-2xl shadow-black/80 flex items-center justify-between gap-3 z-[100] text-xs w-[calc(100%-2rem)] max-w-sm fade-in">
-      <div class="flex-1">
-        <p class="font-bold text-blue-400">⚡ ¡Nueva versión instalada!</p>
-        <p class="text-[11px] text-slate-300 mt-0.5">Se han actualizado las funciones y tasas de arbitraje.</p>
-      </div>
-      <button id="btnReloadApp" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1.5 px-3 rounded-lg transition shrink-0">
-        Recargar
-      </button>
-    </div>
-
     <p class="text-center text-slate-600 text-xs mt-6">Cálculo referencial. Verifica siempre las tasas antes de operar.</p>
+  </div>
+
+  <!-- Modal de Detalle de Operación Histórica -->
+  <div id="detailModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto fade-in text-sm">
+      <button id="closeDetailModalBtn" aria-label="Cerrar" class="absolute right-4 top-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 transition">
+        ✕
+      </button>
+      
+      <h3 class="text-blue-400 font-bold text-lg mb-1 flex items-center gap-2">
+        📊 Detalle de Operación
+      </h3>
+      <p id="detailFecha" class="text-xs text-slate-500 mb-4"></p>
+
+      <div class="space-y-4">
+        <!-- Compra en Banco -->
+        <div class="border-b border-slate-800/80 pb-3">
+          <h4 class="text-slate-300 font-semibold mb-2 text-xs flex items-center gap-1.5 text-blue-400/80">
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> 1. Compra en Banco
+          </h4>
+          <div class="grid grid-cols-2 gap-y-1 text-xs">
+            <span class="text-slate-400 font-medium">Monto Compra:</span>
+            <span id="detailMontoUSD" class="text-right font-semibold text-slate-100">$0.00</span>
+            <span class="text-slate-400 font-medium">Tasa Banco:</span>
+            <span id="detailTasaBanco" class="text-right font-medium text-slate-100">Bs 0.00</span>
+            <span class="text-slate-400 font-medium">Comisión Banco:</span>
+            <span id="detailComBancoPct" class="text-right font-medium text-slate-100">0.00%</span>
+            <span class="text-slate-400 font-medium">Comisión Tarjeta:</span>
+            <span id="detailComTarjetaPct" class="text-right font-medium text-slate-100">0.00%</span>
+            <span class="text-slate-300 font-semibold mt-1">Total Invertido:</span>
+            <span id="detailBsInvertidos" class="text-right font-semibold text-slate-100 mt-1">Bs 0.00</span>
+          </div>
+        </div>
+
+        <!-- Conversión a Crypto -->
+        <div class="border-b border-slate-800/80 pb-3">
+          <h4 class="text-slate-300 font-semibold mb-2 text-xs flex items-center gap-1.5 text-blue-400/80">
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> 2. Conversión a Crypto
+          </h4>
+          <div class="grid grid-cols-2 gap-y-1 text-xs">
+            <span class="text-slate-400 font-medium">USDT Recibidos Netos:</span>
+            <span id="detailUsdtNetos" class="text-right font-semibold text-slate-100">₮0.00</span>
+            <span class="text-slate-400 font-medium">Tasa de Venta P2P:</span>
+            <span id="detailTasaP2P" class="text-right font-medium text-slate-100">Bs 0.00</span>
+            <span class="text-slate-300 font-semibold mt-1">Total Obtenido:</span>
+            <span id="detailBsObtenidos" class="text-right font-semibold text-slate-100 mt-1">Bs 0.00</span>
+          </div>
+        </div>
+
+        <!-- Comisiones / Desglose de Pérdida -->
+        <div class="border-b border-slate-800/80 pb-3">
+          <h4 class="text-slate-300 font-semibold mb-2 text-xs flex items-center gap-1.5 text-red-400/80">
+            <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> 3. Pérdida en Comisiones
+          </h4>
+          <div class="grid grid-cols-2 gap-y-1 text-xs">
+            <span class="text-slate-400 font-medium">Comisión Banco USD:</span>
+            <span id="detailComBancoVal" class="text-right font-medium text-red-400">-$0.00</span>
+            <span class="text-slate-400 font-medium">Comisión Tarjeta USD:</span>
+            <span id="detailComTarjetaVal" class="text-right font-medium text-red-400">-$0.00</span>
+            <span class="text-slate-400 font-medium">Diferencia Cripto (USDT):</span>
+            <span id="detailSpreadCriptoVal" class="text-right font-medium text-red-400">-$0.00</span>
+            <span class="text-slate-300 font-semibold mt-1">Pérdida Total USD:</span>
+            <span id="detailPerdidaComisiones" class="text-right font-semibold text-red-400 mt-1">-$0.00</span>
+          </div>
+        </div>
+
+        <!-- Resultado Final -->
+        <div class="bg-slate-800/60 rounded-xl p-4 border border-slate-800">
+          <div class="grid grid-cols-2 gap-y-2.5 items-center">
+            <span class="text-xs text-slate-400 font-medium">Ganancia Neta Bs:</span>
+            <span id="detailGananciaBs" class="text-right text-base font-bold text-slate-100">Bs 0.00</span>
+            <span class="text-xs text-slate-400 font-medium">Ganancia Neta USD:</span>
+            <span id="detailGananciaUSD" class="text-right text-base font-bold text-slate-100">$0.00</span>
+            <span class="text-xs text-slate-400 font-medium">Rentabilidad:</span>
+            <span id="detailGananciaPct" class="text-right text-base font-bold text-slate-100">0.00%</span>
+          </div>
+          <div id="detailViabilidadBadge" class="mt-3.5 text-center text-xs font-semibold py-2.5 rounded-xl border"></div>
+        </div>
+      </div>
+
+      <!-- Acciones -->
+      <div class="mt-6 flex flex-col gap-2">
+        <button id="detailLoadBtn" class="w-full text-sm font-semibold bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-xl transition shadow-lg shadow-blue-500/10">
+          📥 Cargar en calculadora
+        </button>
+        <div class="grid grid-cols-2 gap-2">
+          <button id="detailCopyBtn" class="text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 py-3 rounded-xl transition flex items-center justify-center gap-1.5">
+            📋 <span id="detailCopyBtnText">Copiar resumen</span>
+          </button>
+          <button id="detailCloseBtn" class="text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 py-3 rounded-xl transition">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmación de Eliminación -->
+  <div id="deleteConfirmModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl relative fade-in text-sm text-center">
+      <div class="w-12 h-12 rounded-full bg-red-500/10 text-red-400 flex items-center justify-center mx-auto mb-4 text-xl">
+        ⚠️
+      </div>
+      <h3 id="deleteModalTitle" class="text-slate-100 font-bold text-lg mb-2">
+        ¿Eliminar registro?
+      </h3>
+      <p id="deleteModalDesc" class="text-xs text-slate-400 mb-6 leading-relaxed">
+        Esta acción no se puede deshacer. El registro seleccionado se borrará permanentemente del historial de cálculos.
+      </p>
+      <div class="flex gap-3">
+        <button id="cancelDeleteBtn" class="flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 py-3 rounded-xl transition">
+          Cancelar
+        </button>
+        <button id="confirmDeleteBtn" class="flex-1 text-xs font-semibold bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl transition shadow-lg shadow-red-500/10">
+          Sí, eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast de Actualización de PWA -->
+  <div id="updateToast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900/95 backdrop-blur-md border border-blue-500/50 text-slate-100 px-4 py-3 rounded-xl shadow-2xl shadow-black/80 flex items-center justify-between gap-3 z-[100] text-xs w-[calc(100%-2rem)] max-w-sm fade-in">
+    <div class="flex-1">
+      <p class="font-bold text-blue-400">⚡ ¡Nueva versión instalada!</p>
+      <p class="text-[11px] text-slate-300 mt-0.5">Se han actualizado las funciones y tasas de arbitraje.</p>
+    </div>
+    <button id="btnReloadApp" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1.5 px-3 rounded-lg transition shrink-0">
+      Recargar
+    </button>
   </div>
 
 <script>
