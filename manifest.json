@@ -18,5 +18,37 @@
   "background_color": "#020617",
   "theme_color": "#60a5fa",
   "display": "standalone",
-  "orientation": "portrait"
+  "orientation": "portrait",
+  "shortcuts": [
+    {
+      "name": "Arbitraje",
+      "short_name": "Arbitraje",
+      "description": "Abrir la calculadora de arbitraje directamente",
+      "url": "index.html?tab=arbitraje",
+      "icons": [{ "src": "icon.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Conversor",
+      "short_name": "Conversor",
+      "description": "Abrir el convertidor de divisas directamente",
+      "url": "index.html?tab=conversor",
+      "icons": [{ "src": "icon.png", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Vista móvil de la Calculadora de Arbitraje"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Vista amplia de la Calculadora de Arbitraje"
+    }
+  ]
 }

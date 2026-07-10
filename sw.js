@@ -1,4 +1,4 @@
-const CACHE_NAME = 'arbitraje-v3';
+const CACHE_NAME = 'arbitraje-v4';
 const ASSETS = [
   'index.html',
   'manifest.json',
@@ -19,7 +19,10 @@ self.addEventListener('activate', (e) => {
       Promise.all(
         cacheNames
           .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
+          .map((name) => {
+            console.log('[Service Worker] Purging obsolete cache:', name);
+            return caches.delete(name);
+          })
       )
     ).then(() => self.clients.claim())
   );

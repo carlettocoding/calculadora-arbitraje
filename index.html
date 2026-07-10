@@ -103,6 +103,83 @@
       radial-gradient(circle at 10% 15%, rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.04) 0%, transparent 40%),
       radial-gradient(circle at 90% 85%, rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.03) 0%, transparent 40%);
   }
+
+  /* Privacy (Incognito) Mode Blurring */
+  .privacy-blur {
+    transition: filter 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  html.privacy-active .privacy-blur {
+    filter: blur(6.5px) !important;
+    user-select: none !important;
+    pointer-events: auto !important;
+  }
+  html.privacy-active .privacy-blur:hover {
+    filter: blur(0px) !important;
+  }
+
+  /* Slide-down descend entry for new history calculations */
+  @keyframes slideDownEntry {
+    from {
+      opacity: 0;
+      transform: translateY(-16px);
+      max-height: 0px;
+      margin-bottom: 0px;
+      padding-top: 0px;
+      padding-bottom: 0px;
+      overflow: hidden;
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      max-height: 120px;
+      margin-bottom: 0.5rem;
+    }
+  }
+  .new-record-animate {
+    animation: slideDownEntry 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  }
+
+  /* Compact scaling for smaller viewports (< 375px) */
+  @media (max-width: 375px) {
+    .max-w-md {
+      padding-left: 0.5rem !important;
+      padding-right: 0.5rem !important;
+    }
+    h1 {
+      font-size: 1.25rem !important;
+    }
+    header {
+      margin-bottom: 1rem !important;
+    }
+    .text-2xl {
+      font-size: 1.375rem !important;
+    }
+    .p-5 {
+      padding: 1rem !important;
+    }
+    .p-4 {
+      padding: 0.75rem !important;
+    }
+    .text-sm {
+      font-size: 0.8125rem !important;
+    }
+    .text-xs {
+      font-size: 0.75rem !important;
+    }
+    .text-base {
+      font-size: 0.875rem !important;
+    }
+    input {
+      padding-top: 0.625rem !important;
+      padding-bottom: 0.625rem !important;
+      font-size: 0.875rem !important;
+    }
+    .quick-amount, .quick-meta, .preset-btn {
+      padding-top: 0.375rem !important;
+      padding-bottom: 0.375rem !important;
+      font-size: 0.6875rem !important;
+    }
+  }
 </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen antialiased">
@@ -138,10 +215,17 @@
       <div class="flex-1 text-center">
         <h1 class="text-2xl font-bold text-blue-400 tracking-tight">Calculadora PRO</h1>
       </div>
+      <!-- Botón de Modo Privacidad (Incógnito) -->
+      <button id="privacyToggleBtn" aria-label="Modo privacidad" class="absolute right-12 top-0 w-9 h-9 flex items-center justify-center rounded-full bg-slate-800 border border-slate-700 text-slate-300 hover:text-blue-400 transition" title="Modo Incógnito (Privacidad)">
+        <span id="privacyIcon">👁️</span>
+      </button>
       <button id="themeToggleBtn" aria-label="Cambiar tema" class="absolute right-0 top-0 w-9 h-9 flex items-center justify-center rounded-full bg-slate-800 border border-slate-700 text-slate-300 hover:text-blue-400 transition">
         <span id="themeIcon">🌙</span>
       </button>
     </header>
+
+    <!-- Banner de Conectividad Sutil -->
+    <div id="connectivityBanner" class="hidden text-center text-[11px] py-2 px-3 rounded-xl mb-4 font-semibold transition-all duration-300"></div>
 
     <!-- Panel de Personalización de Diseño (Colores de Acento y Fondos Premium) -->
     <section id="settingsPanel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-6 shadow-lg shadow-black/20 fade-in relative z-20">
@@ -363,6 +447,15 @@
           </div>
         </div>
         <p id="desgloseProcentaje" class="text-[10px] text-slate-500 mt-2.5 text-center"></p>
+        
+        <!-- Alerta Animada para Comisiones Excesivas -->
+        <div id="commissionWarning" class="hidden mt-4 p-3.5 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl flex items-start gap-2.5 text-xs animate-pulse">
+          <span class="text-base leading-none">⚠️</span>
+          <div class="flex-1">
+            <p class="font-bold">Comisiones excesivas detectadas</p>
+            <p id="commissionWarningText" class="text-[11px] text-slate-300 mt-0.5 leading-relaxed"></p>
+          </div>
+        </div>
       </section>
 
       <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg shadow-black/20 mb-4">
@@ -406,15 +499,15 @@
         <div class="mt-4 pt-4 grid grid-cols-1 gap-3">
           <div class="rounded-xl bg-slate-800/60 p-4 text-center">
             <p class="text-xs text-slate-400 mb-1">Ganancia Neta (Bs)</p>
-            <p id="gananciaBs" class="text-2xl font-bold">Bs 0,00</p>
+            <p id="gananciaBs" class="text-2xl font-bold privacy-blur">Bs 0,00</p>
           </div>
           <div class="rounded-xl bg-slate-800/60 p-4 text-center">
             <p class="text-xs text-slate-400 mb-1">Ganancia Neta (USD)</p>
-            <p id="gananciaUSD" class="text-2xl font-bold">$0,00</p>
+            <p id="gananciaUSD" class="text-2xl font-bold privacy-blur">$0,00</p>
           </div>
           <div class="rounded-xl bg-blue-400/10 border border-blue-400/30 p-4 text-center">
             <p class="text-xs text-slate-400 mb-1">Rentabilidad de la Operación</p>
-            <p id="gananciaPct" class="text-2xl font-bold">0,00%</p>
+            <p id="gananciaPct" class="text-2xl font-bold privacy-blur">0,00%</p>
           </div>
         </div>
 
@@ -509,15 +602,25 @@
           <div id="historialStats" class="hidden grid grid-cols-2 gap-2 bg-slate-950/50 p-3 rounded-xl border border-slate-800/80">
             <div class="text-center p-2 rounded-lg bg-slate-900 border border-slate-800/40">
               <p class="text-[10px] text-slate-400 font-medium">Volumen Total</p>
-              <p id="statsVolumen" class="text-xs font-bold text-slate-100">$0.00</p>
+              <p id="statsVolumen" class="text-xs font-bold text-slate-100 privacy-blur">$0.00</p>
             </div>
             <div class="text-center p-2 rounded-lg bg-slate-900 border border-slate-800/40">
               <p class="text-[10px] text-slate-400 font-medium">Ganancia Total</p>
-              <p id="statsGanancia" class="text-xs font-bold text-emerald-400">+$0.00</p>
+              <p id="statsGanancia" class="text-xs font-bold text-emerald-400 privacy-blur">+$0.00</p>
             </div>
             <div class="text-center p-2 rounded-lg bg-slate-900 border border-slate-800/40 col-span-2 flex justify-between px-3 py-1">
               <span class="text-[10px] text-slate-400 font-medium">Rentabilidad Promedio:</span>
-              <span id="statsRentabilidad" class="text-xs font-bold text-blue-400">0.00%</span>
+              <span id="statsRentabilidad" class="text-xs font-bold text-blue-400 privacy-blur">0.00%</span>
+            </div>
+          </div>
+
+          <!-- Gráfico de Rentabilidad Acumulada -->
+          <div id="chartSection" class="hidden bg-slate-950/50 p-3.5 rounded-xl border border-slate-800/80">
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+              📈 Curva de Rentabilidad Acumulada (USD)
+            </p>
+            <div id="profitChartContainer" class="relative w-full h-[130px] flex items-center justify-center">
+              <!-- El gráfico SVG interactivo se inyectará dinámicamente aquí -->
             </div>
           </div>
 
@@ -1237,6 +1340,17 @@ $('convCopyBtn').addEventListener('click', async () => {
     const pctPerdida = montoUSD !== 0 ? (perdidaComisiones / montoUSD) * 100 : 0;
     $('desgloseProcentaje').textContent = `${pctPerdida.toFixed(2)}% del capital invertido`;
 
+    // Alerta Animada para Comisiones Excesivas
+    const warningEl = $('commissionWarning');
+    if (warningEl) {
+      if (montoUSD > 0 && pctPerdida > 5.0) {
+        warningEl.classList.remove('hidden');
+        $('commissionWarningText').textContent = `La fricción de comisiones y spread cripto representa un ${pctPerdida.toFixed(2)}% de tu capital ($${perdidaComisiones.toFixed(2)}). Intenta usar presets con menores comisiones o una tasa de banco más favorable.`;
+      } else {
+        warningEl.classList.add('hidden');
+      }
+    }
+
     $('bsInvertidos').textContent = fmtBs(bsInvertidos);
     $('bsObtenidos').textContent = fmtBs(bsObtenidos);
 
@@ -1738,6 +1852,8 @@ $('convCopyBtn').addEventListener('click', async () => {
       vacio.classList.remove('hidden');
       if (statsDiv) statsDiv.classList.add('hidden');
       if (accionesDiv) accionesDiv.classList.add('hidden');
+      const chartSec = $('chartSection');
+      if (chartSec) chartSec.classList.add('hidden');
       return;
     }
 
@@ -1762,14 +1878,16 @@ $('convCopyBtn').addEventListener('click', async () => {
 
     $('statsVolumen').textContent = fmtUSD(totalVolumen);
     $('statsGanancia').textContent = (totalGananciaUSD >= 0 ? '+' : '') + fmtUSD(totalGananciaUSD);
-    $('statsGanancia').className = `text-xs font-bold ${totalGananciaUSD >= 0 ? 'text-emerald-400' : 'text-red-400'}`;
+    $('statsGanancia').className = `text-xs font-bold privacy-blur ${totalGananciaUSD >= 0 ? 'text-emerald-400' : 'text-red-400'}`;
     $('statsRentabilidad').textContent = (rentabilidadPromedio >= 0 ? '+' : '') + rentabilidadPromedio.toFixed(2) + '%';
-    $('statsRentabilidad').className = `text-xs font-bold ${rentabilidadPromedio >= 0 ? 'text-blue-400' : 'text-red-400'}`;
+    $('statsRentabilidad').className = `text-xs font-bold privacy-blur ${rentabilidadPromedio >= 0 ? 'text-blue-400' : 'text-red-400'}`;
 
     cont.innerHTML = lista.map(item => {
       const positivo = item.gananciaUSD >= 0;
       const colorClase = positivo ? 'text-emerald-400' : 'text-red-400';
-      return `<div class="flex items-center justify-between gap-2 bg-slate-800/60 rounded-xl p-3 text-xs"><div class="cursor-pointer flex-1" data-load="${item.id}"><p class="font-semibold text-slate-100">$${item.montoUSD.toFixed(2)} <span class="text-slate-500 font-normal">→</span> <span class="${colorClase} font-bold">${positivo ? '+' : ''}${fmtUSD(item.gananciaUSD)}</span></p><p class="text-slate-500 mt-0.5">${item.fecha} · Rentabilidad ${item.gananciaPct.toFixed(2)}%</p></div><button data-delete="${item.id}" class="text-slate-600 hover:text-red-400 px-2 py-1 transition">✕</button></div>`;
+      const isNew = item.id === justSavedItemId;
+      const animClass = isNew ? 'new-record-animate' : '';
+      return `<div class="flex items-center justify-between gap-2 bg-slate-800/60 rounded-xl p-3 text-xs ${animClass}"><div class="cursor-pointer flex-1" data-load="${item.id}"><p class="font-semibold text-slate-100">$${item.montoUSD.toFixed(2)} <span class="text-slate-500 font-normal">→</span> <span class="${colorClase} font-bold privacy-blur">${positivo ? '+' : ''}${fmtUSD(item.gananciaUSD)}</span></p><p class="text-slate-500 mt-0.5">${item.fecha} · Rentabilidad ${item.gananciaPct.toFixed(2)}%</p></div><button data-delete="${item.id}" class="text-slate-600 hover:text-red-400 px-2 py-1 transition">✕</button></div>`;
     }).join('');
 
     cont.querySelectorAll('[data-load]').forEach(el => el.addEventListener('click', () => mostrarDetalleHistorial(el.dataset.load)));
@@ -1777,6 +1895,11 @@ $('convCopyBtn').addEventListener('click', async () => {
       ev.stopPropagation();
       eliminarDeHistorial(el.dataset.delete);
     }));
+
+    // Dibujar Gráfico de Rentabilidad Acumulada si está la función lista
+    if (typeof dibujarGraficoRentabilidad === 'function') {
+      dibujarGraficoRentabilidad();
+    }
   }
 
   function cargarDesdeHistorial(id) {
@@ -1863,6 +1986,7 @@ $('convCopyBtn').addEventListener('click', async () => {
       id: Date.now().toString(), montoUSD: c.montoUSD, tasaBanco: c.tasaBanco, comisionBanco: c.comisionBanco, comisionTarjeta: c.comisionTarjeta, usdtNetos: c.usdtNetos, tasaP2P: c.tasaP2P, gananciaUSD: c.gananciaUSD, gananciaBs: c.gananciaBs, gananciaPct: c.gananciaPct,
       fecha: new Date().toLocaleString('es-VE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
     };
+    justSavedItemId = nuevoItem.id;
     guardarHistorial([nuevoItem, ...leerHistorial()].slice(0, MAX_HISTORIAL)); renderHistorial();
     const btn = $('saveHistorialBtn'); const textoOriginal = btn.innerHTML;
     btn.innerHTML = '✓ Guardado en historial'; setTimeout(() => { btn.innerHTML = textoOriginal; }, 1500);
@@ -2015,12 +2139,312 @@ $('convCopyBtn').addEventListener('click', async () => {
   }
   updateBgStyleBtnUI(localStorage.getItem('arbitrajeBgStyle') || 'cosmic');
 
+  // Global animation flag for new saved items
+  let justSavedItemId = null;
+
+  // ==========================================
+  // GRÁFICO INTERNO DE RENTABILIDAD ACUMULADA
+  // ==========================================
+  function dibujarGraficoRentabilidad() {
+    const container = $('profitChartContainer');
+    const chartSection = $('chartSection');
+    if (!container || !chartSection) return;
+
+    const lista = leerHistorial();
+    if (lista.length < 2) {
+      chartSection.classList.add('hidden');
+      return;
+    }
+
+    chartSection.classList.remove('hidden');
+
+    const chronList = [...lista].reverse();
+    let accumulatedProfit = 0;
+    const dataPoints = chronList.map(item => {
+      accumulatedProfit += item.gananciaUSD || 0;
+      return {
+        date: item.fecha,
+        value: accumulatedProfit
+      };
+    });
+
+    const values = dataPoints.map(p => p.value);
+    const minVal = Math.min(...values, 0); // Anclaje a 0 para mejor escala
+    const maxVal = Math.max(...values, 1);
+
+    const width = container.clientWidth || 340;
+    const height = 130;
+    const paddingLeft = 35;
+    const paddingRight = 15;
+    const paddingTop = 15;
+    const paddingBottom = 22;
+
+    const chartWidth = width - paddingLeft - paddingRight;
+    const chartHeight = height - paddingTop - paddingBottom;
+
+    const points = dataPoints.map((p, i) => {
+      const x = paddingLeft + (i / (dataPoints.length - 1)) * chartWidth;
+      const range = maxVal - minVal;
+      const y = paddingTop + (range === 0 ? chartHeight / 2 : chartHeight - ((p.value - minVal) / range) * chartHeight);
+      return { x, y, value: p.value, date: p.date };
+    });
+
+    let pathD = `M ${points[0].x} ${points[0].y}`;
+    for (let i = 1; i < points.length; i++) {
+      pathD += ` L ${points[i].x} ${points[i].y}`;
+    }
+
+    const areaD = `${pathD} L ${points[points.length - 1].x} ${height - paddingBottom} L ${points[0].x} ${height - paddingBottom} Z`;
+
+    let svgHTML = `
+      <svg width="100%" height="${height}" viewBox="0 0 ${width} ${height}" class="overflow-visible select-none">
+        <defs>
+          <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.25)" />
+            <stop offset="100%" stop-color="rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.0)" />
+          </linearGradient>
+        </defs>
+        
+        <!-- Líneas Guía Horizontales -->
+        <line x1="${paddingLeft}" y1="${paddingTop}" x2="${width - paddingRight}" y2="${paddingTop}" stroke="rgba(255, 255, 255, 0.05)" stroke-dasharray="2" />
+        <line x1="${paddingLeft}" y1="${height - paddingBottom}" x2="${width - paddingRight}" y2="${height - paddingBottom}" stroke="rgba(255, 255, 255, 0.1)" />
+    `;
+
+    if (minVal < 0 && maxVal > 0) {
+      const zeroY = paddingTop + (chartHeight - ((0 - minVal) / (maxVal - minVal)) * chartHeight);
+      svgHTML += `<line x1="${paddingLeft}" y1="${zeroY}" x2="${width - paddingRight}" y2="${zeroY}" stroke="rgba(239, 68, 68, 0.25)" stroke-dasharray="2" />`;
+    }
+
+    svgHTML += `
+        <!-- Área debajo de la curva -->
+        <path d="${areaD}" fill="url(#chartGrad)" />
+        
+        <!-- Línea Principal de la curva -->
+        <path d="${pathD}" fill="none" stroke="rgba(var(--accent-r), var(--accent-g), var(--accent-b), 1)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+    `;
+
+    points.forEach((p, i) => {
+      const isLast = i === points.length - 1;
+      const radius = isLast ? 4.5 : 3.5;
+      const strokeWidth = isLast ? 2 : 1.5;
+      const strokeColor = `rgba(var(--accent-r), var(--accent-g), var(--accent-b), 1)`;
+      
+      svgHTML += `
+        <circle 
+          cx="${p.x}" 
+          cy="${p.y}" 
+          r="${radius}" 
+          fill="#0f172a" 
+          stroke="${strokeColor}" 
+          stroke-width="${strokeWidth}" 
+          class="cursor-pointer hover:scale-125 transition-transform duration-200" 
+          data-index="${i}"
+        />
+      `;
+    });
+
+    svgHTML += `
+      <!-- Etiquetas del Eje Y -->
+      <text x="${paddingLeft - 6}" y="${paddingTop + 4}" fill="rgba(255,255,255,0.4)" font-size="9" text-anchor="end" font-weight="700">$${maxVal.toFixed(1)}</text>
+      <text x="${paddingLeft - 6}" y="${height - paddingBottom + 3}" fill="rgba(255,255,255,0.4)" font-size="9" text-anchor="end" font-weight="700">$${minVal.toFixed(1)}</text>
+    `;
+
+    if (points.length >= 2) {
+      const firstDateStr = points[0].date.split(' ')[0].trim();
+      svgHTML += `<text x="${points[0].x}" y="${height - 5}" fill="rgba(255,255,255,0.35)" font-size="8" text-anchor="start" font-weight="600">${firstDateStr}</text>`;
+      
+      const lastDateStr = points[points.length - 1].date.split(' ')[0].trim();
+      svgHTML += `<text x="${points[points.length - 1].x}" y="${height - 5}" fill="rgba(255,255,255,0.35)" font-size="8" text-anchor="end" font-weight="600">${lastDateStr}</text>`;
+
+      if (points.length > 2) {
+        const midIdx = Math.floor(points.length / 2);
+        const midDateStr = points[midIdx].date.split(' ')[0].trim();
+        svgHTML += `<text x="${points[midIdx].x}" y="${height - 5}" fill="rgba(255,255,255,0.35)" font-size="8" text-anchor="middle" font-weight="600">${midDateStr}</text>`;
+      }
+    }
+
+    svgHTML += `
+      <!-- Tooltip Interactivo -->
+      <g id="chartTooltip" class="opacity-0 transition-opacity duration-200" pointer-events="none">
+        <rect x="0" y="0" width="70" height="26" rx="6" fill="rgba(15, 23, 42, 0.95)" stroke="rgba(255, 255, 255, 0.15)" stroke-width="1" />
+        <text id="chartTooltipText" x="35" y="16" fill="#fff" font-size="9" text-anchor="middle" font-weight="700"></text>
+      </g>
+    </svg>
+    `;
+
+    container.innerHTML = svgHTML;
+
+    // Conectar interactividad al mover el mouse
+    const circles = container.querySelectorAll('circle');
+    const tooltip = container.querySelector('#chartTooltip');
+    const tooltipText = container.querySelector('#chartTooltipText');
+
+    circles.forEach(circle => {
+      circle.addEventListener('mouseenter', () => {
+        const idx = parseInt(circle.dataset.index);
+        const p = points[idx];
+        tooltipText.textContent = `$${p.value.toFixed(2)}`;
+        
+        let tx = p.x - 35;
+        let ty = p.y - 32;
+        
+        if (tx < 2) tx = 2;
+        if (tx + 70 > width) tx = width - 72;
+        if (ty < 2) ty = p.y + 12;
+
+        tooltip.setAttribute('transform', `translate(${tx}, ${ty})`);
+        tooltip.classList.remove('opacity-0');
+        tooltip.classList.add('opacity-100');
+        circle.setAttribute('r', '6');
+      });
+
+      circle.addEventListener('mouseleave', () => {
+        tooltip.classList.remove('opacity-100');
+        tooltip.classList.add('opacity-0');
+        const idx = parseInt(circle.dataset.index);
+        const isLast = idx === points.length - 1;
+        circle.setAttribute('r', isLast ? '4.5' : '3.5');
+      });
+    });
+  }
+
+  // Redibujar gráfico en resize para mantenerlo responsivo
+  window.addEventListener('resize', () => {
+    const chartSec = $('chartSection');
+    if (chartSec && !chartSec.classList.contains('hidden')) {
+      dibujarGraficoRentabilidad();
+    }
+  });
+
+  // ==========================================
+  // SUTILEZ DE CONECTIVIDAD (MODO OFFLINE)
+  // ==========================================
+  function updateOnlineStatus() {
+    const banner = $('connectivityBanner');
+    if (!banner) return;
+    if (navigator.onLine) {
+      if (banner.dataset.wasOffline === 'true') {
+        banner.className = "text-center text-[11px] py-2 px-3 rounded-xl mb-4 font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 fade-in";
+        banner.innerHTML = "🟢 ¡Conexión restablecida! Tasas actualizadas";
+        banner.dataset.wasOffline = 'false';
+        setTimeout(() => {
+          if (navigator.onLine && banner.dataset.wasOffline !== 'true') {
+            banner.classList.add('hidden');
+          }
+        }, 3000);
+        consultarTasasEnTiempoReal();
+      } else {
+        banner.classList.add('hidden');
+      }
+    } else {
+      banner.dataset.wasOffline = 'true';
+      banner.className = "text-center text-[11px] py-2 px-3 rounded-xl mb-4 font-semibold bg-amber-500/10 text-amber-500 border border-amber-500/20 fade-in";
+      banner.innerHTML = "🛰️ Modo sin conexión: Operando con caché local";
+      banner.classList.remove('hidden');
+    }
+  }
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+
+  // ==========================================
+  // MODO PRIVACIDAD ("MODO INCÓGNITO")
+  // ==========================================
+  const privacyBtn = $('privacyToggleBtn');
+  const privacyIcon = $('privacyIcon');
+  if (privacyBtn && privacyIcon) {
+    const applyPrivacyState = (isActive) => {
+      if (isActive) {
+        document.documentElement.classList.add('privacy-active');
+        privacyIcon.textContent = '🕶️';
+        privacyBtn.title = "Desactivar Modo Privacidad";
+        privacyBtn.className = "absolute right-12 top-0 w-9 h-9 flex items-center justify-center rounded-full bg-blue-500/10 border border-blue-400 text-blue-400 transition";
+      } else {
+        document.documentElement.classList.remove('privacy-active');
+        privacyIcon.textContent = '👁️';
+        privacyBtn.title = "Activar Modo Privacidad (Incógnito)";
+        privacyBtn.className = "absolute right-12 top-0 w-9 h-9 flex items-center justify-center rounded-full bg-slate-800 border border-slate-700 text-slate-300 hover:text-blue-400 transition";
+      }
+    };
+
+    // Inicializar privacidad
+    const isPrivacySaved = localStorage.getItem('arbitrajePrivacy') === 'true';
+    applyPrivacyState(isPrivacySaved);
+
+    privacyBtn.addEventListener('click', () => {
+      const activeNow = !document.documentElement.classList.contains('privacy-active');
+      localStorage.setItem('arbitrajePrivacy', activeNow);
+      applyPrivacyState(activeNow);
+    });
+  }
+
+  // ==========================================
+  // ADAPTABILIDAD ULTRA-PRECISA DEL TECLADO NUMÉRICO
+  // ==========================================
+  function setupPreciseNumericInputs() {
+    const fieldsToSanitize = [
+      'montoUSD', 'tasaBanco', 'comisionBanco', 'comisionTarjeta', 'usdtNetos', 'tasaP2P',
+      'metaGananciaUSD', 'convInputDivisa', 'convInputBs'
+    ];
+    
+    fieldsToSanitize.forEach(id => {
+      const el = $(id);
+      if (!el) return;
+
+      el.addEventListener('focus', () => {
+        if (el.value === '0' || el.value === '0.00' || el.value === '0,00') {
+          el.value = '';
+        }
+      });
+
+      el.addEventListener('input', () => {
+        let val = el.value;
+        
+        // Convertir comas en puntos en tiempo real para consistencia
+        val = val.replace(/,/g, '.');
+        
+        // Quitar cualquier carácter que no sea numérico o punto decimal
+        val = val.replace(/[^0-9.]/g, '');
+        
+        // Evitar que haya más de un punto decimal
+        const splitVal = val.split('.');
+        if (splitVal.length > 2) {
+          val = splitVal[0] + '.' + splitVal.slice(1).join('');
+        }
+        
+        if (el.value !== val) {
+          el.value = val;
+        }
+
+        // Ejecutar los recálculos oportunos según el input que cambie
+        if (id === 'metaGananciaUSD') {
+          calcularInverso();
+        } else if (id === 'convInputDivisa') {
+          calcularConversor('DIVISA');
+        } else if (id === 'convInputBs') {
+          calcularConversor('BS');
+        } else {
+          calcular();
+        }
+      });
+    });
+  }
+
+  // Ejecutar inicializaciones de funciones
+  setupPreciseNumericInputs();
+  updateOnlineStatus();
+
   renderHistorial();
   resetRender();
   
-  // Recuperar última pestaña usada
-  const savedTab = localStorage.getItem('activeTab') || 'arbitraje';
-  setActiveTab(savedTab);
+  // Recuperar última pestaña usada (con soporte para Shortcuts deep-linking)
+  const urlParams = new URLSearchParams(window.location.search);
+  const queryTab = urlParams.get('tab');
+  if (queryTab === 'arbitraje' || queryTab === 'conversor') {
+    setActiveTab(queryTab);
+  } else {
+    const savedTab = localStorage.getItem('activeTab') || 'arbitraje';
+    setActiveTab(savedTab);
+  }
   
   updateConversorUI(); 
 
