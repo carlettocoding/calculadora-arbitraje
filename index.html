@@ -304,6 +304,19 @@
         <!-- Columna Izquierda: Entradas y Simuladores -->
         <div class="md:col-span-6 lg:col-span-7 space-y-4">
           
+          <!-- Selector de Modo de Arbitraje -->
+          <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg shadow-black/20">
+            <p class="text-xs text-slate-400 font-medium mb-2.5">🔄 Modo de Operación</p>
+            <div class="flex bg-slate-950 rounded-xl p-1 border border-slate-800/50">
+              <button id="modeBsToBsBtn" type="button" class="flex-1 text-xs font-semibold py-2.5 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-400/30 transition-all duration-200">
+                🔄 Bs ➔ Bs (Tradicional)
+              </button>
+              <button id="modeUsdtToUsdtBtn" type="button" class="flex-1 text-xs font-semibold py-2.5 rounded-lg text-slate-400 hover:text-slate-300 transition-all duration-200 border border-transparent">
+                🪙 USDT ➔ USDT (Retorno)
+              </button>
+            </div>
+          </section>
+
           <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg shadow-black/20">
             <p class="text-xs text-slate-400 font-medium mb-2.5">⚡ Presets de Comisiones</p>
             <div class="grid grid-cols-2 gap-2">
@@ -315,16 +328,16 @@
           </section>
 
           <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg shadow-black/20">
-            <h2 class="text-blue-400 font-semibold text-base mb-4 flex items-center gap-2">
+            <h2 id="seccion1Titulo" class="text-blue-400 font-semibold text-base mb-4 flex items-center gap-2">
               <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-400/10 text-blue-400 text-xs font-bold">1</span>
               Compra en Banco
             </h2>
 
             <div class="space-y-4">
               <div>
-                <label for="montoUSD" class="block text-xs font-medium text-slate-400 mb-1.5">Monto a Comprar (USD)</label>
+                <label id="montoLabel" for="montoUSD" class="block text-xs font-medium text-slate-400 mb-1.5">Monto a Comprar (USD)</label>
                 <div class="relative">
-                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
+                  <span id="montoSimbolo" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
                   <input type="text" id="montoUSD" inputmode="decimal" pattern="[0-9,.]*" placeholder="100.00"
                     class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-7 pr-3 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
                 </div>
@@ -334,6 +347,24 @@
                   <button type="button" data-monto="100" class="quick-amount flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">$100</button>
                   <button type="button" data-monto="500" class="quick-amount flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">$500</button>
                   <button type="button" data-monto="1000" class="quick-amount flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">$1000</button>
+                </div>
+              </div>
+
+              <!-- Contenedor dinámico para venta inicial de USDT (Solo modo USDT ➔ USDT) -->
+              <div id="usdtToUsdtInitialSaleContainer" class="hidden pt-4 border-t border-slate-800/60 mt-2 space-y-4">
+                <div class="bg-blue-500/5 rounded-xl border border-blue-500/10 p-4 space-y-3">
+                  <div class="flex justify-between items-center pb-2 border-b border-slate-800/40">
+                    <div>
+                      <span class="text-xs font-semibold text-blue-400 block">📊 Simulación Venta P2P (Paso 1)</span>
+                      <span class="text-[10px] text-slate-500 block leading-tight mt-0.5">Calcula los Bs de vender tus USDT iniciales</span>
+                    </div>
+                    <div class="text-right">
+                      <span class="text-[10px] text-slate-400 block">Bolívares Obtenidos:</span>
+                      <span id="usdtToUsdtBsObtenidos" class="text-base font-bold text-emerald-400">Bs 0,00</span>
+                    </div>
+                  </div>
+                  <!-- El input de tasaP2P se moverá dinámicamente aquí en modo USDT ➔ USDT -->
+                  <div id="tasaP2PPlacement"></div>
                 </div>
               </div>
 
@@ -386,26 +417,54 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Control de dólares comprados en banco (Solo para modo USDT ➔ USDT) -->
+              <div id="usdBancoOverrideContainer" class="pt-4 border-t border-slate-800/85 space-y-3 hidden">
+                <div class="flex justify-between items-center">
+                  <div>
+                    <span class="text-xs font-semibold text-slate-200 block">Dólares Comprados en Banco</span>
+                    <span class="text-[10px] text-slate-500 block">¿Cómo determinar la compra?</span>
+                  </div>
+                  <div class="inline-flex rounded-lg bg-slate-950 p-0.5 border border-slate-800">
+                    <button type="button" id="usdAutoBtn" class="px-2.5 py-1 text-[11px] font-semibold rounded-md bg-blue-500/20 text-blue-400 border border-blue-500/30 transition">
+                      Auto
+                    </button>
+                    <button type="button" id="usdManualBtn" class="px-2.5 py-1 text-[11px] font-semibold rounded-md text-slate-400 hover:text-slate-200 transition">
+                      Manual
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="relative">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
+                  <input type="text" id="usdCompradosInput" inputmode="decimal" pattern="[0-9,.]*" placeholder="0.00"
+                    class="w-full bg-slate-800/50 border border-slate-800 text-slate-400 rounded-xl pl-7 pr-3 py-3 text-slate-100 placeholder-slate-600 focus:outline-none transition cursor-not-allowed" readonly>
+                </div>
+                <p class="text-[10px] text-slate-500 leading-tight">
+                  <strong class="text-slate-400">Auto:</strong> Calcula los dólares comprados automáticamente con los Bs de la venta de tus USDT iniciales.<br>
+                  <strong class="text-slate-400">Manual:</strong> Permite ingresar la cantidad real exacta de dólares que lograste comprar en tu banco.
+                </p>
+              </div>
             </div>
           </section>
 
           <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg shadow-black/20">
-            <h2 class="text-blue-400 font-semibold text-base mb-4 flex items-center gap-2">
+            <h2 id="seccion2Titulo" class="text-blue-400 font-semibold text-base mb-4 flex items-center gap-2">
               <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-400/10 text-blue-400 text-xs font-bold">2</span>
               Conversión a Crypto (Binance)
             </h2>
 
-            <div class="space-y-4">
+            <div id="section2InputsContainer" class="space-y-4">
               <div>
-                <label for="usdtNetos" class="block text-xs font-medium text-slate-400 mb-1.5">USDT a Recibir Netos</label>
+                <label id="usdtNetosLabel" for="usdtNetos" class="block text-xs font-medium text-slate-400 mb-1.5">USDT a Recibir Netos</label>
                 <div class="relative">
-                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">₮</span>
+                  <span id="usdtNetosSimbolo" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">₮</span>
                   <input type="text" id="usdtNetos" inputmode="decimal" pattern="[0-9,.]*" placeholder="97.50"
                     class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-8 pr-3 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
                 </div>
               </div>
 
-              <div>
+              <div id="tasaP2PContainer">
                 <div class="flex justify-between items-center mb-1.5">
                   <label for="tasaP2P" class="block text-xs font-medium text-slate-400">Tasa de Venta P2P (Bs/USDT)</label>
                   <span class="flex items-center gap-1.5">
@@ -436,9 +495,9 @@
               </p>
               
               <div>
-                <label for="metaGananciaUSD" class="block text-xs font-medium text-slate-400 mb-1.5">Meta de Ganancia Neta (USD)</label>
+                <label id="labelMetaGanancia" for="metaGananciaUSD" class="block text-xs font-medium text-slate-400 mb-1.5">Meta de Ganancia Neta (USD)</label>
                 <div class="relative">
-                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
+                  <span id="metaSimbolo" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
                   <input type="text" id="metaGananciaUSD" inputmode="decimal" pattern="[0-9,.]*" placeholder="10.00"
                     class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-7 pr-3 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
                 </div>
@@ -452,19 +511,19 @@
 
               <div id="inversaResultados" class="bg-slate-950/50 rounded-xl p-4 border border-slate-800/80 space-y-3 text-xs hidden">
                 <div class="flex justify-between items-center py-1 border-b border-slate-800/30 pb-2">
-                  <span class="text-slate-400">Capital Compra Requerido (USD):</span>
+                  <span id="inversaUSDRequeridoLabel" class="text-slate-400">Capital Compra Requerido (USD):</span>
                   <span id="inversaUSDRequerido" class="font-bold text-slate-100">$0.00</span>
                 </div>
                 <div class="flex justify-between items-center py-1">
-                  <span class="text-slate-400">USDT Netos a Recibir:</span>
+                  <span id="inversaUSDTRequeridoLabel" class="text-slate-400">USDT Netos a Recibir:</span>
                   <span id="inversaUSDTRequerido" class="font-medium text-slate-100">₮0.00</span>
                 </div>
                 <div class="flex justify-between items-center py-1">
-                  <span class="text-slate-400">Capital a Invertir en Banco:</span>
+                  <span id="inversaBsInvertirLabel" class="text-slate-400">Capital a Invertir en Banco:</span>
                   <span id="inversaBsInvertir" class="font-medium text-slate-100">Bs 0.00</span>
                 </div>
                 <div class="flex justify-between items-center py-1 border-t border-slate-800/50 pt-2 font-semibold">
-                  <span class="text-slate-300">Retorno Bruto en Binance:</span>
+                  <span id="inversaBsRetornoLabel" class="text-slate-300">Retorno Bruto en Binance:</span>
                   <span id="inversaBsRetorno" class="text-emerald-400">Bs 0.00</span>
                 </div>
               </div>
@@ -491,15 +550,15 @@
             <p class="text-xs text-slate-400 font-medium mb-3">💰 Desglose de Costos</p>
             <div class="space-y-2 text-xs">
               <div class="flex justify-between items-center py-1.5 border-b border-slate-800">
-                <span class="text-slate-400">├ Comisión Banco</span>
+                <span id="costoBancoLabel" class="text-slate-400">├ Comisión Banco</span>
                 <span id="desgloseComBanco" class="font-medium text-red-400">-$0,00</span>
               </div>
               <div class="flex justify-between items-center py-1.5 border-b border-slate-800">
-                <span class="text-slate-400">├ Comisión Tarjeta</span>
+                <span id="costoTarjetaLabel" class="text-slate-400">├ Comisión Tarjeta</span>
                 <span id="desgloseComTarjeta" class="font-medium text-red-400">-$0,00</span>
               </div>
               <div class="flex justify-between items-center py-1.5 border-b border-slate-800">
-                <span class="text-slate-400">├ Diferencia Cripto (USDT)</span>
+                <span id="costoCriptoLabel" class="text-slate-400">├ Diferencia Cripto (USDT)</span>
                 <span id="desgloseSpreadCripto" class="font-medium text-red-400">-$0,00</span>
               </div>
               <div class="flex justify-between items-center py-2 pt-2.5">
@@ -537,11 +596,23 @@
 
             <div class="space-y-3 text-sm">
               <div class="flex justify-between items-center py-2 border-b border-slate-800">
-                <span class="text-slate-400">Bs Invertidos</span>
+                <span id="labelResultInvertidos" class="text-slate-400">Bs Invertidos</span>
                 <span id="bsInvertidos" class="font-medium text-slate-100">Bs 0,00</span>
               </div>
+              <div id="rowBsP2P" class="flex justify-between items-center py-2 border-b border-slate-800 hidden">
+                <span class="text-slate-400">├ Bolívares por Venta P2P</span>
+                <span id="valBsP2P" class="font-medium text-slate-100">Bs 0,00</span>
+              </div>
+              <div id="rowUsdBanco" class="flex justify-between items-center py-2 border-b border-slate-800 hidden">
+                <span class="text-slate-400">├ USD Comprados en Banco</span>
+                <span id="valUsdBanco" class="font-medium text-slate-100">$0,00</span>
+              </div>
+              <div id="rowUsdNetos" class="flex justify-between items-center py-2 border-b border-slate-800 hidden">
+                <span class="text-slate-400">├ USD Netos (tarjeta aplicada)</span>
+                <span id="valUsdNetos" class="font-medium text-slate-100">$0,00</span>
+              </div>
               <div class="flex justify-between items-center py-2 border-b border-slate-800">
-                <span class="text-slate-400">Bs Obtenidos</span>
+                <span id="labelResultObtenidos" class="text-slate-400">Bs Obtenidos</span>
                 <span id="bsObtenidos" class="font-medium text-slate-100">Bs 0,00</span>
               </div>
               <div class="flex justify-between items-center py-2 border-b border-slate-800">
@@ -550,8 +621,8 @@
               </div>
               <div class="flex justify-between items-center py-2 border-b border-slate-800">
                 <div class="flex flex-col">
-                  <span class="text-slate-400">Tasa de Equilibrio (Break-even)</span>
-                  <span class="text-[10px] text-slate-500">Mínimo para no perder dinero</span>
+                  <span id="labelBreakEven" class="text-slate-400">Tasa de Equilibrio (Break-even)</span>
+                  <span id="subLabelBreakEven" class="text-[10px] text-slate-500">Mínimo para no perder dinero</span>
                 </div>
                 <span id="breakEvenTasa" class="font-semibold text-blue-400">Bs 0,00</span>
               </div>
@@ -559,11 +630,11 @@
 
             <div class="mt-4 pt-4 grid grid-cols-1 gap-3">
               <div class="rounded-xl bg-slate-800/60 p-4 text-center">
-                <p class="text-xs text-slate-400 mb-1">Ganancia Neta (Bs)</p>
+                <p id="labelCard1" class="text-xs text-slate-400 mb-1">Ganancia Neta (Bs)</p>
                 <p id="gananciaBs" class="text-2xl font-bold privacy-blur">Bs 0,00</p>
               </div>
               <div class="rounded-xl bg-slate-800/60 p-4 text-center">
-                <p class="text-xs text-slate-400 mb-1">Ganancia Neta (USD)</p>
+                <p id="labelCard2" class="text-xs text-slate-400 mb-1">Ganancia Neta (USD)</p>
                 <p id="gananciaUSD" class="text-2xl font-bold privacy-blur">$0,00</p>
               </div>
               <div class="rounded-xl bg-blue-400/10 border border-blue-400/30 p-4 text-center">
@@ -783,11 +854,11 @@
       <div class="space-y-4">
         <!-- Compra en Banco -->
         <div class="border-b border-slate-800/80 pb-3">
-          <h4 class="text-slate-300 font-semibold mb-2 text-xs flex items-center gap-1.5 text-blue-400/80">
+          <h4 id="detailSeccion1Titulo" class="text-slate-300 font-semibold mb-2 text-xs flex items-center gap-1.5 text-blue-400/80">
             <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> 1. Compra en Banco
           </h4>
           <div class="grid grid-cols-2 gap-y-1 text-xs">
-            <span class="text-slate-400 font-medium">Monto Compra:</span>
+            <span id="detailMontoUSDLabel" class="text-slate-400 font-medium">Monto Compra:</span>
             <span id="detailMontoUSD" class="text-right font-semibold text-slate-100">$0.00</span>
             <span class="text-slate-400 font-medium">Tasa Banco:</span>
             <span id="detailTasaBanco" class="text-right font-medium text-slate-100">Bs 0.00</span>
@@ -795,39 +866,39 @@
             <span id="detailComBancoPct" class="text-right font-medium text-slate-100">0.00%</span>
             <span class="text-slate-400 font-medium">Comisión Tarjeta:</span>
             <span id="detailComTarjetaPct" class="text-right font-medium text-slate-100">0.00%</span>
-            <span class="text-slate-300 font-semibold mt-1">Total Invertido:</span>
+            <span id="detailBsInvertidosLabel" class="text-slate-300 font-semibold mt-1">Total Invertido:</span>
             <span id="detailBsInvertidos" class="text-right font-semibold text-slate-100 mt-1">Bs 0.00</span>
           </div>
         </div>
 
         <!-- Conversión a Crypto -->
         <div class="border-b border-slate-800/80 pb-3">
-          <h4 class="text-slate-300 font-semibold mb-2 text-xs flex items-center gap-1.5 text-blue-400/80">
+          <h4 id="detailSeccion2Titulo" class="text-slate-300 font-semibold mb-2 text-xs flex items-center gap-1.5 text-blue-400/80">
             <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> 2. Conversión a Crypto
           </h4>
           <div class="grid grid-cols-2 gap-y-1 text-xs">
-            <span class="text-slate-400 font-medium">USDT Recibidos Netos:</span>
+            <span id="detailUsdtNetosLabel" class="text-slate-400 font-medium">USDT Recibidos Netos:</span>
             <span id="detailUsdtNetos" class="text-right font-semibold text-slate-100">₮0.00</span>
             <span class="text-slate-400 font-medium">Tasa de Venta P2P:</span>
             <span id="detailTasaP2P" class="text-right font-medium text-slate-100">Bs 0.00</span>
-            <span class="text-slate-300 font-semibold mt-1">Total Obtenido:</span>
+            <span id="detailBsObtenidosLabel" class="text-slate-300 font-semibold mt-1">Total Obtenido:</span>
             <span id="detailBsObtenidos" class="text-right font-semibold text-slate-100 mt-1">Bs 0.00</span>
           </div>
         </div>
 
         <!-- Comisiones / Desglose de Pérdida -->
         <div class="border-b border-slate-800/80 pb-3">
-          <h4 class="text-slate-300 font-semibold mb-2 text-xs flex items-center gap-1.5 text-red-400/80">
+          <h4 id="detailSeccion3Titulo" class="text-slate-300 font-semibold mb-2 text-xs flex items-center gap-1.5 text-red-400/80">
             <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> 3. Pérdida en Comisiones
           </h4>
           <div class="grid grid-cols-2 gap-y-1 text-xs">
-            <span class="text-slate-400 font-medium">Comisión Banco USD:</span>
+            <span id="detailComBancoLabel" class="text-slate-400 font-medium">Comisión Banco USD:</span>
             <span id="detailComBancoVal" class="text-right font-medium text-red-400">-$0.00</span>
-            <span class="text-slate-400 font-medium">Comisión Tarjeta USD:</span>
+            <span id="detailComTarjetaLabel" class="text-slate-400 font-medium">Comisión Tarjeta USD:</span>
             <span id="detailComTarjetaVal" class="text-right font-medium text-red-400">-$0.00</span>
-            <span class="text-slate-400 font-medium">Diferencia Cripto (USDT):</span>
+            <span id="detailSpreadCriptoLabel" class="text-slate-400 font-medium">Diferencia Cripto (USDT):</span>
             <span id="detailSpreadCriptoVal" class="text-right font-medium text-red-400">-$0.00</span>
-            <span class="text-slate-300 font-semibold mt-1">Pérdida Total USD:</span>
+            <span id="detailPerdidaComisionesLabel" class="text-slate-300 font-semibold mt-1">Pérdida Total USD:</span>
             <span id="detailPerdidaComisiones" class="text-right font-semibold text-red-400 mt-1">-$0.00</span>
           </div>
         </div>
@@ -835,9 +906,9 @@
         <!-- Resultado Final -->
         <div class="bg-slate-800/60 rounded-xl p-4 border border-slate-800">
           <div class="grid grid-cols-2 gap-y-2.5 items-center">
-            <span class="text-xs text-slate-400 font-medium">Ganancia Neta Bs:</span>
+            <span id="detailGananciaBsLabel" class="text-xs text-slate-400 font-medium">Ganancia Neta Bs:</span>
             <span id="detailGananciaBs" class="text-right text-base font-bold text-slate-100">Bs 0.00</span>
-            <span class="text-xs text-slate-400 font-medium">Ganancia Neta USD:</span>
+            <span id="detailGananciaUSDLabel" class="text-xs text-slate-400 font-medium">Ganancia Neta USD:</span>
             <span id="detailGananciaUSD" class="text-right text-base font-bold text-slate-100">$0.00</span>
             <span class="text-xs text-slate-400 font-medium">Rentabilidad:</span>
             <span id="detailGananciaPct" class="text-right text-base font-bold text-slate-100">0.00%</span>
@@ -932,6 +1003,147 @@
 
   tabArbitraje.addEventListener('click', () => setActiveTab('arbitraje'));
   tabConversor.addEventListener('click', () => setActiveTab('conversor'));
+
+  // ===== VARIABLES GLOBALES DE MODO DE OPERACIÓN =====
+  let currentMode = localStorage.getItem('arbitrajeMode') || 'BsToBs';
+  let usdOverrideMode = localStorage.getItem('usdOverrideMode') || 'auto';
+
+  function updateUsdOverrideUI() {
+    const autoBtn = $('usdAutoBtn');
+    const manualBtn = $('usdManualBtn');
+    const input = $('usdCompradosInput');
+    if (!autoBtn || !manualBtn || !input) return;
+
+    if (usdOverrideMode === 'auto') {
+      autoBtn.className = "px-2.5 py-1 text-[11px] font-semibold rounded-md bg-blue-500/20 text-blue-400 border border-blue-400/30 transition";
+      manualBtn.className = "px-2.5 py-1 text-[11px] font-semibold rounded-md text-slate-400 hover:text-slate-200 transition border border-transparent";
+      input.classList.add('cursor-not-allowed', 'opacity-80');
+      input.classList.remove('bg-slate-800', 'border-slate-700', 'text-slate-100');
+      input.classList.add('bg-slate-800/50', 'border-slate-800', 'text-slate-400');
+      input.readOnly = true;
+    } else {
+      manualBtn.className = "px-2.5 py-1 text-[11px] font-semibold rounded-md bg-blue-500/20 text-blue-400 border border-blue-400/30 transition";
+      autoBtn.className = "px-2.5 py-1 text-[11px] font-semibold rounded-md text-slate-400 hover:text-slate-200 transition border border-transparent";
+      input.classList.remove('cursor-not-allowed', 'opacity-80');
+      input.classList.remove('bg-slate-800/50', 'border-slate-800', 'text-slate-400');
+      input.classList.add('bg-slate-800', 'border-slate-700', 'text-slate-100');
+      input.readOnly = false;
+    }
+  }
+
+  function setMode(mode) {
+    currentMode = mode;
+    localStorage.setItem('arbitrajeMode', mode);
+
+    const btnBs = $('modeBsToBsBtn');
+    const btnUsdt = $('modeUsdtToUsdtBtn');
+
+    if (mode === 'BsToBs') {
+      btnBs.className = "flex-1 text-xs font-semibold py-2.5 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-400/30 transition-all duration-200";
+      btnUsdt.className = "flex-1 text-xs font-semibold py-2.5 rounded-lg text-slate-400 hover:text-slate-300 transition-all duration-200 border border-transparent";
+
+      $('seccion1Titulo').innerHTML = `<span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-400/10 text-blue-400 text-xs font-bold">1</span> Compra en Banco`;
+      $('montoLabel').textContent = "Monto a Comprar (USD)";
+      $('montoSimbolo').textContent = "$";
+      $('montoUSD').placeholder = "100.00";
+
+      $('seccion2Titulo').innerHTML = `<span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-400/10 text-blue-400 text-xs font-bold">2</span> Conversión a Crypto (Binance)`;
+      $('usdtNetosLabel').textContent = "USDT a Recibir Netos";
+      $('usdtNetosSimbolo').textContent = "₮";
+      $('usdtNetos').placeholder = "97.50";
+
+      $('labelResultInvertidos').textContent = "Bs Invertidos";
+      $('labelResultObtenidos').textContent = "Bs Obtenidos";
+      $('labelComisiones').textContent = "Pérdida en Comisiones (USD)";
+      $('labelBreakEven').textContent = "Tasa de Equilibrio (Break-even)";
+      $('subLabelBreakEven').textContent = "Mínimo para no perder dinero";
+
+      $('labelCard1').textContent = "Ganancia Neta (Bs)";
+      $('labelCard2').textContent = "Ganancia Neta (USD)";
+
+      $('costoBancoLabel').textContent = "├ Comisión Banco";
+      $('costoTarjetaLabel').textContent = "├ Comisión Tarjeta";
+      $('costoCriptoLabel').textContent = "├ Diferencia Cripto (USDT)";
+      $('labelTotalPerdida').textContent = "└ Total perdido";
+
+      $('labelMetaGanancia').textContent = "Meta de Ganancia Neta (USD)";
+      $('metaSimbolo').textContent = "$";
+      $('metaGananciaUSD').placeholder = "10.00";
+
+      $('inversaUSDRequeridoLabel').textContent = "Capital Compra Requerido (USD):";
+      $('inversaUSDTRequeridoLabel').textContent = "USDT Netos a Recibir:";
+      $('inversaBsInvertirLabel').textContent = "Capital a Invertir en Banco:";
+      $('inversaBsRetornoLabel').textContent = "Retorno Bruto en Binance:";
+
+      $('rowBsP2P').classList.add('hidden');
+      $('rowUsdBanco').classList.add('hidden');
+      $('rowUsdNetos').classList.add('hidden');
+      $('usdBancoOverrideContainer').classList.add('hidden');
+
+      // Restaurar el contenedor de tasaP2P a su lugar original en Sección 2
+      const originalContainer = $('section2InputsContainer');
+      const tasaP2PContainer = $('tasaP2PContainer');
+      if (originalContainer && tasaP2PContainer) {
+        originalContainer.appendChild(tasaP2PContainer);
+      }
+      $('usdtToUsdtInitialSaleContainer').classList.add('hidden');
+    } else {
+      btnUsdt.className = "flex-1 text-xs font-semibold py-2.5 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-400/30 transition-all duration-200";
+      btnBs.className = "flex-1 text-xs font-semibold py-2.5 rounded-lg text-slate-400 hover:text-slate-300 transition-all duration-200 border border-transparent";
+
+      $('seccion1Titulo').innerHTML = `<span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-400/10 text-blue-400 text-xs font-bold">1</span> Inversión Inicial (USDT)`;
+      $('montoLabel').textContent = "Capital Inicial (USDT)";
+      $('montoSimbolo').textContent = "₮";
+      $('montoUSD').placeholder = "100.00";
+
+      $('seccion2Titulo').innerHTML = `<span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-400/10 text-blue-400 text-xs font-bold">2</span> Retorno a Crypto (Binance)`;
+      $('usdtNetosLabel').textContent = "USDT Finales Recibidos";
+      $('usdtNetosSimbolo').textContent = "₮";
+      $('usdtNetos').placeholder = "98.20";
+
+      $('labelResultInvertidos').textContent = "Capital Inicial USDT";
+      $('labelResultObtenidos').textContent = "USDT Finales Obtenidos";
+      $('labelComisiones').textContent = "Pérdida en Comisiones (USDT)";
+      $('labelBreakEven').textContent = "Tasa de Equilibrio (Break-even)";
+      $('subLabelBreakEven').textContent = "Tasa Banco máxima para no perder";
+
+      $('labelCard1').textContent = "Ganancia Neta (USDT)";
+      $('labelCard2').textContent = "Ganancia Neta (Bs)";
+
+      $('costoBancoLabel').textContent = "├ Comisión Banco (equiv)";
+      $('costoTarjetaLabel').textContent = "├ Comisión Tarjeta";
+      $('costoCriptoLabel').textContent = "├ Pérdida Conversión";
+      $('labelTotalPerdida').textContent = "└ Total comisiones";
+
+      $('labelMetaGanancia').textContent = "Meta de Ganancia Neta (USDT)";
+      $('metaSimbolo').textContent = "₮";
+      $('metaGananciaUSD').placeholder = "10.00";
+
+      $('inversaUSDRequeridoLabel').textContent = "Capital Inicial Requerido (USDT):";
+      $('inversaUSDTRequeridoLabel').textContent = "USDT Finales Proyectados:";
+      $('inversaBsInvertirLabel').textContent = "Bolívares en Venta P2P:";
+      $('inversaBsRetornoLabel').textContent = "USD de Retorno (Banco):";
+
+      $('rowBsP2P').classList.remove('hidden');
+      $('rowUsdBanco').classList.remove('hidden');
+      $('rowUsdNetos').classList.remove('hidden');
+      $('usdBancoOverrideContainer').classList.remove('hidden');
+      updateUsdOverrideUI();
+
+      // Mover el contenedor de tasaP2P al módulo inicial (Paso 1 de Inversión Inicial)
+      const placement = $('tasaP2PPlacement');
+      const tasaP2PContainer = $('tasaP2PContainer');
+      if (placement && tasaP2PContainer) {
+        placement.appendChild(tasaP2PContainer);
+      }
+      $('usdtToUsdtInitialSaleContainer').classList.remove('hidden');
+    }
+
+    calcular();
+  }
+
+  $('modeBsToBsBtn').addEventListener('click', () => { setMode('BsToBs'); });
+  $('modeUsdtToUsdtBtn').addEventListener('click', () => { setMode('UsdtToUsdt'); });
 
   const inputs = ['montoUSD','tasaBanco','comisionBanco','comisionTarjeta','usdtNetos','tasaP2P'].map($);
   const fmtBs = (n) => 'Bs ' + n.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -1298,11 +1510,11 @@ $('convCopyBtn').addEventListener('click', async () => {
   }
 
   function calcular() {
-    const montoUSD = num($('montoUSD'));
+    const valMonto = num($('montoUSD'));
     const tasaBanco = num($('tasaBanco'));
     const comisionBanco = num($('comisionBanco'));
     const comisionTarjeta = num($('comisionTarjeta'));
-    const usdtNetos = num($('usdtNetos'));
+    const valUsdt = num($('usdtNetos'));
     const tasaP2P = num($('tasaP2P'));
 
     const spreadBs = tasaP2P - tasaBanco;
@@ -1322,84 +1534,205 @@ $('convCopyBtn').addEventListener('click', async () => {
       return;
     }
 
-    const bsInvertidos = montoUSD * tasaBanco * (1 + (comisionBanco / 100));
-    const bsObtenidos = usdtNetos * tasaP2P;
-    const gananciaBs = bsObtenidos - bsInvertidos;
-    const gananciaUSD = tasaBanco !== 0 ? gananciaBs / tasaBanco : 0;
+    let bsInvertidos = 0;
+    let bsObtenidos = 0;
+    let gananciaBs = 0;
+    let gananciaUSD = 0;
+    let gananciaPct = 0;
+    let perdidaComisiones = 0;
 
-    const perdidaComisiones =
-      ((montoUSD * (1 + (comisionTarjeta / 100))) - montoUSD) +
-      (montoUSD * (comisionBanco / 100)) +
-      (montoUSD - usdtNetos);
+    if (currentMode === 'BsToBs') {
+      const montoUSD = valMonto;
+      const usdtNetos = valUsdt;
 
-    const gananciaPct = montoUSD !== 0 ? (gananciaUSD / montoUSD) * 100 : 0;
+      bsInvertidos = montoUSD * tasaBanco * (1 + (comisionBanco / 100));
+      bsObtenidos = usdtNetos * tasaP2P;
+      gananciaBs = bsObtenidos - bsInvertidos;
+      gananciaUSD = tasaBanco !== 0 ? gananciaBs / tasaBanco : 0;
+      gananciaPct = montoUSD !== 0 ? (gananciaUSD / montoUSD) * 100 : 0;
 
-    const comisionBancoUSD = montoUSD * (comisionBanco / 100);
-    const comisionTarjetaUSD = montoUSD * (comisionTarjeta / 100);
-    const usdtPerdidosEnCripto = montoUSD - usdtNetos;
+      perdidaComisiones =
+        ((montoUSD * (1 + (comisionTarjeta / 100))) - montoUSD) +
+        (montoUSD * (comisionBanco / 100)) +
+        (montoUSD - usdtNetos);
 
-    $('desgloseComBanco').textContent = '-' + fmtUSD(comisionBancoUSD);
-    $('desgloseComTarjeta').textContent = '-' + fmtUSD(comisionTarjetaUSD);
+      const comisionBancoUSD = montoUSD * (comisionBanco / 100);
+      const comisionTarjetaUSD = montoUSD * (comisionTarjeta / 100);
+      const usdtPerdidosEnCripto = montoUSD - usdtNetos;
+
+      $('desgloseComBanco').textContent = '-' + fmtUSD(comisionBancoUSD);
+      $('desgloseComTarjeta').textContent = '-' + fmtUSD(comisionTarjetaUSD);
+      
+      const spreadCriptoEl = $('desgloseSpreadCripto');
+      if (usdtPerdidosEnCripto < 0) {
+        spreadCriptoEl.textContent = '+' + fmtUSD(Math.abs(usdtPerdidosEnCripto));
+        spreadCriptoEl.className = "font-medium text-emerald-400";
+      } else {
+        spreadCriptoEl.textContent = '-' + fmtUSD(usdtPerdidosEnCripto);
+        spreadCriptoEl.className = "font-medium text-red-400";
+      }
+
+      const totalPerdidaEl = $('desgloseTotalPerdida');
+      if (perdidaComisiones < 0) {
+        totalPerdidaEl.textContent = '+' + fmtUSD(Math.abs(perdidaComisiones));
+        totalPerdidaEl.className = "font-bold text-emerald-400";
+        $('labelTotalPerdida').textContent = "└ Total ganancia extra";
+      } else {
+        totalPerdidaEl.textContent = '-' + fmtUSD(perdidaComisiones);
+        totalPerdidaEl.className = "font-bold text-red-400";
+        $('labelTotalPerdida').textContent = "└ Total perdido";
+      }
+
+      const pctPerdida = montoUSD !== 0 ? (perdidaComisiones / montoUSD) * 100 : 0;
+      $('desgloseProcentaje').textContent = `${pctPerdida.toFixed(2)}% del capital invertido`;
+
+      $('bsInvertidos').textContent = fmtBs(bsInvertidos);
+      $('bsObtenidos').textContent = fmtBs(bsObtenidos);
+
+      const breakEven = usdtNetos > 0 ? (bsInvertidos / usdtNetos) : 0;
+      $('breakEvenTasa').textContent = breakEven > 0 ? fmtBs(breakEven) : 'Bs 0,00';
+
+      if (perdidaComisiones > 0) {
+        $('labelComisiones').textContent = 'Pérdida en Comisiones (USD)';
+        $('perdidaComisiones').textContent = '- ' + fmtUSD(perdidaComisiones);
+      } else if (perdidaComisiones < 0) {
+        $('labelComisiones').textContent = 'Ganancia en Comisiones (USD)';
+        $('perdidaComisiones').textContent = '+ ' + fmtUSD(Math.abs(perdidaComisiones));
+      } else {
+        $('labelComisiones').textContent = 'Pérdida en Comisiones (USD)';
+        $('perdidaComisiones').textContent = fmtUSD(0);
+      }
+      setComisionesColor($('perdidaComisiones'), perdidaComisiones);
+
+      $('gananciaBs').textContent = (gananciaBs >= 0 ? '' : '-') + fmtBs(Math.abs(gananciaBs));
+      $('gananciaUSD').textContent = (gananciaUSD >= 0 ? '' : '-') + fmtUSD(gananciaUSD);
+
+      ultimoCalculo = {
+        montoUSD, tasaBanco, comisionBanco, comisionTarjeta, usdtNetos, tasaP2P,
+        bsInvertidos, bsObtenidos, gananciaBs, gananciaUSD, gananciaPct, perdidaComisiones
+      };
+    } else {
+      // USDT to USDT mode
+      const montoUSDT = valMonto; // USDT inicial (e.g. 100)
+      const usdtFinales = valUsdt; // USDT final (e.g. 98)
+
+      bsInvertidos = montoUSDT; // En USDT
+      bsObtenidos = montoUSDT * tasaP2P; // Bolivares obtenidos al vender USDT en Binance P2P
+      
+      const bsObtenidosEl = $('usdtToUsdtBsObtenidos');
+      if (bsObtenidosEl) {
+        bsObtenidosEl.textContent = fmtBs(bsObtenidos);
+      }
+      
+      let usdComprados = 0;
+      if (usdOverrideMode === 'auto') {
+        usdComprados = tasaBanco > 0 ? (bsObtenidos / (tasaBanco * (1 + (comisionBanco / 100)))) : 0;
+        const inputEl = $('usdCompradosInput');
+        if (inputEl) {
+          inputEl.value = usdComprados > 0 ? usdComprados.toFixed(2) : '';
+        }
+      } else {
+        const inputEl = $('usdCompradosInput');
+        if (inputEl) {
+          usdComprados = num(inputEl);
+          if (usdComprados <= 0 && tasaBanco > 0) {
+            const calculatedVal = bsObtenidos / (tasaBanco * (1 + (comisionBanco / 100)));
+            inputEl.placeholder = calculatedVal.toFixed(2);
+          }
+        }
+      }
+
+      const usdNetos = usdComprados * (1 - (comisionTarjeta / 100));
+
+      $('valBsP2P').textContent = fmtBs(bsObtenidos);
+      $('valUsdBanco').textContent = fmtUSD(usdComprados);
+      $('valUsdNetos').textContent = fmtUSD(usdNetos);
+
+      const gananciaUSDT = usdtFinales - montoUSDT;
+      gananciaBs = gananciaUSDT * tasaP2P; // Ganancia equivalente en Bs
+      gananciaUSD = gananciaUSDT; // En USDT mode, gananciaUSD represents the USDT profit!
+      gananciaPct = montoUSDT > 0 ? (gananciaUSDT / montoUSDT) * 100 : 0;
+
+      // Fees en equivalente USDT (o USD)
+      const feeBancoUSDT = usdComprados * (comisionBanco / 100);
+      const feeTarjetaUSDT = usdComprados * (comisionTarjeta / 100);
+      const feeRetornoUSDT = usdNetos - usdtFinales;
+      perdidaComisiones = feeBancoUSDT + feeTarjetaUSDT + feeRetornoUSDT;
+
+      $('desgloseComBanco').textContent = '-' + '₮' + feeBancoUSDT.toFixed(2);
+      $('desgloseComTarjeta').textContent = '-' + '₮' + feeTarjetaUSDT.toFixed(2);
+      
+      const spreadCriptoEl = $('desgloseSpreadCripto');
+      if (feeRetornoUSDT < 0) {
+        spreadCriptoEl.textContent = '+' + '₮' + Math.abs(feeRetornoUSDT).toFixed(2);
+        spreadCriptoEl.className = "font-medium text-emerald-400";
+      } else {
+        spreadCriptoEl.textContent = '-' + '₮' + feeRetornoUSDT.toFixed(2);
+        spreadCriptoEl.className = "font-medium text-red-400";
+      }
+
+      const totalPerdidaEl = $('desgloseTotalPerdida');
+      if (perdidaComisiones < 0) {
+        totalPerdidaEl.textContent = '+' + '₮' + Math.abs(perdidaComisiones).toFixed(2);
+        totalPerdidaEl.className = "font-bold text-emerald-400";
+        $('labelTotalPerdida').textContent = "└ Total ganancia extra";
+      } else {
+        totalPerdidaEl.textContent = '-' + '₮' + perdidaComisiones.toFixed(2);
+        totalPerdidaEl.className = "font-bold text-red-400";
+        $('labelTotalPerdida').textContent = "└ Total comisiones";
+      }
+
+      const pctPerdida = montoUSDT > 0 ? (perdidaComisiones / montoUSDT) * 100 : 0;
+      $('desgloseProcentaje').textContent = `${pctPerdida.toFixed(2)}% del capital invertido`;
+
+      $('bsInvertidos').textContent = '₮' + montoUSDT.toFixed(2);
+      $('bsObtenidos').textContent = '₮' + usdtFinales.toFixed(2);
+
+      // Break even bank rate
+      const breakEven = usdtFinales > 0 ? (tasaBanco * (usdtFinales / montoUSDT)) : 0;
+      $('breakEvenTasa').textContent = breakEven > 0 ? fmtBs(breakEven) : 'Bs 0,00';
+
+      $('labelComisiones').textContent = 'Pérdida en Comisiones (USDT)';
+      if (perdidaComisiones > 0) {
+        $('perdidaComisiones').textContent = '- ₮' + perdidaComisiones.toFixed(2);
+      } else if (perdidaComisiones < 0) {
+        $('perdidaComisiones').textContent = '+ ₮' + Math.abs(perdidaComisiones).toFixed(2);
+      } else {
+        $('perdidaComisiones').textContent = '₮' + (0).toFixed(2);
+      }
+      setComisionesColor($('perdidaComisiones'), perdidaComisiones);
+
+      $('gananciaBs').textContent = (gananciaUSDT >= 0 ? '' : '-') + '₮' + Math.abs(gananciaUSDT).toFixed(2); // primary gain is USDT
+      $('gananciaUSD').textContent = (gananciaBs >= 0 ? '' : '-') + fmtBs(Math.abs(gananciaBs)); // secondary gain is Bs
+
+      // Save calculation results
+      ultimoCalculo = {
+        montoUSD: montoUSDT, tasaBanco, comisionBanco, comisionTarjeta, usdtNetos: usdtFinales, tasaP2P,
+        bsInvertidos: montoUSDT, bsObtenidos: usdtFinales, usdComprados, gananciaBs: gananciaUSDT, gananciaUSD: gananciaBs, gananciaPct, perdidaComisiones
+      };
+    }
+
+    $('gananciaPct').textContent = (gananciaPct >= 0 ? '' : '-') + Math.abs(gananciaPct).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
     
-    const spreadCriptoEl = $('desgloseSpreadCripto');
-    if (usdtPerdidosEnCripto < 0) {
-      spreadCriptoEl.textContent = '+' + fmtUSD(Math.abs(usdtPerdidosEnCripto));
-      spreadCriptoEl.className = "font-medium text-emerald-400";
-    } else {
-      spreadCriptoEl.textContent = '-' + fmtUSD(usdtPerdidosEnCripto);
-      spreadCriptoEl.className = "font-medium text-red-400";
-    }
+    setColor($('gananciaBs'), currentMode === 'BsToBs' ? gananciaBs : ultimoCalculo.gananciaBs);
+    setColor($('gananciaUSD'), currentMode === 'BsToBs' ? gananciaUSD : ultimoCalculo.gananciaUSD);
+    setColor($('gananciaPct'), gananciaPct);
 
-    const totalPerdidaEl = $('desgloseTotalPerdida');
-    if (perdidaComisiones < 0) {
-      totalPerdidaEl.textContent = '+' + fmtUSD(Math.abs(perdidaComisiones));
-      totalPerdidaEl.className = "font-bold text-emerald-400";
-      $('labelTotalPerdida').textContent = "└ Total ganancia extra";
-    } else {
-      totalPerdidaEl.textContent = '-' + fmtUSD(perdidaComisiones);
-      totalPerdidaEl.className = "font-bold text-red-400";
-      $('labelTotalPerdida').textContent = "└ Total perdido";
-    }
-
-    const pctPerdida = montoUSD !== 0 ? (perdidaComisiones / montoUSD) * 100 : 0;
-    $('desgloseProcentaje').textContent = `${pctPerdida.toFixed(2)}% del capital invertido`;
-
-    // Alerta Animada para Comisiones Excesivas
+    // Semáforo y Alerta de Comisiones
     const warningEl = $('commissionWarning');
     if (warningEl) {
-      if (montoUSD > 0 && pctPerdida > 5.0) {
+      const pctPerdida = valMonto > 0 ? (perdidaComisiones / valMonto) * 100 : 0;
+      if (valMonto > 0 && pctPerdida > 5.0) {
         warningEl.classList.remove('hidden');
-        $('commissionWarningText').textContent = `La fricción de comisiones y spread cripto representa un ${pctPerdida.toFixed(2)}% de tu capital ($${perdidaComisiones.toFixed(2)}). Intenta usar presets con menores comisiones o una tasa de banco más favorable.`;
+        if (currentMode === 'BsToBs') {
+          $('commissionWarningText').textContent = `La fricción de comisiones y spread cripto representa un ${pctPerdida.toFixed(2)}% de tu capital ($${perdidaComisiones.toFixed(2)}). Intenta usar presets con menores comisiones o una tasa de banco más favorable.`;
+        } else {
+          $('commissionWarningText').textContent = `La fricción de comisiones y retorno representa un ${pctPerdida.toFixed(2)}% de tu capital (₮${perdidaComisiones.toFixed(2)}). Intenta usar tasas más óptimas.`;
+        }
       } else {
         warningEl.classList.add('hidden');
       }
     }
-
-    $('bsInvertidos').textContent = fmtBs(bsInvertidos);
-    $('bsObtenidos').textContent = fmtBs(bsObtenidos);
-
-    const breakEven = usdtNetos > 0 ? (bsInvertidos / usdtNetos) : 0;
-    $('breakEvenTasa').textContent = breakEven > 0 ? fmtBs(breakEven) : 'Bs 0,00';
-
-    if (perdidaComisiones > 0) {
-      $('labelComisiones').textContent = 'Pérdida en Comisiones (USD)';
-      $('perdidaComisiones').textContent = '- ' + fmtUSD(perdidaComisiones);
-    } else if (perdidaComisiones < 0) {
-      $('labelComisiones').textContent = 'Ganancia en Comisiones (USD)';
-      $('perdidaComisiones').textContent = '+ ' + fmtUSD(Math.abs(perdidaComisiones));
-    } else {
-      $('labelComisiones').textContent = 'Pérdida en Comisiones (USD)';
-      $('perdidaComisiones').textContent = fmtUSD(0);
-    }
-    setComisionesColor($('perdidaComisiones'), perdidaComisiones);
-
-    $('gananciaBs').textContent = (gananciaBs >= 0 ? '' : '-') + fmtBs(Math.abs(gananciaBs));
-    $('gananciaUSD').textContent = (gananciaUSD >= 0 ? '' : '-') + fmtUSD(gananciaUSD);
-    $('gananciaPct').textContent = (gananciaPct >= 0 ? '' : '-') + Math.abs(gananciaPct).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
-
-    setColor($('gananciaBs'), gananciaBs);
-    setColor($('gananciaUSD'), gananciaUSD);
-    setColor($('gananciaPct'), gananciaPct);
 
     const badge = $('viabilidadBadge');
     badge.className = "mt-4 text-center text-xs font-semibold py-2.5 rounded-xl border block";
@@ -1414,12 +1747,10 @@ $('convCopyBtn').addEventListener('click', async () => {
       badge.classList.add('bg-amber-500/10', 'border-amber-500/30', 'text-amber-400');
     }
 
-    // Actualizar indicador visual de brecha (Semáforo)
     $('brechaVisualContainer').classList.remove('hidden');
     $('brechaPorcentaje').textContent = (gananciaPct >= 0 ? '+' : '') + gananciaPct.toFixed(2) + '%';
     $('brechaPorcentaje').className = `font-bold ${gananciaPct >= 3 ? 'text-emerald-400' : (gananciaPct >= 1 ? 'text-amber-400' : 'text-red-400')}`;
 
-    // Mapear gananciaPct (rango de -3% a +7%, extensión de 10) al porcentaje del slider (0% a 100%)
     let sliderPercent = ((gananciaPct + 3) / 10) * 100;
     sliderPercent = Math.max(0, Math.min(100, sliderPercent));
     $('brechaCursor').style.left = `calc(${sliderPercent}% - 6px)`;
@@ -1435,12 +1766,6 @@ $('convCopyBtn').addEventListener('click', async () => {
       brechaDetalle.innerHTML = `<span class="text-emerald-400 font-semibold">Brecha óptima:</span> ¡Excelente spread de ${gananciaPct.toFixed(2)}%! Operación altamente rentable.`;
     }
 
-    ultimoCalculo = {
-      montoUSD, tasaBanco, comisionBanco, comisionTarjeta, usdtNetos, tasaP2P,
-      bsInvertidos, bsObtenidos, gananciaBs, gananciaUSD, gananciaPct, perdidaComisiones
-    };
-
-    // Actualizar cálculos inversos automáticamente si hay una meta ingresada
     calcularInverso();
   }
 
@@ -1449,9 +1774,9 @@ $('convCopyBtn').addEventListener('click', async () => {
     if (!metaInput) return;
     
     const metaStr = metaInput.value.replace(',', '.');
-    const metaUSD = parseFloat(metaStr);
+    const metaVal = parseFloat(metaStr);
 
-    if (isNaN(metaUSD) || metaUSD <= 0) {
+    if (isNaN(metaVal) || metaVal <= 0) {
       $('inversaResultados').classList.add('hidden');
       $('inversaMensajeAviso').classList.remove('hidden');
       $('inversaMensajeAviso').textContent = 'Ingresa una meta de ganancia mayor a 0 para proyectar.';
@@ -1465,28 +1790,51 @@ $('convCopyBtn').addEventListener('click', async () => {
       return;
     }
 
-    const { tasaBanco, comisionBanco, usdtNetos, montoUSD, tasaP2P } = ultimoCalculo;
-    const conversionRatio = usdtNetos / montoUSD;
+    if (currentMode === 'BsToBs') {
+      const { tasaBanco, comisionBanco, usdtNetos, montoUSD, tasaP2P } = ultimoCalculo;
+      const conversionRatio = usdtNetos / montoUSD;
 
-    // margenNetoBs = (conversionRatio * tasaP2P) - (tasaBanco * (1 + (comisionBanco / 100)))
-    const margenNetoBs = (conversionRatio * tasaP2P) - (tasaBanco * (1 + (comisionBanco / 100)));
+      const margenNetoBs = (conversionRatio * tasaP2P) - (tasaBanco * (1 + (comisionBanco / 100)));
 
-    if (margenNetoBs <= 0) {
-      $('inversaResultados').classList.add('hidden');
-      $('inversaMensajeAviso').classList.remove('hidden');
-      $('inversaMensajeAviso').innerHTML = `<span class="text-red-400 font-semibold">⚠️ Margen Negativo o Nulo:</span> La operación actual tiene pérdida o ganancia cero. Es imposible obtener ganancias con estas tasas.`;
-      return;
+      if (margenNetoBs <= 0) {
+        $('inversaResultados').classList.add('hidden');
+        $('inversaMensajeAviso').classList.remove('hidden');
+        $('inversaMensajeAviso').innerHTML = `<span class="text-red-400 font-semibold">⚠️ Margen Negativo o Nulo:</span> La operación actual tiene pérdida o ganancia cero. Es imposible obtener ganancias con estas tasas.`;
+        return;
+      }
+
+      const reqUSD = (metaVal * tasaBanco) / margenNetoBs;
+      const reqUSDT = reqUSD * conversionRatio;
+      const bsInvertir = reqUSD * tasaBanco * (1 + (comisionBanco / 100));
+      const bsRetorno = reqUSDT * tasaP2P;
+
+      $('inversaUSDRequerido').textContent = fmtUSD(reqUSD);
+      $('inversaUSDTRequerido').textContent = '₮' + reqUSDT.toFixed(2);
+      $('inversaBsInvertir').textContent = fmtBs(bsInvertir);
+      $('inversaBsRetorno').textContent = fmtBs(bsRetorno);
+    } else {
+      // USDT mode
+      const { tasaBanco, comisionBanco, comisionTarjeta, usdtNetos: perdidaRetorno, tasaP2P, gananciaPct } = ultimoCalculo;
+
+      if (gananciaPct <= 0) {
+        $('inversaResultados').classList.add('hidden');
+        $('inversaMensajeAviso').classList.remove('hidden');
+        $('inversaMensajeAviso').innerHTML = `<span class="text-red-400 font-semibold">⚠️ Rentabilidad Negativa o Nulo:</span> La operación actual no genera retornos positivos. Es imposible proyectar con ganancias.`;
+        return;
+      }
+
+      const reqUSDT = metaVal / (gananciaPct / 100);
+      const usdtFinales = reqUSDT + metaVal;
+      const bsVentaP2P = reqUSDT * tasaP2P;
+      
+      const usdComprados = tasaBanco > 0 ? (bsVentaP2P / (tasaBanco * (1 + (comisionBanco / 100)))) : 0;
+      const usdNetos = usdComprados * (1 - (comisionTarjeta / 100));
+
+      $('inversaUSDRequerido').textContent = '₮' + reqUSDT.toFixed(2);
+      $('inversaUSDTRequerido').textContent = '₮' + usdtFinales.toFixed(2);
+      $('inversaBsInvertir').textContent = fmtBs(bsVentaP2P);
+      $('inversaBsRetorno').textContent = fmtUSD(usdNetos); // Intermediate USD net
     }
-
-    const reqUSD = (metaUSD * tasaBanco) / margenNetoBs;
-    const reqUSDT = reqUSD * conversionRatio;
-    const bsInvertir = reqUSD * tasaBanco * (1 + (comisionBanco / 100));
-    const bsRetorno = reqUSDT * tasaP2P;
-
-    $('inversaUSDRequerido').textContent = fmtUSD(reqUSD);
-    $('inversaUSDTRequerido').textContent = '₮' + reqUSDT.toFixed(2);
-    $('inversaBsInvertir').textContent = fmtBs(bsInvertir);
-    $('inversaBsRetorno').textContent = fmtBs(bsRetorno);
 
     $('inversaResultados').classList.remove('hidden');
     $('inversaMensajeAviso').classList.add('hidden');
@@ -1685,10 +2033,35 @@ $('convCopyBtn').addEventListener('click', async () => {
 
   inputs.forEach(el => el.addEventListener('input', calcular));
 
+  // Eventos para el control de dólares comprados en banco (USDT ➔ USDT)
+  $('usdAutoBtn').addEventListener('click', () => {
+    usdOverrideMode = 'auto';
+    localStorage.setItem('usdOverrideMode', 'auto');
+    updateUsdOverrideUI();
+    calcular();
+  });
+
+  $('usdManualBtn').addEventListener('click', () => {
+    usdOverrideMode = 'manual';
+    localStorage.setItem('usdOverrideMode', 'manual');
+    updateUsdOverrideUI();
+    calcular();
+  });
+
+  $('usdCompradosInput').addEventListener('input', calcular);
+
   $('copyBtn').addEventListener('click', async () => {
     if (!ultimoCalculo) return;
     const c = ultimoCalculo;
-    const resumen = `📊 Arbitraje Cambiario\nMonto invertido: $${c.montoUSD.toFixed(2)}\nBs Invertidos: ${fmtBs(c.bsInvertidos)} (Tasa: ${fmtBs(c.tasaBanco)})\nBs Obtenidos: ${fmtBs(c.bsObtenidos)} (Tasa: ${fmtBs(c.tasaP2P)})\nGanancia Neta: ${fmtBs(c.gananciaBs)} (${fmtUSD(c.gananciaUSD)})\nRentabilidad: ${c.gananciaPct.toFixed(2)}%`;
+    let resumen = '';
+    if (currentMode === 'BsToBs') {
+      resumen = `📊 Arbitraje Cambiario (Bs ➔ Bs)\nMonto invertido: $${c.montoUSD.toFixed(2)}\nBs Invertidos: ${fmtBs(c.bsInvertidos)} (Tasa: ${fmtBs(c.tasaBanco)})\nBs Obtenidos: ${fmtBs(c.bsObtenidos)} (Tasa: ${fmtBs(c.tasaP2P)})\nGanancia Neta: ${fmtBs(c.gananciaBs)} (${fmtUSD(c.gananciaUSD)})\nRentabilidad: ${c.gananciaPct.toFixed(2)}%`;
+    } else {
+      const bsObtenidosP2P = c.montoUSD * c.tasaP2P;
+      const usdComprados = c.usdComprados !== undefined ? c.usdComprados : (c.tasaBanco > 0 ? (bsObtenidosP2P / (c.tasaBanco * (1 + (c.comisionBanco / 100)))) : 0);
+      const usdNetos = usdComprados * (1 - (c.comisionTarjeta / 100));
+      resumen = `📊 Arbitraje Cambiario (USDT ➔ USDT)\nCapital Inicial: ₮${c.montoUSD.toFixed(2)}\nVenta P2P: ${fmtBs(bsObtenidosP2P)} (Tasa: ${fmtBs(c.tasaP2P)})\nCompra Banco: ${fmtUSD(usdComprados)} (Tasa: ${fmtBs(c.tasaBanco)})\nUSD Netos: ${fmtUSD(usdNetos)}\nUSDT Finales: ₮${c.usdtNetos.toFixed(2)}\nGanancia Neta: ₮${c.gananciaBs.toFixed(2)} (${fmtBs(c.gananciaUSD)})\nRentabilidad: ${c.gananciaPct.toFixed(2)}%`;
+    }
     try { await navigator.clipboard.writeText(resumen); } 
     catch (err) {
       const temp = document.createElement('textarea');
@@ -1792,49 +2165,108 @@ $('convCopyBtn').addEventListener('click', async () => {
     const item = leerHistorial().find(i => i.id === id); if (!item) return;
     selectedHistoryItem = item;
 
+    const isUsdtMode = item.mode === 'UsdtToUsdt';
+
+    // Actualizar títulos del modal dependiendo del modo
+    $('detailSeccion1Titulo').innerHTML = isUsdtMode ? `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> 1. Inversión Inicial (USDT)` : `<span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> 1. Compra en Banco`;
+    $('detailMontoUSDLabel').textContent = isUsdtMode ? "Capital Inicial (USDT):" : "Monto Compra:";
+    $('detailBsInvertidosLabel').textContent = isUsdtMode ? "Total Capital Inicial:" : "Total Invertido:";
+
+    $('detailSeccion2Titulo').innerHTML = isUsdtMode ? `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> 2. Retorno a Crypto` : `<span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> 2. Conversión a Crypto`;
+    $('detailUsdtNetosLabel').textContent = isUsdtMode ? "USDT Finales Recibidos:" : "USDT Recibidos Netos:";
+    $('detailBsObtenidosLabel').textContent = isUsdtMode ? "USDT Finales Obtenidos:" : "Total Obtenido:";
+
+    $('detailSeccion3Titulo').innerHTML = isUsdtMode ? `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> 3. Pérdida en Comisiones` : `<span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> 3. Pérdida en Comisiones`;
+    $('detailComBancoLabel').textContent = isUsdtMode ? "Comisión Banco (equiv):" : "Comisión Banco USD:";
+    $('detailComTarjetaLabel').textContent = isUsdtMode ? "Comisión Tarjeta (equiv):" : "Comisión Tarjeta USD:";
+    $('detailSpreadCriptoLabel').textContent = isUsdtMode ? "Pérdida Conversión:" : "Diferencia Cripto (USDT):";
+    $('detailPerdidaComisionesLabel').textContent = isUsdtMode ? "Pérdida Total comisiones:" : "Pérdida Total USD:";
+
+    $('detailGananciaBsLabel').textContent = isUsdtMode ? "Ganancia Neta (USDT):" : "Ganancia Neta Bs:";
+    $('detailGananciaUSDLabel').textContent = isUsdtMode ? "Ganancia Neta (Bs):" : "Ganancia Neta USD:";
+
     $('detailFecha').textContent = item.fecha;
-    $('detailMontoUSD').textContent = fmtUSD(item.montoUSD);
+    $('detailMontoUSD').textContent = isUsdtMode ? '₮' + item.montoUSD.toFixed(2) : fmtUSD(item.montoUSD);
     $('detailTasaBanco').textContent = fmtBs(item.tasaBanco);
     $('detailComBancoPct').textContent = item.comisionBanco.toFixed(2) + '%';
     $('detailComTarjetaPct').textContent = item.comisionTarjeta.toFixed(2) + '%';
 
-    const bsInvertidos = item.bsInvertidos || (item.montoUSD * item.tasaBanco * (1 + (item.comisionBanco / 100)));
-    $('detailBsInvertidos').textContent = fmtBs(bsInvertidos);
+    const bsInvertidos = item.bsInvertidos || (isUsdtMode ? item.montoUSD : (item.montoUSD * item.tasaBanco * (1 + (item.comisionBanco / 100))));
+    $('detailBsInvertidos').textContent = isUsdtMode ? '₮' + bsInvertidos.toFixed(2) : fmtBs(bsInvertidos);
 
-    $('detailUsdtNetos').textContent = '₮' + item.usdtNetos.toFixed(2);
+    const valUsdtNetos = item.usdtNetos;
+    $('detailUsdtNetos').textContent = '₮' + valUsdtNetos.toFixed(2);
     $('detailTasaP2P').textContent = fmtBs(item.tasaP2P);
 
-    const bsObtenidos = item.bsObtenidos || (item.usdtNetos * item.tasaP2P);
-    $('detailBsObtenidos').textContent = fmtBs(bsObtenidos);
+    const bsObtenidos = item.bsObtenidos || (isUsdtMode ? (item.montoUSD * item.tasaP2P) : (item.usdtNetos * item.tasaP2P));
+    $('detailBsObtenidos').textContent = isUsdtMode ? '₮' + bsObtenidos.toFixed(2) : fmtBs(bsObtenidos);
 
-    const comisionBancoUSD = item.montoUSD * (item.comisionBanco / 100);
-    const comisionTarjetaUSD = item.montoUSD * (item.comisionTarjeta / 100);
-    const usdtPerdidosEnCripto = item.montoUSD - item.usdtNetos;
-    const perdidaComisiones = item.perdidaComisiones !== undefined ? item.perdidaComisiones : (comisionBancoUSD + comisionTarjetaUSD + usdtPerdidosEnCripto);
+    if (isUsdtMode) {
+      const montoUSDT = item.montoUSD;
+      const usdtFinales = item.usdtNetos;
+      const bsObt = montoUSDT * item.tasaP2P;
+      const usdComprados = item.tasaBanco > 0 ? (bsObt / (item.tasaBanco * (1 + (item.comisionBanco / 100)))) : 0;
+      const usdNetos = usdComprados * (1 - (item.comisionTarjeta / 100));
 
-    $('detailComBancoVal').textContent = '-' + fmtUSD(comisionBancoUSD);
-    $('detailComTarjetaVal').textContent = '-' + fmtUSD(comisionTarjetaUSD);
+      const feeBancoUSDT = usdComprados * (item.comisionBanco / 100);
+      const feeTarjetaUSDT = usdComprados * (item.comisionTarjeta / 100);
+      const feeRetornoUSDT = usdNetos - usdtFinales;
+      const perdidaComisiones = feeBancoUSDT + feeTarjetaUSDT + feeRetornoUSDT;
 
-    const spreadCriptoEl = $('detailSpreadCriptoVal');
-    if (usdtPerdidosEnCripto < 0) {
-      spreadCriptoEl.textContent = '+' + fmtUSD(Math.abs(usdtPerdidosEnCripto));
-      spreadCriptoEl.className = "text-right font-medium text-emerald-400";
+      $('detailComBancoVal').textContent = '-' + '₮' + feeBancoUSDT.toFixed(2);
+      $('detailComTarjetaVal').textContent = '-' + '₮' + feeTarjetaUSDT.toFixed(2);
+      
+      const spreadCriptoEl = $('detailSpreadCriptoVal');
+      if (feeRetornoUSDT < 0) {
+        spreadCriptoEl.textContent = '+' + '₮' + Math.abs(feeRetornoUSDT).toFixed(2);
+        spreadCriptoEl.className = "text-right font-medium text-emerald-400";
+      } else {
+        spreadCriptoEl.textContent = '-' + '₮' + feeRetornoUSDT.toFixed(2);
+        spreadCriptoEl.className = "text-right font-medium text-red-400";
+      }
+
+      const totalPerdidaEl = $('detailPerdidaComisiones');
+      if (perdidaComisiones < 0) {
+        totalPerdidaEl.textContent = '+' + '₮' + Math.abs(perdidaComisiones).toFixed(2);
+        totalPerdidaEl.className = "text-right font-bold text-emerald-400";
+      } else {
+        totalPerdidaEl.textContent = '-' + '₮' + perdidaComisiones.toFixed(2);
+        totalPerdidaEl.className = "text-right font-bold text-red-400";
+      }
+
+      $('detailGananciaBs').textContent = (item.gananciaBs >= 0 ? '' : '-') + '₮' + Math.abs(item.gananciaBs).toFixed(2);
+      $('detailGananciaUSD').textContent = (item.gananciaUSD >= 0 ? '' : '-') + fmtBs(Math.abs(item.gananciaUSD));
     } else {
-      spreadCriptoEl.textContent = '-' + fmtUSD(usdtPerdidosEnCripto);
-      spreadCriptoEl.className = "text-right font-medium text-red-400";
+      const comisionBancoUSD = item.montoUSD * (item.comisionBanco / 100);
+      const comisionTarjetaUSD = item.montoUSD * (item.comisionTarjeta / 100);
+      const usdtPerdidosEnCripto = item.montoUSD - item.usdtNetos;
+      const perdidaComisiones = item.perdidaComisiones !== undefined ? item.perdidaComisiones : (comisionBancoUSD + comisionTarjetaUSD + usdtPerdidosEnCripto);
+
+      $('detailComBancoVal').textContent = '-' + fmtUSD(comisionBancoUSD);
+      $('detailComTarjetaVal').textContent = '-' + fmtUSD(comisionTarjetaUSD);
+
+      const spreadCriptoEl = $('detailSpreadCriptoVal');
+      if (usdtPerdidosEnCripto < 0) {
+        spreadCriptoEl.textContent = '+' + fmtUSD(Math.abs(usdtPerdidosEnCripto));
+        spreadCriptoEl.className = "text-right font-medium text-emerald-400";
+      } else {
+        spreadCriptoEl.textContent = '-' + fmtUSD(usdtPerdidosEnCripto);
+        spreadCriptoEl.className = "text-right font-medium text-red-400";
+      }
+
+      const totalPerdidaEl = $('detailPerdidaComisiones');
+      if (perdidaComisiones < 0) {
+        totalPerdidaEl.textContent = '+' + fmtUSD(Math.abs(perdidaComisiones));
+        totalPerdidaEl.className = "text-right font-bold text-emerald-400";
+      } else {
+        totalPerdidaEl.textContent = '-' + fmtUSD(perdidaComisiones);
+        totalPerdidaEl.className = "text-right font-bold text-red-400";
+      }
+
+      $('detailGananciaBs').textContent = (item.gananciaBs >= 0 ? '' : '-') + fmtBs(Math.abs(item.gananciaBs));
+      $('detailGananciaUSD').textContent = (item.gananciaUSD >= 0 ? '' : '-') + fmtUSD(item.gananciaUSD);
     }
 
-    const totalPerdidaEl = $('detailPerdidaComisiones');
-    if (perdidaComisiones < 0) {
-      totalPerdidaEl.textContent = '+' + fmtUSD(Math.abs(perdidaComisiones));
-      totalPerdidaEl.className = "text-right font-bold text-emerald-400";
-    } else {
-      totalPerdidaEl.textContent = '-' + fmtUSD(perdidaComisiones);
-      totalPerdidaEl.className = "text-right font-bold text-red-400";
-    }
-
-    $('detailGananciaBs').textContent = (item.gananciaBs >= 0 ? '' : '-') + fmtBs(Math.abs(item.gananciaBs));
-    $('detailGananciaUSD').textContent = (item.gananciaUSD >= 0 ? '' : '-') + fmtUSD(item.gananciaUSD);
     $('detailGananciaPct').textContent = (item.gananciaPct >= 0 ? '' : '-') + Math.abs(item.gananciaPct).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
 
     setColor($('detailGananciaBs'), item.gananciaBs);
@@ -1892,9 +2324,16 @@ $('convCopyBtn').addEventListener('click', async () => {
     let sumaRentabilidad = 0;
 
     lista.forEach(item => {
-      totalVolumen += item.montoUSD || 0;
-      totalGananciaUSD += item.gananciaUSD || 0;
-      totalGananciaBs += item.gananciaBs || 0;
+      const isUsdtMode = item.mode === 'UsdtToUsdt';
+      if (isUsdtMode) {
+        totalVolumen += item.montoUSD || 0;
+        totalGananciaUSD += item.gananciaBs || 0;
+        totalGananciaBs += item.gananciaUSD || 0;
+      } else {
+        totalVolumen += item.montoUSD || 0;
+        totalGananciaUSD += item.gananciaUSD || 0;
+        totalGananciaBs += item.gananciaBs || 0;
+      }
       sumaRentabilidad += item.gananciaPct || 0;
     });
 
@@ -1907,11 +2346,17 @@ $('convCopyBtn').addEventListener('click', async () => {
     $('statsRentabilidad').className = `text-xs font-bold privacy-blur ${rentabilidadPromedio >= 0 ? 'text-blue-400' : 'text-red-400'}`;
 
     cont.innerHTML = lista.map(item => {
-      const positivo = item.gananciaUSD >= 0;
+      const isUsdtMode = item.mode === 'UsdtToUsdt';
+      const positivo = isUsdtMode ? (item.gananciaBs >= 0) : (item.gananciaUSD >= 0);
       const colorClase = positivo ? 'text-emerald-400' : 'text-red-400';
       const isNew = item.id === justSavedItemId;
       const animClass = isNew ? 'new-record-animate' : '';
-      return `<div class="flex items-center justify-between gap-2 bg-slate-800/60 rounded-xl p-3 text-xs ${animClass}"><div class="cursor-pointer flex-1" data-load="${item.id}"><p class="font-semibold text-slate-100">$${item.montoUSD.toFixed(2)} <span class="text-slate-500 font-normal">→</span> <span class="${colorClase} font-bold privacy-blur">${positivo ? '+' : ''}${fmtUSD(item.gananciaUSD)}</span></p><p class="text-slate-500 mt-0.5">${item.fecha} · Rentabilidad ${item.gananciaPct.toFixed(2)}%</p></div><button data-delete="${item.id}" class="text-slate-600 hover:text-red-400 px-2 py-1 transition">✕</button></div>`;
+
+      const formattedMonto = isUsdtMode ? `₮${item.montoUSD.toFixed(2)}` : `$${item.montoUSD.toFixed(2)}`;
+      const formattedGanancia = isUsdtMode ? `₮${item.gananciaBs.toFixed(2)}` : fmtUSD(item.gananciaUSD);
+      const modeLabel = isUsdtMode ? '<span class="text-[9px] bg-emerald-500/15 text-emerald-400 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider">USDT</span>' : '<span class="text-[9px] bg-blue-500/15 text-blue-400 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider">Bs</span>';
+
+      return `<div class="flex items-center justify-between gap-2 bg-slate-800/60 rounded-xl p-3 text-xs ${animClass}"><div class="cursor-pointer flex-1" data-load="${item.id}"><p class="font-semibold text-slate-100 flex items-center gap-1.5">${formattedMonto} <span class="text-slate-500 font-normal">→</span> <span class="${colorClase} font-bold privacy-blur">${positivo ? '+' : ''}${formattedGanancia}</span> ${modeLabel}</p><p class="text-slate-500 mt-0.5">${item.fecha} · Rentabilidad ${item.gananciaPct.toFixed(2)}%</p></div><button data-delete="${item.id}" class="text-slate-600 hover:text-red-400 px-2 py-1 transition">✕</button></div>`;
     }).join('');
 
     cont.querySelectorAll('[data-load]').forEach(el => el.addEventListener('click', () => mostrarDetalleHistorial(el.dataset.load)));
@@ -1920,7 +2365,6 @@ $('convCopyBtn').addEventListener('click', async () => {
       eliminarDeHistorial(el.dataset.delete);
     }));
 
-    // Dibujar Gráfico de Rentabilidad Acumulada si está la función lista
     if (typeof dibujarGraficoRentabilidad === 'function') {
       dibujarGraficoRentabilidad();
     }
@@ -1928,6 +2372,18 @@ $('convCopyBtn').addEventListener('click', async () => {
 
   function cargarDesdeHistorial(id) {
     const item = leerHistorial().find(i => i.id === id); if (!item) return;
+    const itemMode = item.mode || 'BsToBs';
+    setMode(itemMode);
+
+    if (itemMode === 'UsdtToUsdt') {
+      usdOverrideMode = item.usdOverrideMode || 'auto';
+      localStorage.setItem('usdOverrideMode', usdOverrideMode);
+      updateUsdOverrideUI();
+      if (usdOverrideMode === 'manual' && item.usdComprados !== undefined) {
+        $('usdCompradosInput').value = item.usdComprados > 0 ? item.usdComprados.toFixed(2) : '';
+      }
+    }
+
     $('montoUSD').value = item.montoUSD; $('tasaBanco').value = item.tasaBanco; $('comisionBanco').value = item.comisionBanco;
     $('comisionTarjeta').value = item.comisionTarjeta; $('usdtNetos').value = item.usdtNetos; $('tasaP2P').value = item.tasaP2P;
     setActiveButton('.quick-amount', null, QUICK_AMOUNT_INACTIVE, QUICK_AMOUNT_ACTIVE);
@@ -1970,14 +2426,16 @@ $('convCopyBtn').addEventListener('click', async () => {
     if (lista.length === 0) return;
     
     // Header
-    const headers = ['Fecha', 'Monto Compra (USD)', 'Tasa Banco (Bs)', 'Comision Banco (%)', 'Comision Tarjeta (%)', 'Bs Invertidos', 'USDT Recibidos', 'Tasa P2P (Bs)', 'Bs Obtenidos', 'Ganancia (Bs)', 'Ganancia (USD)', 'Rentabilidad (%)'];
+    const headers = ['Fecha', 'Modo', 'Monto Inicial (USD/USDT)', 'Tasa Banco (Bs)', 'Comisión Banco (%)', 'Comisión Tarjeta (%)', 'Inversión Total', 'Retorno Net (USDT/%)', 'Tasa P2P (Bs)', 'Retorno Total', 'Ganancia (Primaria)', 'Ganancia (Secundaria)', 'Rentabilidad (%)'];
     
     // Rows
     const rows = lista.map(item => {
-      const bsInvertidos = item.bsInvertidos || (item.montoUSD * item.tasaBanco * (1 + (item.comisionBanco / 100)));
-      const bsObtenidos = item.bsObtenidos || (item.usdtNetos * item.tasaP2P);
+      const isUsdtMode = item.mode === 'UsdtToUsdt';
+      const bsInvertidos = item.bsInvertidos || (isUsdtMode ? item.montoUSD : (item.montoUSD * item.tasaBanco * (1 + (item.comisionBanco / 100))));
+      const bsObtenidos = item.bsObtenidos || (isUsdtMode ? (item.montoUSD * item.tasaP2P) : (item.usdtNetos * item.tasaP2P));
       return [
         `"${item.fecha}"`,
+        isUsdtMode ? '"USDT_TO_USDT"' : '"BS_TO_BS"',
         item.montoUSD.toFixed(2),
         item.tasaBanco.toFixed(2),
         item.comisionBanco.toFixed(2),
@@ -2007,7 +2465,22 @@ $('convCopyBtn').addEventListener('click', async () => {
   $('saveHistorialBtn').addEventListener('click', () => {
     if (!ultimoCalculo) return; const c = ultimoCalculo;
     const nuevoItem = {
-      id: Date.now().toString(), montoUSD: c.montoUSD, tasaBanco: c.tasaBanco, comisionBanco: c.comisionBanco, comisionTarjeta: c.comisionTarjeta, usdtNetos: c.usdtNetos, tasaP2P: c.tasaP2P, gananciaUSD: c.gananciaUSD, gananciaBs: c.gananciaBs, gananciaPct: c.gananciaPct,
+      id: Date.now().toString(),
+      montoUSD: c.montoUSD,
+      tasaBanco: c.tasaBanco,
+      comisionBanco: c.comisionBanco,
+      comisionTarjeta: c.comisionTarjeta,
+      usdtNetos: c.usdtNetos,
+      tasaP2P: c.tasaP2P,
+      gananciaUSD: c.gananciaUSD,
+      gananciaBs: c.gananciaBs,
+      gananciaPct: c.gananciaPct,
+      perdidaComisiones: c.perdidaComisiones,
+      bsInvertidos: c.bsInvertidos,
+      bsObtenidos: c.bsObtenidos,
+      usdComprados: c.usdComprados || 0,
+      usdOverrideMode: currentMode === 'UsdtToUsdt' ? usdOverrideMode : 'auto',
+      mode: currentMode,
       fecha: new Date().toLocaleString('es-VE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
     };
     justSavedItemId = nuevoItem.id;
@@ -2054,9 +2527,18 @@ $('convCopyBtn').addEventListener('click', async () => {
   $('detailCopyBtn').addEventListener('click', async () => {
     if (!selectedHistoryItem) return;
     const c = selectedHistoryItem;
-    const bsInvertidos = c.bsInvertidos || (c.montoUSD * c.tasaBanco * (1 + (c.comisionBanco / 100)));
-    const bsObtenidos = c.bsObtenidos || (c.usdtNetos * c.tasaP2P);
-    const resumen = `📊 Arbitraje Cambiario (Historial)\nFecha: ${c.fecha}\nMonto invertido: $${c.montoUSD.toFixed(2)}\nBs Invertidos: ${fmtBs(bsInvertidos)} (Tasa: ${fmtBs(c.tasaBanco)})\nBs Obtenidos: ${fmtBs(bsObtenidos)} (Tasa: ${fmtBs(c.tasaP2P)})\nGanancia Neta: ${fmtBs(c.gananciaBs)} (${fmtUSD(c.gananciaUSD)})\nRentabilidad: ${c.gananciaPct.toFixed(2)}%`;
+    const isUsdtMode = c.mode === 'UsdtToUsdt';
+    let resumen = '';
+    if (!isUsdtMode) {
+      const bsInvertidos = c.bsInvertidos || (c.montoUSD * c.tasaBanco * (1 + (c.comisionBanco / 100)));
+      const bsObtenidos = c.bsObtenidos || (c.usdtNetos * c.tasaP2P);
+      resumen = `📊 Arbitraje Cambiario (Bs ➔ Bs - Historial)\nFecha: ${c.fecha}\nMonto invertido: $${c.montoUSD.toFixed(2)}\nBs Invertidos: ${fmtBs(bsInvertidos)} (Tasa: ${fmtBs(c.tasaBanco)})\nBs Obtenidos: ${fmtBs(bsObtenidos)} (Tasa: ${fmtBs(c.tasaP2P)})\nGanancia Neta: ${fmtBs(c.gananciaBs)} (${fmtUSD(c.gananciaUSD)})\nRentabilidad: ${c.gananciaPct.toFixed(2)}%`;
+    } else {
+      const bsObtenidosP2P = c.montoUSD * c.tasaP2P;
+      const usdComprados = c.usdComprados !== undefined ? c.usdComprados : (c.tasaBanco > 0 ? (bsObtenidosP2P / (c.tasaBanco * (1 + (c.comisionBanco / 100)))) : 0);
+      const usdNetos = usdComprados * (1 - (c.comisionTarjeta / 100));
+      resumen = `📊 Arbitraje Cambiario (USDT ➔ USDT - Historial)\nFecha: ${c.fecha}\nCapital Inicial: ₮${c.montoUSD.toFixed(2)}\nVenta P2P: ${fmtBs(bsObtenidosP2P)} (Tasa: ${fmtBs(c.tasaP2P)})\nCompra Banco: ${fmtUSD(usdComprados)} (Tasa: ${fmtBs(c.tasaBanco)})\nUSD Netos: ${fmtUSD(usdNetos)}\nUSDT Finales: ₮${c.usdtNetos.toFixed(2)}\nGanancia Neta: ₮${c.gananciaBs.toFixed(2)} (${fmtBs(c.gananciaUSD)})\nRentabilidad: ${c.gananciaPct.toFixed(2)}%`;
+    }
     try { await navigator.clipboard.writeText(resumen); } 
     catch (err) {
       const temp = document.createElement('textarea');
@@ -2407,7 +2889,7 @@ $('convCopyBtn').addEventListener('click', async () => {
   function setupPreciseNumericInputs() {
     const fieldsToSanitize = [
       'montoUSD', 'tasaBanco', 'comisionBanco', 'comisionTarjeta', 'usdtNetos', 'tasaP2P',
-      'metaGananciaUSD', 'convInputDivisa', 'convInputBs'
+      'metaGananciaUSD', 'convInputDivisa', 'convInputBs', 'usdCompradosInput'
     ];
     
     fieldsToSanitize.forEach(id => {
@@ -2457,6 +2939,7 @@ $('convCopyBtn').addEventListener('click', async () => {
   setupPreciseNumericInputs();
   updateOnlineStatus();
 
+  setMode(currentMode);
   renderHistorial();
   resetRender();
   
