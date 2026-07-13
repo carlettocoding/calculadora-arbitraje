@@ -1,4 +1,4 @@
-const CACHE_NAME = 'arbitraje-v4';
+const CACHE_NAME = 'arbitraje-v5';
 const ASSETS = [
   'index.html',
   'manifest.json',
@@ -33,8 +33,10 @@ self.addEventListener('fetch', (e) => {
                        e.request.url.endsWith('index.html') || 
                        e.request.url === self.location.origin + '/';
 
-  if (isNavigation) {
-    // Estrategia Network-First: Intentar red primero para obtener siempre el último despliegue.
+  const isApiRequest = e.request.url.includes('dolarapi.com');
+
+  if (isNavigation || isApiRequest) {
+    // Estrategia Network-First: Intentar red primero para obtener siempre el último despliegue o tasas reales al día.
     // Si falla (offline), servir desde la caché.
     e.respondWith(
       fetch(e.request)

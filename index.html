@@ -335,13 +335,25 @@
 
             <div class="space-y-4">
               <div>
-                <label id="montoLabel" for="montoUSD" class="block text-xs font-medium text-slate-400 mb-1.5">Monto a Comprar (USD)</label>
-                <div class="relative">
-                  <span id="montoSimbolo" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
-                  <input type="text" id="montoUSD" inputmode="decimal" pattern="[0-9,.]*" placeholder="100.00"
-                    class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-7 pr-3 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-3">
+                  <div>
+                    <label id="montoLabel" for="montoUSD" class="block text-xs font-medium text-slate-400 mb-1.5">Monto a Comprar (USD)</label>
+                    <div class="relative">
+                      <span id="montoSimbolo" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
+                      <input type="text" id="montoUSD" inputmode="decimal" pattern="[0-9,.]*" placeholder="100.00"
+                        class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-7 pr-3 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
+                    </div>
+                  </div>
+                  <div>
+                    <label id="montoBsLabel" for="montoBs" class="block text-xs font-medium text-slate-400 mb-1.5">Presupuesto en Bolívares (Bs)</label>
+                    <div class="relative">
+                      <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">Bs</span>
+                      <input type="text" id="montoBs" inputmode="decimal" pattern="[0-9,.]*" placeholder="0.00"
+                        class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-9 pr-3 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
+                    </div>
+                  </div>
                 </div>
-                <div class="flex gap-2 mt-2">
+                <div class="flex gap-2">
                   <button type="button" data-monto="10" class="quick-amount flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">$10</button>
                   <button type="button" data-monto="50" class="quick-amount flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">$50</button>
                   <button type="button" data-monto="100" class="quick-amount flex-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 border border-slate-700 py-1.5 rounded-lg transition">$100</button>
@@ -399,22 +411,25 @@
                 </div>
               </div>
 
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label for="comisionBanco" class="block text-xs font-medium text-slate-400 mb-1.5">Comisión Banco (%)</label>
-                  <div class="relative">
-                    <input type="text" id="comisionBanco" inputmode="decimal" pattern="[0-9,.]*" placeholder="0.50"
-                      class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-3 pr-8 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
-                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">%</span>
-                  </div>
+              <!-- Nota Informativa de Comisión Fija de Compra de Divisas -->
+              <div class="bg-blue-500/5 rounded-xl border border-blue-500/15 p-3 flex gap-2.5 items-start">
+                <span class="text-blue-400 text-sm leading-none mt-0.5">ℹ️</span>
+                <div class="space-y-0.5">
+                  <span class="text-xs font-semibold text-blue-300 block">Comisión de compra fija (0,50%)</span>
+                  <span class="text-[10px] text-slate-400 block leading-normal">
+                    La comisión bancaria para la compra de divisas está fijada por ley en <strong>0,50%</strong> para todos los bancos nacionales. Este porcentaje se incluye de forma automática en los cálculos del desglose.
+                  </span>
                 </div>
-                <div>
-                  <label for="comisionTarjeta" class="block text-xs font-medium text-slate-400 mb-1.5">Comisión Tarjeta (%)</label>
-                  <div class="relative">
-                    <input type="text" id="comisionTarjeta" inputmode="decimal" pattern="[0-9,.]*" placeholder="1.50"
-                      class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-3 pr-8 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
-                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">%</span>
-                  </div>
+              </div>
+
+              <input type="hidden" id="comisionBanco" value="0.50" placeholder="0.50">
+
+              <div>
+                <label for="comisionTarjeta" class="block text-xs font-medium text-slate-400 mb-1.5">Comisión Tarjeta (%)</label>
+                <div class="relative">
+                  <input type="text" id="comisionTarjeta" inputmode="decimal" pattern="[0-9,.]*" placeholder="1.50"
+                    class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-3 pr-8 py-3 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">%</span>
                 </div>
               </div>
 
@@ -1046,6 +1061,8 @@
       $('montoLabel').textContent = "Monto a Comprar (USD)";
       $('montoSimbolo').textContent = "$";
       $('montoUSD').placeholder = "100.00";
+      $('montoBsLabel').textContent = "Presupuesto en Bolívares (Bs)";
+      $('montoBs').placeholder = "0.00";
 
       $('seccion2Titulo').innerHTML = `<span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-400/10 text-blue-400 text-xs font-bold">2</span> Conversión a Crypto (Binance)`;
       $('usdtNetosLabel').textContent = "USDT a Recibir Netos";
@@ -1095,6 +1112,8 @@
       $('montoLabel').textContent = "Capital Inicial (USDT)";
       $('montoSimbolo').textContent = "₮";
       $('montoUSD').placeholder = "100.00";
+      $('montoBsLabel').textContent = "Equivalente Venta P2P (Bs)";
+      $('montoBs').placeholder = "0.00";
 
       $('seccion2Titulo').innerHTML = `<span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-400/10 text-blue-400 text-xs font-bold">2</span> Retorno a Crypto (Binance)`;
       $('usdtNetosLabel').textContent = "USDT Finales Recibidos";
@@ -1139,11 +1158,71 @@
       $('usdtToUsdtInitialSaleContainer').classList.remove('hidden');
     }
 
+    syncMontoFields();
     calcular();
   }
 
   $('modeBsToBsBtn').addEventListener('click', () => { setMode('BsToBs'); });
   $('modeUsdtToUsdtBtn').addEventListener('click', () => { setMode('UsdtToUsdt'); });
+
+  let lastEditedMontoField = 'USD'; // 'USD' o 'Bs'
+
+  function syncMontoFields(source) {
+    if (source) {
+      lastEditedMontoField = source;
+    }
+    const tasaBanco = num($('tasaBanco'));
+    const comisionBanco = num($('comisionBanco'));
+    const tasaP2P = num($('tasaP2P'));
+
+    // Calcular el valor de referencia en bolívares para $100 en gris (placeholder)
+    if (currentMode === 'BsToBs') {
+      const refBs = 100.00 * tasaBanco * (1 + (comisionBanco / 100));
+      $('montoBs').placeholder = refBs > 0 ? refBs.toFixed(2) : '0.00';
+    } else {
+      const refBs = 100.00 * tasaP2P;
+      $('montoBs').placeholder = refBs > 0 ? refBs.toFixed(2) : '0.00';
+    }
+
+    if (lastEditedMontoField === 'USD') {
+      const rawUSD = $('montoUSD').value.trim();
+      if (rawUSD === "") {
+        $('montoBs').value = '';
+        return;
+      }
+      const valUSD = limpiarNumero(rawUSD);
+      if (valUSD <= 0) {
+        $('montoBs').value = '';
+        return;
+      }
+      if (currentMode === 'BsToBs') {
+        const calculatedBs = valUSD * tasaBanco * (1 + (comisionBanco / 100));
+        $('montoBs').value = calculatedBs > 0 ? calculatedBs.toFixed(2) : '';
+      } else {
+        const calculatedBs = valUSD * tasaP2P;
+        $('montoBs').value = calculatedBs > 0 ? calculatedBs.toFixed(2) : '';
+      }
+    } else {
+      const rawBs = $('montoBs').value.trim();
+      if (rawBs === "") {
+        $('montoUSD').value = '';
+        return;
+      }
+      const valBs = limpiarNumero(rawBs);
+      if (valBs <= 0) {
+        $('montoUSD').value = '';
+        return;
+      }
+      if (currentMode === 'BsToBs') {
+        const denom = tasaBanco * (1 + (comisionBanco / 100));
+        const calculatedUSD = denom > 0 ? valBs / denom : 0;
+        $('montoUSD').value = calculatedUSD > 0 ? calculatedUSD.toFixed(2) : '';
+      } else {
+        const calculatedUSD = tasaP2P > 0 ? valBs / tasaP2P : 0;
+        $('montoUSD').value = calculatedUSD > 0 ? calculatedUSD.toFixed(2) : '';
+      }
+    }
+  }
 
   const inputs = ['montoUSD','tasaBanco','comisionBanco','comisionTarjeta','usdtNetos','tasaP2P'].map($);
   const fmtBs = (n) => 'Bs ' + n.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -1435,13 +1514,27 @@ $('convCopyBtn').addEventListener('click', async () => {
   document.querySelectorAll('.quick-amount').forEach(btn => {
     btn.addEventListener('click', () => {
       $('montoUSD').value = btn.dataset.monto;
+      lastEditedMontoField = 'USD';
+      syncMontoFields('USD');
       calcular();
       setActiveButton('.quick-amount', btn, QUICK_AMOUNT_INACTIVE, QUICK_AMOUNT_ACTIVE);
     });
   });
 
   // Si el usuario edita manualmente el monto, se pierde el estado activo del preset
-  $('montoUSD').addEventListener('input', () => setActiveButton('.quick-amount', null, QUICK_AMOUNT_INACTIVE, QUICK_AMOUNT_ACTIVE));
+  $('montoUSD').addEventListener('input', () => {
+    lastEditedMontoField = 'USD';
+    syncMontoFields('USD');
+    calcular();
+    setActiveButton('.quick-amount', null, QUICK_AMOUNT_INACTIVE, QUICK_AMOUNT_ACTIVE);
+  });
+
+  $('montoBs').addEventListener('input', () => {
+    lastEditedMontoField = 'Bs';
+    syncMontoFields('Bs');
+    calcular();
+    setActiveButton('.quick-amount', null, QUICK_AMOUNT_INACTIVE, QUICK_AMOUNT_ACTIVE);
+  });
 
   document.querySelectorAll('.preset-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1510,6 +1603,7 @@ $('convCopyBtn').addEventListener('click', async () => {
   }
 
   function calcular() {
+    syncMontoFields();
     const valMonto = num($('montoUSD'));
     const tasaBanco = num($('tasaBanco'));
     const comisionBanco = num($('comisionBanco'));
@@ -2090,7 +2184,7 @@ $('convCopyBtn').addEventListener('click', async () => {
   });
 
   $('clearArbitrajeBtn').addEventListener('click', () => {
-    ['montoUSD', 'comisionBanco', 'comisionTarjeta', 'usdtNetos'].forEach(id => { $(id).value = ''; });
+    ['montoUSD', 'montoBs', 'comisionBanco', 'comisionTarjeta', 'usdtNetos'].forEach(id => { $(id).value = ''; });
     calcular();
     setActiveButton('.quick-amount', null, QUICK_AMOUNT_INACTIVE, QUICK_AMOUNT_ACTIVE);
     setActiveButton('.preset-btn', null, PRESET_BTN_INACTIVE, PRESET_BTN_ACTIVE);
@@ -2888,7 +2982,7 @@ $('convCopyBtn').addEventListener('click', async () => {
   // ==========================================
   function setupPreciseNumericInputs() {
     const fieldsToSanitize = [
-      'montoUSD', 'tasaBanco', 'comisionBanco', 'comisionTarjeta', 'usdtNetos', 'tasaP2P',
+      'montoUSD', 'montoBs', 'tasaBanco', 'comisionBanco', 'comisionTarjeta', 'usdtNetos', 'tasaP2P',
       'metaGananciaUSD', 'convInputDivisa', 'convInputBs', 'usdCompradosInput'
     ];
     
