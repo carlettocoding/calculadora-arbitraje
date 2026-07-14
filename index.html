@@ -851,7 +851,18 @@
       </ol>
     </section>
 
-    <p class="text-center text-slate-600 text-xs mt-6">Cálculo referencial. Verifica siempre las tasas antes de operar.</p>
+    <footer class="mt-8 pb-6 text-center space-y-2">
+      <p class="text-slate-600 text-xs font-medium">Cálculo referencial. Verifica siempre las tasas antes de operar.</p>
+      <div class="flex items-center justify-center gap-2 text-[10px] text-slate-500">
+        <span class="font-medium text-slate-400">Calculadora PRO</span>
+        <button id="versionBadge" class="inline-flex items-center px-1.5 py-0.5 rounded-md font-bold bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-400 hover:text-blue-400 border border-slate-700/80 hover:border-blue-400/50 transition cursor-pointer" title="Ver historial de cambios (Changelog)">v1.1.2</button>
+        <span>•</span>
+        <span class="flex items-center gap-1 text-slate-400">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          PWA Activa
+        </span>
+      </div>
+    </footer>
   </div>
 
   <!-- Modal de Detalle de Operación Histórica -->
@@ -945,6 +956,87 @@
             Cerrar
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Historial de Versiones (Changelog) -->
+  <div id="changelogModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto fade-in text-sm text-slate-300">
+      <button id="closeChangelogModalBtn" aria-label="Cerrar" class="absolute right-4 top-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 transition">
+        ✕
+      </button>
+      
+      <h3 class="text-blue-400 font-bold text-lg mb-4 flex items-center gap-2">
+        🚀 Historial de Versiones
+      </h3>
+
+      <div class="space-y-6 text-left">
+        <!-- v1.1.2 -->
+        <div class="border-l-2 border-blue-500 pl-4 relative">
+          <div class="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-slate-900 border-2 border-blue-500"></div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-bold text-slate-100 text-sm">v1.1.2</span>
+            <span class="text-[10px] bg-blue-500/15 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/30">Actual</span>
+          </div>
+          <p class="text-xs font-semibold text-blue-400/90 mb-2">Changelog Integrado y Optimización de SW</p>
+          <ul class="list-disc list-inside space-y-1 text-xs text-slate-400 leading-relaxed">
+            <li><strong>Historial Interactivo:</strong> Se añade el indicador de versión en el pie de página que abre la línea de tiempo de cambios.</li>
+            <li><strong>Optimización Documental:</strong> Comentarios añadidos en el Service Worker para facilitar la comprensión de las políticas de caché de PWAs.</li>
+          </ul>
+        </div>
+
+        <!-- v1.1.1 -->
+        <div class="border-l-2 border-slate-700 pl-4 relative">
+          <div class="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-slate-900 border-2 border-slate-700"></div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-bold text-slate-100 text-sm">v1.1.1</span>
+          </div>
+          <p class="text-xs font-semibold text-slate-400 mb-2">Optimización de Caché y UX</p>
+          <ul class="list-disc list-inside space-y-1 text-xs text-slate-400 leading-relaxed">
+            <li><strong>Interfaz Simplificada:</strong> Refactorización del Paso 1 (Compra en Banco), eliminando el campo redundante de "Presupuesto en Bs" para mantener un único punto de entrada de capital ("Monto a Comprar").</li>
+            <li><strong>Mayor Fluidez:</strong> Limpieza de lógica redundante en la sincronización de campos numéricos al escribir.</li>
+            <li><strong>Service Worker Mejorado:</strong> Cambio a estrategia estricta de <em>Network-First</em> para la API de tasas, eliminando problemas de caché obsoleto.</li>
+          </ul>
+        </div>
+
+        <!-- v1.1.0 -->
+        <div class="border-l-2 border-slate-700 pl-4 relative">
+          <div class="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-slate-900 border-2 border-slate-700"></div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-bold text-slate-100 text-sm">v1.1.0</span>
+          </div>
+          <p class="text-xs font-semibold text-slate-400 mb-2">Arbitraje Cripto a Cripto (USDT a USDT)</p>
+          <ul class="list-disc list-inside space-y-1 text-xs text-slate-400 leading-relaxed">
+            <li><strong>Módulo Cripto a Cripto:</strong> Evalúa la rentabilidad y comisiones de red al mover USDT entre plataformas directas.</li>
+            <li><strong>Optimización de Comisiones:</strong> Nuevos selectores para comisiones en redes e intercambios P2P.</li>
+            <li><strong>Soporte Historial:</strong> Adaptación del guardado local y gráficos SVG para visualizar las nuevas métricas.</li>
+          </ul>
+        </div>
+
+        <!-- v1.0.0 -->
+        <div class="border-l-2 border-slate-700 pl-4 relative">
+          <div class="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-slate-900 border-2 border-slate-700"></div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-bold text-slate-100 text-sm">v1.0.0</span>
+          </div>
+          <p class="text-xs font-semibold text-slate-400 mb-2">Lanzamiento Oficial: Calculadora PRO (PWA)</p>
+          <ul class="list-disc list-inside space-y-1 text-xs text-slate-400 leading-relaxed">
+            <li><strong>Arbitraje Bancario:</strong> Descuento exacto de comisiones de banco y tarjetas de crédito/débito.</li>
+            <li><strong>Semáforo de Brecha:</strong> Indicador de rentabilidad en tres colores según el spread cambiario.</li>
+            <li><strong>Calculadora Inversa:</strong> Calcula el capital necesario dada una meta de ganancia en USD.</li>
+            <li><strong>Conversor BCV / Paralelo:</strong> Conversión directa e histórica con DolarAPI.</li>
+            <li><strong>Historial y Gráficos SVG:</strong> Almacenamiento local, exportación a CSV y gráfico interactivo de rendimiento.</li>
+            <li><strong>Modo Offline & PWA:</strong> Funciona 100% sin internet una vez guardada en la pantalla de inicio.</li>
+            <li><strong>Modo Privacidad:</strong> Difumina datos financieros en entornos públicos.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-6">
+        <button id="closeChangelogBtn" class="w-full text-xs font-semibold bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-xl transition shadow-lg shadow-blue-500/10">
+          Entendido
+        </button>
       </div>
     </div>
   </div>
@@ -3048,6 +3140,32 @@ $('convCopyBtn').addEventListener('click', async () => {
   }
   
   updateConversorUI(); 
+
+  // Lógica del Modal del Changelog (Historial de Cambios)
+  const changelogModal = $('changelogModal');
+  const versionBadge = $('versionBadge');
+  const closeChangelogModalBtn = $('closeChangelogModalBtn');
+  const closeChangelogBtn = $('closeChangelogBtn');
+
+  if (changelogModal && versionBadge) {
+    const abrirChangelog = () => {
+      changelogModal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    };
+    const cerrarChangelog = () => {
+      changelogModal.classList.add('hidden');
+      document.body.style.overflow = '';
+    };
+
+    versionBadge.addEventListener('click', abrirChangelog);
+    if (closeChangelogModalBtn) closeChangelogModalBtn.addEventListener('click', cerrarChangelog);
+    if (closeChangelogBtn) closeChangelogBtn.addEventListener('click', cerrarChangelog);
+
+    // Cerrar al hacer clic fuera del modal (en el backdrop)
+    changelogModal.addEventListener('click', (e) => {
+      if (e.target === changelogModal) cerrarChangelog();
+    });
+  }
 
   setTimeout(consultarTasasEnTiempoReal, 500);
 </script>

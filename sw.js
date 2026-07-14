@@ -1,4 +1,11 @@
-const CACHE_NAME = 'arbitraje-v5';
+// =========================================================================
+// SERVICE WORKER - CONTROL DE CACHÉ
+// IMPORTANTE: Para forzar una actualización en los dispositivos de los usuarios
+// (activando el aviso de "Nueva versión instalada"), debes incrementar el número
+// al final del CACHE_NAME (ej: 'arbitraje-v6' -> 'arbitraje-v7') cada vez que
+// realices un nuevo release de la aplicación.
+// =========================================================================
+const CACHE_NAME = 'arbitraje-v7';
 const ASSETS = [
   'index.html',
   'manifest.json',
