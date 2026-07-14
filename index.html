@@ -1081,11 +1081,11 @@
   const $ = (id) => document.getElementById(id);
 
   // ===== VARIABLES GLOBALES DE TASAS =====
-  let globalTasaBCV = 0;      
-  let globalTasaP2P = 0;      
-  let globalTasaBcvEUR = 0;   
-  let globalTasaP2pEUR = 0;   
-  let lastUpdateString = "";
+  let globalTasaBCV = parseFloat(localStorage.getItem('globalTasaBCV')) || 0;      
+  let globalTasaP2P = parseFloat(localStorage.getItem('globalTasaP2P')) || 0;      
+  let globalTasaBcvEUR = parseFloat(localStorage.getItem('globalTasaBcvEUR')) || 0;   
+  let globalTasaP2pEUR = parseFloat(localStorage.getItem('globalTasaP2pEUR')) || 0;   
+  let lastUpdateString = localStorage.getItem('lastUpdateString') || "";
 
   // Lógica Pestañas (Con memoria localStorage)
   const tabArbitraje = $('tabArbitraje');
@@ -1321,7 +1321,7 @@
   const fmtUSD = (n) => '$' + Math.abs(n).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   let ultimoCalculo = null;
-  let lastUpdateTime = null;
+  let lastUpdateTime = localStorage.getItem('lastUpdateTime') ? new Date(localStorage.getItem('lastUpdateTime')) : null;
   let updateCheckInterval = null;
   let bcvSincronizado = false;
   let p2pSincronizado = false;
@@ -2105,23 +2105,41 @@ $('convCopyBtn').addEventListener('click', async () => {
       if (respEur.ok) {
         const datosEur = await respEur.json();
         const eurOficial = Array.isArray(datosEur) ? datosEur.find(item => item.fuente === 'oficial') : null;
-        if (eurOficial && eurOficial.promedio) globalTasaBcvEUR = parseFloat(eurOficial.promedio);
+        if (eurOficial && eurOficial.promedio) {
+          globalTasaBcvEUR = parseFloat(eurOficial.promedio);
+          localStorage.setItem('globalTasaBcvEUR', globalTasaBcvEUR);
+        }
 
         const eurParalelo = Array.isArray(datosEur) ? datosEur.find(item => item.fuente === 'paralelo') : null;
-        if (eurParalelo && eurParalelo.promedio) globalTasaP2pEUR = parseFloat(eurParalelo.promedio);
+        if (eurParalelo && eurParalelo.promedio) {
+          globalTasaP2pEUR = parseFloat(eurParalelo.promedio);
+          localStorage.setItem('globalTasaP2pEUR', globalTasaP2pEUR);
+        }
       }
     } catch (error) { }
 
     if (globalTasaBcvEUR === 0) {
       try {
         const r = await fetchConTimeout('https://ve.dolarapi.com/v1/euros/oficial');
-        if (r.ok) { const d = await r.json(); if (d && d.promedio) globalTasaBcvEUR = parseFloat(d.promedio); }
+        if (r.ok) { 
+          const d = await r.json(); 
+          if (d && d.promedio) {
+            globalTasaBcvEUR = parseFloat(d.promedio);
+            localStorage.setItem('globalTasaBcvEUR', globalTasaBcvEUR);
+          }
+        }
       } catch (error) { }
     }
     if (globalTasaP2pEUR === 0) {
       try {
         const r = await fetchConTimeout('https://ve.dolarapi.com/v1/euros/paralelo');
-        if (r.ok) { const d = await r.json(); if (d && d.promedio) globalTasaP2pEUR = parseFloat(d.promedio); }
+        if (r.ok) { 
+          const d = await r.json(); 
+          if (d && d.promedio) {
+            globalTasaP2pEUR = parseFloat(d.promedio);
+            localStorage.setItem('globalTasaP2pEUR', globalTasaP2pEUR);
+          }
+        }
       } catch (error) { }
     }
 
@@ -2129,10 +2147,12 @@ $('convCopyBtn').addEventListener('click', async () => {
 
     if (valorBCV !== null && !isNaN(valorBCV) && valorBCV > 0) {
       globalTasaBCV = valorBCV;
+      localStorage.setItem('globalTasaBCV', valorBCV);
       $('tasaBanco').value = valorBCV.toFixed(2);
       bcvStatusEl.textContent = "● BCV Actualizado";
       bcvStatusEl.className = "text-[10px] text-emerald-400 font-medium";
       lastUpdateTime = new Date();
+      localStorage.setItem('lastUpdateTime', lastUpdateTime.toISOString());
       bcvSincronizado = true;
       huboExito = true;
       actualizarVolatilidad('bcv', valorBCV, $('bcvVolatilidad'));
@@ -2140,10 +2160,14 @@ $('convCopyBtn').addEventListener('click', async () => {
       bcvStatusEl.textContent = "⚠️ Tasa manual (sin conexión)";
       bcvStatusEl.className = "text-[10px] text-red-400 font-medium animate-none";
       bcvSincronizado = false;
+      if (globalTasaBCV > 0) {
+        $('tasaBanco').value = globalTasaBCV.toFixed(2);
+      }
     }
 
     if (valorP2P !== null && !isNaN(valorP2P) && valorP2P > 0) {
       globalTasaP2P = valorP2P;
+      localStorage.setItem('globalTasaP2P', valorP2P);
       $('tasaP2P').value = valorP2P.toFixed(2);
       p2pStatusEl.textContent = "● Paralelo Sincronizado";
       p2pStatusEl.className = "text-[10px] text-emerald-400 font-medium";
@@ -2154,14 +2178,24 @@ $('convCopyBtn').addEventListener('click', async () => {
       p2pStatusEl.textContent = "⚠️ Tasa manual (sin conexión)";
       p2pStatusEl.className = "text-[10px] text-red-400 font-medium animate-none";
       p2pSincronizado = false;
+      if (globalTasaP2P > 0) {
+        $('tasaP2P').value = globalTasaP2P.toFixed(2);
+      }
     }
 
     if (huboExito) {
       lastUpdateString = new Date().toLocaleString('es-VE', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      localStorage.setItem('lastUpdateString', lastUpdateString);
+      actualizarTimerTasas();
+      calcular();
+      calcularConversor(lastEdited);
+    } else {
       actualizarTimerTasas();
       calcular();
       calcularConversor(lastEdited);
     }
+
+    return huboExito;
 
     return huboExito;
   }
