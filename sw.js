@@ -5,7 +5,7 @@
 // al final del CACHE_NAME (ej: 'arbitraje-v6' -> 'arbitraje-v7') cada vez que
 // realices un nuevo release de la aplicación.
 // =========================================================================
-const CACHE_NAME = 'arbitraje-v8';
+const CACHE_NAME = 'arbitraje-v14';
 const ASSETS = [
   'index.html',
   'manifest.json',
@@ -40,7 +40,9 @@ self.addEventListener('fetch', (e) => {
                        e.request.url.endsWith('index.html') || 
                        e.request.url === self.location.origin + '/';
 
-  const isApiRequest = e.request.url.includes('dolarapi.com');
+  const isApiRequest = e.request.url.includes('dolarapi.com') ||
+                       e.request.url.includes('criptoya.com') ||
+                       e.request.url.includes('yadio.io');
 
   if (isNavigation || isApiRequest) {
     // Estrategia Network-First: Intentar red primero para obtener siempre el último despliegue o tasas reales al día.
