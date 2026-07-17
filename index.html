@@ -277,12 +277,82 @@
       font-size: 0.8125rem !important;
     }
   }
+
+  /* ==========================================
+   * ESTILOS DEL ONBOARDING GUIADO (TUTORIAL)
+   * ========================================== */
+  #onboardingOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9990;
+    pointer-events: auto;
+    background-color: transparent;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  #onboardingOverlay.active {
+    opacity: 1;
+  }
+  #onboardingSpotlight {
+    position: fixed;
+    z-index: 9991;
+    pointer-events: none;
+    box-sizing: border-box;
+    border-radius: 12px;
+    border: 2px solid rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.85);
+    box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.75);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  html.light #onboardingSpotlight {
+    box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.65);
+    border: 2px solid rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.95);
+  }
+  #onboardingCard {
+    position: fixed;
+    z-index: 9992;
+    width: 320px;
+    pointer-events: auto;
+    opacity: 0;
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  }
+  #onboardingCard.active {
+    opacity: 1;
+    transform: scale(1);
+  }
+  
+  /* Ajuste responsivo de Onboarding Card en móviles (Bottom Sheet o Top Sheet según posición) */
+  @media (max-width: 768px) {
+    #onboardingCard {
+      left: 16px !important;
+      right: 16px !important;
+      width: calc(100% - 32px) !important;
+      max-width: none !important;
+      transform: translateY(40px) scale(0.95);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, top 0.3s ease, bottom 0.3s ease;
+    }
+    #onboardingCard.active {
+      transform: translateY(0) scale(1);
+    }
+    #onboardingCard.mobile-top {
+      top: 24px !important;
+      bottom: auto !important;
+    }
+    #onboardingCard.mobile-bottom {
+      bottom: 24px !important;
+      top: auto !important;
+    }
+  }
 </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen antialiased">
 <script>
   if (localStorage.getItem('arbitrajeTema') === 'light') {
     document.documentElement.classList.add('light');
+    const themeMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeMeta) {
+      themeMeta.setAttribute('content', '#dde3ed');
+    }
   }
   
   try {
@@ -305,14 +375,14 @@
 
   <div class="max-w-md md:max-w-5xl mx-auto px-4 py-6 pb-28 md:pb-8 relative transition-all duration-300">
 
-    <header class="mb-6 flex items-center justify-between gap-1 select-none h-10 relative">
+    <header id="appHeader" class="mb-6 flex items-center justify-between gap-1 select-none h-10 relative">
       <button id="settingsToggleBtn" type="button" aria-label="Personalización de diseño" class="w-9 h-9 flex items-center justify-center rounded-full bg-slate-800/80 border border-slate-700/80 text-slate-300 hover:text-blue-400 hover:scale-105 active:scale-95 transition shrink-0" title="Personalizar diseño">
         <span>🎨</span>
       </button>
       <div class="flex-1 text-center min-w-0 px-1 md:absolute md:left-1/2 md:-translate-x-1/2 md:top-1/2 md:-translate-y-1/2">
         <h1 id="appTitleBtn" class="text-sm sm:text-base md:text-lg font-extrabold tracking-tight cursor-pointer hover:text-blue-300 transition-colors inline-flex items-center justify-center gap-1 py-1 text-slate-100 truncate max-w-full">
           Calculadora PRO
-          <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/25">v1.4.1</span>
+          <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/25">v1.6.1</span>
         </h1>
       </div>
       <div class="flex items-center gap-1.5 shrink-0">
@@ -331,7 +401,7 @@
     </header>
 
     <!-- Barra de Navegación Responsiva (Dock Flotante en Móvil / Pestañas Superiores en PC) -->
-    <nav class="fixed bottom-4 left-4 right-4 max-w-md mx-auto md:relative md:bottom-auto md:left-auto md:right-auto md:max-w-md md:h-12 md:rounded-xl md:mb-6 md:shadow-none border border-white/10 rounded-2xl backdrop-blur-xl bg-slate-900/80 flex h-16 items-center justify-around px-6 z-40 shadow-2xl shadow-black/50" data-purpose="bottom-nav">
+    <nav id="mainNavigation" class="fixed bottom-4 left-4 right-4 max-w-md mx-auto md:relative md:bottom-auto md:left-auto md:right-auto md:max-w-md md:h-12 md:rounded-xl md:mb-6 md:shadow-none border border-white/10 rounded-2xl backdrop-blur-xl bg-slate-900/80 flex h-16 items-center justify-around px-6 z-40 shadow-2xl shadow-black/50" data-purpose="bottom-nav">
       <button id="tabArbitraje" type="button" class="flex flex-col md:flex-row items-center justify-center space-y-0.5 md:space-y-0 md:gap-2 transition-all duration-200" title="Arbitraje Cambiario">
         <i class="fa-solid fa-scale-balanced text-base md:text-sm"></i>
         <span class="text-[9px] md:text-xs font-semibold">Arbitraje</span>
@@ -396,10 +466,17 @@
           </button>
         </div>
       </div>
+      
+      <!-- Ayuda y Guía -->
+      <div class="mt-4 pt-3 border-t border-white/5">
+        <button id="startOnboardingBtn" type="button" class="w-full text-[10px] font-semibold bg-blue-500/10 hover:bg-blue-500/25 text-blue-400 border border-blue-500/30 py-2.5 rounded-xl transition flex items-center justify-center gap-1.5">
+          <span>🧭</span> Recorrido Tutorial Guiado
+        </button>
+      </div>
     </section>
 
     <!-- Indicador de Sincronización Sutil (Global) -->
-    <section class="glass-card rounded-2xl px-4 py-2.5 mb-4 flex items-center justify-between gap-3 text-xs shadow-md">
+    <section id="syncStatusBar" class="glass-card rounded-2xl px-4 py-2.5 mb-4 flex items-center justify-between gap-3 text-xs shadow-md">
       <div class="flex items-center gap-2">
         <span class="relative flex h-2 w-2">
           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -759,7 +836,7 @@
               </div>
             </div>
 
-            <div class="mt-4 pt-4 grid grid-cols-1 gap-3">
+            <div id="cardsResultadoGanancia" class="mt-4 pt-4 grid grid-cols-1 gap-3">
               <div class="rounded-xl glass-input p-4 text-center">
                 <p id="labelCard1" class="text-xs text-slate-400 mb-1">Ganancia Neta (Bs)</p>
                 <p id="gananciaBs" class="text-2xl font-bold privacy-blur text-slate-100">Bs 0,00</p>
@@ -865,7 +942,7 @@
         
         <!-- Columna Izquierda: Entradas y Configuraciones -->
         <div class="md:col-span-6 lg:col-span-7 space-y-4">
-          <section class="glass-card rounded-2xl p-5 shadow-lg border-t border-white/5 bg-white/5">
+          <section id="conversorSeccionPrincipal" class="glass-card rounded-2xl p-5 shadow-lg border-t border-white/5 bg-white/5">
             
             <!-- Panel de Tasas Rápidas en Conversor -->
             <div class="grid grid-cols-3 gap-2 p-2.5 mb-3 bg-slate-950 border border-slate-800 rounded-xl text-center select-none">
@@ -884,9 +961,20 @@
             </div>
 
             <div class="flex glass-segment rounded-xl p-1 mb-3 border border-white/5">
-              <button id="convOptDolarBtn" type="button" class="flex-1 text-xs font-semibold py-2.5 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-400/30 transition-all duration-200">💵 Dólar (BCV)</button>
-              <button id="convOptEuroBtn" type="button" class="flex-1 text-xs font-semibold py-2.5 rounded-lg text-slate-400 hover:text-slate-200 transition-all duration-200 border border-transparent">💶 Euro (BCV)</button>
-              <button id="convOptUsdtBtn" type="button" class="flex-1 text-xs font-semibold py-2.5 rounded-lg text-slate-400 hover:text-slate-200 transition-all duration-200 border border-transparent">🪙 USDT (P2P)</button>
+              <button id="convOptDolarBtn" type="button" class="flex-1 text-[11px] font-semibold py-2.5 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-400/30 transition-all duration-200">💵 Dólar</button>
+              <button id="convOptEuroBtn" type="button" class="flex-1 text-[11px] font-semibold py-2.5 rounded-lg text-slate-400 hover:text-slate-200 transition-all duration-200 border border-transparent">💶 Euro</button>
+              <button id="convOptUsdtBtn" type="button" class="flex-1 text-[11px] font-semibold py-2.5 rounded-lg text-slate-400 hover:text-slate-200 transition-all duration-200 border border-transparent">🪙 USDT</button>
+              <button id="convOptPropiaBtn" type="button" class="flex-1 text-[11px] font-semibold py-2.5 rounded-lg text-slate-400 hover:text-slate-200 transition-all duration-200 border border-transparent">✍️ Propia</button>
+            </div>
+
+            <!-- Contenedor para ingresar Tasa Propia (oculto por defecto) -->
+            <div id="convPropiaInputContainer" class="hidden mb-3 glass-input border border-white/10 rounded-xl p-3 space-y-2">
+              <label for="convPropiaInput" class="block text-[11px] font-semibold text-slate-400">Ingresa tu Tasa Personalizada (Bs)</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-semibold text-sm">Bs</span>
+                <input type="text" id="convPropiaInput" inputmode="decimal" pattern="[0-9,.]*" placeholder="Ej. 45,50"
+                  class="w-full glass-input rounded-lg pl-9 pr-3 py-2 text-xs font-bold text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
+              </div>
             </div>
 
             <button type="button" id="toggleHistoricoConvBtn" class="text-[11px] text-slate-500 hover:text-blue-400 underline decoration-dotted underline-offset-2 transition mb-2">
@@ -894,7 +982,7 @@
             </button>
 
             <div id="historicoConvContainer" class="hidden mb-4 glass-input border border-white/10 rounded-xl p-3 space-y-2">
-              <label for="fechaHistoricaConv" class="block text-[11px] font-semibold text-slate-400">Fecha de la tasa BCV</label>
+              <label id="fechaHistoricaConvLabel" for="fechaHistoricaConv" class="block text-[11px] font-semibold text-slate-400">Fecha de la tasa BCV</label>
               <div class="flex gap-2">
                 <input type="date" id="fechaHistoricaConv"
                   class="flex-1 glass-input rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
@@ -967,14 +1055,14 @@
           </section>
 
           <!-- Sección de Historial y Gráfica BCV (Informativo, solo visual) -->
-          <section class="glass-card rounded-2xl shadow-lg overflow-hidden border-t border-white/5 bg-white/5">
+          <section id="sectionGraficaTendencia" class="glass-card rounded-2xl shadow-lg overflow-hidden border-t border-white/5 bg-white/5">
             <!-- Botón de Cabecera Colapsable -->
             <button id="toggleBcvHistBtn" type="button" class="w-full flex items-center justify-between p-4 text-left hover:bg-white/5 transition">
               <div class="flex items-center gap-2.5">
                 <span class="text-blue-400 text-sm">📈</span>
                 <div>
-                  <p class="text-xs font-semibold text-slate-300">Tendencia Histórica BCV</p>
-                  <p id="bcvHistSummary" class="text-[10px] text-slate-500 mt-0.5">Ver evolución del dólar oficial</p>
+                  <p class="text-xs font-semibold text-slate-300">Tendencia Histórica</p>
+                  <p id="bcvHistSummary" class="text-[10px] text-slate-500 mt-0.5">Ver evolución de las tasas de cambio</p>
                 </div>
               </div>
               <span id="bcvHistChevron" class="text-xs text-slate-500 transition-transform duration-300">▼</span>
@@ -982,6 +1070,19 @@
 
             <!-- Contenido del histórico (oculto por defecto) -->
             <div id="bcvHistContent" class="hidden border-t border-white/5 p-4 space-y-4">
+              <!-- Selector de Cotización Histórica -->
+              <div class="glass-segment rounded-xl p-1 flex gap-1">
+                <button id="btnHistSourceDolarBcv" type="button" class="flex-1 text-[10px] font-semibold py-1.5 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-400/30 transition-all duration-200">
+                  💵 Dólar Oficial
+                </button>
+                <button id="btnHistSourceEuroBcv" type="button" class="flex-1 text-[10px] font-semibold py-1.5 rounded-lg text-slate-400 hover:text-slate-300 transition-all duration-200 border border-transparent">
+                  💶 Euro Oficial
+                </button>
+                <button id="btnHistSourceDolarParalelo" type="button" class="flex-1 text-[10px] font-semibold py-1.5 rounded-lg text-slate-400 hover:text-slate-300 transition-all duration-200 border border-transparent">
+                  🪙 Paralelo
+                </button>
+              </div>
+
               <!-- Selector de Períodos -->
               <div class="glass-segment rounded-xl p-1 flex gap-1">
                 <button id="btnBcvPeriod10d" type="button" class="flex-1 text-[10px] font-semibold py-1.5 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-400/30 transition-all duration-200">
@@ -1168,7 +1269,7 @@
       
       <div class="text-center pb-4 mb-4 border-b border-white/5">
         <h3 class="text-xl font-bold tracking-tight text-slate-100 flex items-center justify-center gap-2">
-          Calculadora PRO <span class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/25">v1.4.1</span>
+          Calculadora PRO <span class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/25">v1.6.1</span>
         </h3>
         <p class="text-[11px] text-slate-400 mt-2 font-medium">Acerca de la Aplicación</p>
       </div>
@@ -1183,14 +1284,71 @@
       </h4>
 
       <div class="space-y-5 text-left max-h-[40vh] overflow-y-auto pr-2">
-        <!-- v1.4.1 -->
+        <!-- v1.6.1 -->
         <div class="border-l-2 border-emerald-400 pl-4 relative">
           <div class="absolute -left-[6px] top-1.5 w-3 h-3 rounded-full bg-slate-900 border-2 border-emerald-400"></div>
           <div class="flex items-center gap-2 mb-1">
-            <span class="font-bold text-slate-100 text-sm">v1.4.1</span>
+            <span class="font-bold text-slate-100 text-sm">v1.6.1</span>
             <span class="text-[9px] bg-emerald-500/15 text-emerald-400 px-1.5 py-0.5 rounded-full border border-emerald-500/30">Actual</span>
           </div>
-          <p class="text-xs font-semibold text-emerald-400/90 mb-2">Correcciones de Modo Claro y Gráfica</p>
+          <p class="text-xs font-semibold text-emerald-400/90 mb-2">Correcciones de Superposición del Tutorial y CSS</p>
+          <ul class="list-disc list-inside space-y-1 text-xs text-slate-400 leading-relaxed">
+            <li><strong>Evitar superposición del Onboarding Card:</strong> Corregido el problema en móviles donde la tarjeta informativa se superponía al resaltar elementos situados en la parte inferior (como el dock flotante). Ahora, la tarjeta cambia dinámicamente al extremo superior si el elemento está abajo.</li>
+            <li><strong>Corrección de sintaxis CSS:</strong> Eliminados los corchetes sobrantes en las reglas de responsive design que arrojaban advertencias en el validador IDE.</li>
+          </ul>
+        </div>
+
+        <!-- v1.6.0 -->
+        <div class="border-l-2 border-slate-700 pl-4 relative">
+          <div class="absolute -left-[6px] top-1.5 w-3 h-3 rounded-full bg-slate-900 border-2 border-slate-700"></div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-bold text-slate-300 text-sm">v1.6.0</span>
+          </div>
+          <p class="text-xs font-semibold text-slate-400 mb-2">Recorrido Tutorial Interactivo (Onboarding)</p>
+          <ul class="list-disc list-inside space-y-1 text-xs text-slate-400 leading-relaxed">
+            <li><strong>Guía Interactiva:</strong> Implementación de un tutorial guiado paso a paso con spotlight y tarjetas informativas.</li>
+            <li><strong>Auto-arranque y Control Local:</strong> Se inicia de manera automática solo la primera vez que se accede a la app (guardado en LocalStorage).</li>
+            <li><strong>Acceso Manual:</strong> Botón añadido al final del panel de personalización para activar el tutorial de forma manual cuando se desee.</li>
+            <li><strong>Soporte Responsivo:</strong> Adaptación del cuadro informativo para flotar en ordenadores y actuar como bottom-sheet en teléfonos.</li>
+          </ul>
+        </div>
+
+        <!-- v1.5.1 -->
+        <div class="border-l-2 border-slate-700 pl-4 relative">
+          <div class="absolute -left-[6px] top-1.5 w-3 h-3 rounded-full bg-slate-900 border-2 border-slate-700"></div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-bold text-slate-300 text-sm">v1.5.1</span>
+          </div>
+          <p class="text-xs font-semibold text-slate-400 mb-2">Buscador Histórico de Euro y Dólar Paralelo en Conversor</p>
+          <ul class="list-disc list-inside space-y-1 text-xs text-slate-400 leading-relaxed">
+            <li><strong>Buscador Histórico ampliado:</strong> Habilitado el botón de búsqueda de tasa histórica para Dólar BCV, Euro BCV y Dólar Paralelo en el conversor.</li>
+            <li><strong>Actualización dinámica de etiquetas:</strong> La etiqueta del botón y el calendario de búsqueda se adaptan dinámicamente según la divisa que esté seleccionada.</li>
+            <li><strong>Caché y reset:</strong> Integración de restablecimiento rápido ("Usar tasa en vivo") y sincronización con el botón global de refresco de tasas.</li>
+          </ul>
+        </div>
+
+        <!-- v1.5.0 -->
+        <div class="border-l-2 border-slate-700 pl-4 relative">
+          <div class="absolute -left-[6px] top-1.5 w-3 h-3 rounded-full bg-slate-900 border-2 border-slate-700"></div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-bold text-slate-300 text-sm">v1.5.0</span>
+          </div>
+          <p class="text-xs font-semibold text-slate-400 mb-2">Tasa Propia, Más Históricos y Correcciones en Móvil</p>
+          <ul class="list-disc list-inside space-y-1 text-xs text-slate-400 leading-relaxed">
+            <li><strong>Apartado de Tasa Propia:</strong> Agregado selector y campo para tasa de cambio personalizada en el conversor, con persistencia en LocalStorage.</li>
+            <li><strong>Euro BCV y Dólar Paralelo Histórico:</strong> Añadido selector en el gráfico del conversor para alternar la tendencia de Dólar BCV, Euro BCV y Dólar Paralelo con caché de carga rápida.</li>
+            <li><strong>Cambio de Tema en Móviles:</strong> Corregido el bloqueo de color al alternar temas en iOS/Android mediante forzado de reflow y actualización de meta theme-color.</li>
+            <li><strong>Contraste en Modo Claro:</strong> Ajustados colores de rejillas, textos y círculos en los gráficos SVG para perfecta legibilidad en el tema claro.</li>
+          </ul>
+        </div>
+
+        <!-- v1.4.1 -->
+        <div class="border-l-2 border-slate-700 pl-4 relative">
+          <div class="absolute -left-[6px] top-1.5 w-3 h-3 rounded-full bg-slate-900 border-2 border-slate-700"></div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-bold text-slate-300 text-sm">v1.4.1</span>
+          </div>
+          <p class="text-xs font-semibold text-slate-400 mb-2">Correcciones de Modo Claro y Gráfica</p>
           <ul class="list-disc list-inside space-y-1 text-xs text-slate-400 leading-relaxed">
             <li><strong>Tasas visibles en modo claro:</strong> Las tasas del conversor (Dólar BCV, Euro BCV, USDT P2P) eran invisibles sobre el fondo claro. Corregido con overrides CSS para <code>text-slate-200</code>.</li>
             <li><strong>Tooltip de gráfica reparado:</strong> El tooltip del historial de arbitraje se posicionaba incorrectamente. Reemplazado por overlay HTML confiable con valor +/- en verde/rojo y fecha.</li>
@@ -1358,6 +1516,7 @@
   let globalTasaBcvEUR = parseFloat(localStorage.getItem('globalTasaBcvEUR')) || 0;   
   let globalTasaP2pEUR = parseFloat(localStorage.getItem('globalTasaP2pEUR')) || 0;   
   let globalTasaUsdtP2P = parseFloat(localStorage.getItem('globalTasaUsdtP2P')) || 830.00;   
+  let globalTasaPropia = parseFloat(localStorage.getItem('globalTasaPropia')) || 0;
   let lastUpdateString = localStorage.getItem('lastUpdateString') || "";
 
   // Lógica Pestañas (Con memoria localStorage)
@@ -1607,13 +1766,36 @@
   // Tema
   function aplicarIconoTema() {
     const esClaro = document.documentElement.classList.contains('light');
-    $('themeIcon').textContent = esClaro ? '☀️' : '🌙';
+    const themeIcon = $('themeIcon');
+    if (themeIcon) {
+      themeIcon.textContent = esClaro ? '☀️' : '🌙';
+    }
+    const themeMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeMeta) {
+      themeMeta.setAttribute('content', esClaro ? '#dde3ed' : '#0f172a');
+    }
   }
+
   $('themeToggleBtn').addEventListener('click', () => {
     document.documentElement.classList.toggle('light');
     const esClaro = document.documentElement.classList.contains('light');
     localStorage.setItem('arbitrajeTema', esClaro ? 'light' : 'dark');
+    
+    // Forzar redibujado/reflow en móviles para solucionar problemas de persistencia de color (iOS/Android WebKit)
+    const originalDisplay = document.body.style.display;
+    document.body.style.display = 'none';
+    document.body.offsetHeight; // Truco de reflow
+    document.body.style.display = originalDisplay;
+
     aplicarIconoTema();
+
+    // Redibujar gráficos para que adopten los colores del nuevo tema
+    if (typeof globalBcvHistory !== 'undefined' && globalBcvHistory) {
+      dibujarBcvHistoryChart(activeBcvPeriod);
+    }
+    if (typeof dibujarGraficoRentabilidad === 'function') {
+      dibujarGraficoRentabilidad();
+    }
   });
   aplicarIconoTema();
 
@@ -1621,10 +1803,10 @@
   // ==========================================
   // LÓGICA DEL CONVERTIDOR BIDIRECCIONAL (MEJORADA)
   // ==========================================
-  let convActiveOption = 'DOLAR'; // Opciones: 'DOLAR', 'EURO', 'USDT'
+  let convActiveOption = 'DOLAR'; // Opciones: 'DOLAR', 'EURO', 'USDT', 'PROPIA'
   let lastEdited = 'DIVISA'; 
   let convUsandoHistorico = false;
-  let convTasaHistoricaBCV = null;
+  let convTasaHistorica = null; // Tasa histórica genérica (se aplica al modo activo)
   let convFechaHistoricaTexto = '';
 
   const convInputDivisa = $('convInputDivisa');
@@ -1632,15 +1814,17 @@
   const convResultadoFinal = $('convResultadoFinal');
 
   function getTasaConvertidor() {
+    if (convUsandoHistorico && convTasaHistorica) {
+      return convTasaHistorica;
+    }
     if (convActiveOption === 'DOLAR') {
-      if (convUsandoHistorico && convTasaHistoricaBCV) {
-        return convTasaHistoricaBCV;
-      }
       return globalTasaBCV;
     } else if (convActiveOption === 'EURO') {
       return globalTasaBcvEUR;
     } else if (convActiveOption === 'USDT') {
       return globalTasaUsdtP2P;
+    } else if (convActiveOption === 'PROPIA') {
+      return globalTasaPropia;
     }
     return 0;
   }
@@ -1649,11 +1833,12 @@
     const btnDolar = $('convOptDolarBtn');
     const btnEuro = $('convOptEuroBtn');
     const btnUsdt = $('convOptUsdtBtn');
+    const btnPropia = $('convOptPropiaBtn');
 
     // Restablecer estilos de botones
-    [btnDolar, btnEuro, btnUsdt].forEach(btn => {
+    [btnDolar, btnEuro, btnUsdt, btnPropia].forEach(btn => {
       if (btn) {
-        btn.className = "flex-1 text-xs font-semibold py-2.5 rounded-lg text-slate-400 hover:text-slate-200 transition-all duration-200 border border-transparent";
+        btn.className = "flex-1 text-[11px] font-semibold py-2.5 rounded-lg text-slate-400 hover:text-slate-200 transition-all duration-200 border border-transparent";
       }
     });
 
@@ -1671,21 +1856,53 @@
       activeBtn = btnUsdt;
       $('convLabelDivisa').textContent = 'USDT (Binance)';
       $('convSimboloDivisa').textContent = '₮';
+    } else if (convActiveOption === 'PROPIA') {
+      activeBtn = btnPropia;
+      $('convLabelDivisa').textContent = 'Divisas (USD/EUR)';
+      $('convSimboloDivisa').textContent = '$';
     }
 
     if (activeBtn) {
-      activeBtn.className = "flex-1 text-xs font-semibold py-2.5 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-400/30 transition-all duration-200";
+      activeBtn.className = "flex-1 text-[11px] font-semibold py-2.5 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-400/30 transition-all duration-200";
     }
 
     // Toggle para el botón del buscador de tasas históricas
     const toggleHistoricoConvBtn = $('toggleHistoricoConvBtn');
     if (toggleHistoricoConvBtn) {
-      if (convActiveOption === 'DOLAR') {
+      if (convActiveOption === 'DOLAR' || convActiveOption === 'EURO' || convActiveOption === 'USDT') {
         toggleHistoricoConvBtn.classList.remove('hidden');
+        
+        let labelBtnText = "¿Quieres usar la tasa de otro día? Buscar tasa histórica";
+        let labelDateText = "Fecha de la tasa";
+        if (convActiveOption === 'DOLAR') {
+          labelBtnText = "¿Quieres usar el Dólar BCV de otro día? Buscar histórica";
+          labelDateText = "Fecha de la tasa Dólar BCV";
+        } else if (convActiveOption === 'EURO') {
+          labelBtnText = "¿Quieres usar el Euro BCV de otro día? Buscar histórica";
+          labelDateText = "Fecha de la tasa Euro BCV";
+        } else if (convActiveOption === 'USDT') {
+          labelBtnText = "¿Quieres usar el Dólar Paralelo de otro día? Buscar histórica";
+          labelDateText = "Fecha de la tasa Dólar Paralelo";
+        }
+        toggleHistoricoConvBtn.textContent = labelBtnText;
+        const labelEl = $('fechaHistoricaConvLabel');
+        if (labelEl) labelEl.textContent = labelDateText;
       } else {
         toggleHistoricoConvBtn.classList.add('hidden');
         $('historicoConvContainer').classList.add('hidden');
         convUsandoHistorico = false;
+        convTasaHistorica = null;
+      }
+    }
+
+    // Toggle para el contenedor de Tasa Propia
+    const propiaContainer = $('convPropiaInputContainer');
+    if (propiaContainer) {
+      if (convActiveOption === 'PROPIA') {
+        propiaContainer.classList.remove('hidden');
+        $('convPropiaInput').value = globalTasaPropia > 0 ? globalTasaPropia.toFixed(2).replace('.', ',') : '';
+      } else {
+        propiaContainer.classList.add('hidden');
       }
     }
 
@@ -1711,10 +1928,10 @@
   function calcularConversor(fuente = lastEdited) {
     lastEdited = fuente;
     const tasaActual = getTasaConvertidor();
-    const simbolo = convActiveOption === 'DOLAR' ? '$' : (convActiveOption === 'EURO' ? '€' : '₮');
+    const simbolo = (convActiveOption === 'EURO') ? '€' : ((convActiveOption === 'USDT') ? '₮' : '$');
     
-    const notaHistorica = (convUsandoHistorico && convActiveOption === 'DOLAR' && convTasaHistoricaBCV) ? ` (Histórica ${convFechaHistoricaTexto})` : '';
-    $('convTasaAplicada').textContent = tasaActual > 0 ? fmtBs(tasaActual) + notaHistorica : 'Sin conexión';
+    const notaHistorica = (convUsandoHistorico && convTasaHistorica) ? ` (Histórica ${convFechaHistoricaTexto})` : '';
+    $('convTasaAplicada').textContent = tasaActual > 0 ? fmtBs(tasaActual) + notaHistorica : (convActiveOption === 'PROPIA' ? 'Tasa no definida' : 'Sin conexión');
     if (tasaActual <= 0) return;
 
     let divisaAmount = 0;
@@ -1765,6 +1982,17 @@
         
         diffContainer.classList.remove('hidden');
         diffContainer.innerHTML = `<span class="text-slate-400">Con tasa Paralelo, serían </span><span class="text-emerald-400 font-semibold">+${fmtBs(diffBs)}</span>`;
+      } else if (convActiveOption === 'PROPIA') {
+        const bsOficial = divisaAmount * globalTasaBCV;
+        const bsPropia = divisaAmount * globalTasaPropia;
+        const diffBs = Math.abs(bsPropia - bsOficial);
+        
+        diffContainer.classList.remove('hidden');
+        if (bsPropia >= bsOficial) {
+          diffContainer.innerHTML = `<span class="text-slate-400">Con tasa Oficial (BCV), serían </span><span class="text-red-400 font-semibold">-${fmtBs(diffBs)}</span>`;
+        } else {
+          diffContainer.innerHTML = `<span class="text-slate-400">Con tasa Oficial (BCV), serían </span><span class="text-emerald-400 font-semibold">+${fmtBs(diffBs)}</span>`;
+        }
       } else {
         diffContainer.classList.add('hidden');
       }
@@ -1773,10 +2001,29 @@
     }
   }
 
+  function resetTasaHistoricaConv() {
+    convUsandoHistorico = false;
+    convTasaHistorica = null;
+    convFechaHistoricaTexto = '';
+    const estadoEl = $('historicoConvEstado');
+    if (estadoEl) estadoEl.textContent = '';
+    const fechaInput = $('fechaHistoricaConv');
+    if (fechaInput) fechaInput.value = '';
+    const container = $('historicoConvContainer');
+    if (container) container.classList.add('hidden');
+  }
+
   // Event Listeners Convertidor
-  $('convOptDolarBtn').addEventListener('click', () => { convActiveOption = 'DOLAR'; updateConversorUI(); });
-  $('convOptEuroBtn').addEventListener('click', () => { convActiveOption = 'EURO'; updateConversorUI(); });
-  $('convOptUsdtBtn').addEventListener('click', () => { convActiveOption = 'USDT'; updateConversorUI(); });
+  $('convOptDolarBtn').addEventListener('click', () => { resetTasaHistoricaConv(); convActiveOption = 'DOLAR'; updateConversorUI(); });
+  $('convOptEuroBtn').addEventListener('click', () => { resetTasaHistoricaConv(); convActiveOption = 'EURO'; updateConversorUI(); });
+  $('convOptUsdtBtn').addEventListener('click', () => { resetTasaHistoricaConv(); convActiveOption = 'USDT'; updateConversorUI(); });
+  $('convOptPropiaBtn').addEventListener('click', () => { resetTasaHistoricaConv(); convActiveOption = 'PROPIA'; updateConversorUI(); });
+
+  $('convPropiaInput').addEventListener('input', (e) => {
+    globalTasaPropia = limpiarNumero(e.target.value);
+    localStorage.setItem('globalTasaPropia', globalTasaPropia);
+    calcularConversor(lastEdited);
+  });
 
   convInputDivisa.addEventListener('input', () => calcularConversor('DIVISA'));
   convInputBs.addEventListener('input', () => calcularConversor('BS'));
@@ -1806,28 +2053,37 @@
     estadoEl.textContent = 'Buscando tasa histórica...';
     estadoEl.className = 'text-[10px] text-amber-400 min-h-[14px] animate-pulse';
 
+    let url = '';
+    let fuenteLabel = 'BCV';
+    if (convActiveOption === 'DOLAR') {
+      url = `https://ve.dolarapi.com/v1/historicos/dolares/oficial/${anio}/${mes}/${dia}`;
+      fuenteLabel = 'BCV';
+    } else if (convActiveOption === 'EURO') {
+      url = `https://ve.dolarapi.com/v1/historicos/euros/oficial/${anio}/${mes}/${dia}`;
+      fuenteLabel = 'Euro BCV';
+    } else if (convActiveOption === 'USDT') {
+      url = `https://ve.dolarapi.com/v1/historicos/dolares/paralelo/${anio}/${mes}/${dia}`;
+      fuenteLabel = 'Paralelo';
+    }
+
     try {
-      const url = `https://ve.dolarapi.com/v1/historicos/dolares/oficial/${anio}/${mes}/${dia}`;
       const respuesta = await fetchConTimeout(url);
       if (!respuesta.ok) throw new Error('No disponible');
       const datos = await respuesta.json();
       if (!datos || !datos.promedio) throw new Error('Sin datos');
 
-      convTasaHistoricaBCV = parseFloat(datos.promedio);
+      convTasaHistorica = parseFloat(datos.promedio);
       convFechaHistoricaTexto = `${dia}/${mes}`;
       convUsandoHistorico = true;
 
-      // La tasa histórica es siempre BCV/USD, así que reflejamos ese modo en la UI
-      convUseBcv = true;
-      convMoneda = 'USD';
       updateConversorUI();
 
-      estadoEl.innerHTML = `✓ Tasa del ${convFechaHistoricaTexto} aplicada. <button type="button" id="usarTasaVivoConvBtn" class="underline decoration-dotted hover:text-blue-400 transition">Usar tasa en vivo</button>`;
+      estadoEl.innerHTML = `✓ Tasa de ${fuenteLabel} del ${convFechaHistoricaTexto} aplicada. <button type="button" id="usarTasaVivoConvBtn" class="underline decoration-dotted hover:text-blue-400 transition">Usar tasa en vivo</button>`;
       estadoEl.className = 'text-[10px] text-emerald-400 min-h-[14px]';
 
       $('usarTasaVivoConvBtn').addEventListener('click', () => {
         convUsandoHistorico = false;
-        convTasaHistoricaBCV = null;
+        convTasaHistorica = null;
         estadoEl.textContent = '';
         calcularConversor(lastEdited);
       });
@@ -2696,7 +2952,7 @@ $('convCopyBtn').addEventListener('click', async () => {
     if (btn.disabled) return;
     btn.disabled = true; btn.classList.add('opacity-60'); icon.textContent = '⏳';
     convUsandoHistorico = false;
-    convTasaHistoricaBCV = null;
+    convTasaHistorica = null;
     const historicoConvEstadoEl = $('historicoConvEstado');
     if (historicoConvEstadoEl) historicoConvEstadoEl.textContent = '';
     await consultarTasasEnTiempoReal();
@@ -3296,6 +3552,13 @@ $('convCopyBtn').addEventListener('click', async () => {
 
     const areaD = `${pathD} L ${points[points.length - 1].x} ${height - paddingBottom} L ${points[0].x} ${height - paddingBottom} Z`;
 
+    const esClaro = document.documentElement.classList.contains('light');
+    const gridStroke1 = esClaro ? 'rgba(15, 23, 42, 0.05)' : 'rgba(255, 255, 255, 0.05)';
+    const gridStroke2 = esClaro ? 'rgba(15, 23, 42, 0.1)' : 'rgba(255, 255, 255, 0.1)';
+    const textFill1 = esClaro ? 'rgba(15, 23, 42, 0.5)' : 'rgba(255, 255, 255, 0.4)';
+    const textFill2 = esClaro ? 'rgba(15, 23, 42, 0.4)' : 'rgba(255, 255, 255, 0.35)';
+    const circleFill = esClaro ? '#dde3ed' : '#0f172a';
+
     let svgHTML = `
       <svg width="100%" height="${height}" viewBox="0 0 ${width} ${height}" class="overflow-visible select-none">
         <defs>
@@ -3306,8 +3569,8 @@ $('convCopyBtn').addEventListener('click', async () => {
         </defs>
         
         <!-- Líneas Guía Horizontales -->
-        <line x1="${paddingLeft}" y1="${paddingTop}" x2="${width - paddingRight}" y2="${paddingTop}" stroke="rgba(255, 255, 255, 0.05)" stroke-dasharray="2" />
-        <line x1="${paddingLeft}" y1="${height - paddingBottom}" x2="${width - paddingRight}" y2="${height - paddingBottom}" stroke="rgba(255, 255, 255, 0.1)" />
+        <line x1="${paddingLeft}" y1="${paddingTop}" x2="${width - paddingRight}" y2="${paddingTop}" stroke="${gridStroke1}" stroke-dasharray="2" />
+        <line x1="${paddingLeft}" y1="${height - paddingBottom}" x2="${width - paddingRight}" y2="${height - paddingBottom}" stroke="${gridStroke2}" />
     `;
 
     if (minVal < 0 && maxVal > 0) {
@@ -3332,7 +3595,7 @@ $('convCopyBtn').addEventListener('click', async () => {
           cx="${p.x}" 
           cy="${p.y}" 
           r="${radius}" 
-          fill="#0f172a" 
+          fill="${circleFill}" 
           stroke="${strokeColor}" 
           stroke-width="${isLast ? 2.5 : 1.5}" 
           class="cursor-pointer" 
@@ -3344,21 +3607,21 @@ $('convCopyBtn').addEventListener('click', async () => {
 
     svgHTML += `
       <!-- Etiquetas del Eje Y -->
-      <text x="${paddingLeft - 6}" y="${paddingTop + 4}" fill="rgba(255,255,255,0.4)" font-size="9" text-anchor="end" font-weight="700">$${maxVal.toFixed(1)}</text>
-      <text x="${paddingLeft - 6}" y="${height - paddingBottom + 3}" fill="rgba(255,255,255,0.4)" font-size="9" text-anchor="end" font-weight="700">$${minVal.toFixed(1)}</text>
+      <text x="${paddingLeft - 6}" y="${paddingTop + 4}" fill="${textFill1}" font-size="9" text-anchor="end" font-weight="700">$${maxVal.toFixed(1)}</text>
+      <text x="${paddingLeft - 6}" y="${height - paddingBottom + 3}" fill="${textFill1}" font-size="9" text-anchor="end" font-weight="700">$${minVal.toFixed(1)}</text>
     `;
 
     if (points.length >= 2) {
       const firstDateStr = points[0].date.split(' ')[0].trim();
-      svgHTML += `<text x="${points[0].x}" y="${height - 5}" fill="rgba(255,255,255,0.35)" font-size="8" text-anchor="start" font-weight="600">${firstDateStr}</text>`;
+      svgHTML += `<text x="${points[0].x}" y="${height - 5}" fill="${textFill2}" font-size="8" text-anchor="start" font-weight="600">${firstDateStr}</text>`;
       
       const lastDateStr = points[points.length - 1].date.split(' ')[0].trim();
-      svgHTML += `<text x="${points[points.length - 1].x}" y="${height - 5}" fill="rgba(255,255,255,0.35)" font-size="8" text-anchor="end" font-weight="600">${lastDateStr}</text>`;
+      svgHTML += `<text x="${points[points.length - 1].x}" y="${height - 5}" fill="${textFill2}" font-size="8" text-anchor="end" font-weight="600">${lastDateStr}</text>`;
 
       if (points.length > 2) {
         const midIdx = Math.floor(points.length / 2);
         const midDateStr = points[midIdx].date.split(' ')[0].trim();
-        svgHTML += `<text x="${points[midIdx].x}" y="${height - 5}" fill="rgba(255,255,255,0.35)" font-size="8" text-anchor="middle" font-weight="600">${midDateStr}</text>`;
+        svgHTML += `<text x="${points[midIdx].x}" y="${height - 5}" fill="${textFill2}" font-size="8" text-anchor="middle" font-weight="600">${midDateStr}</text>`;
       }
     }
 
@@ -3577,24 +3840,57 @@ $('convCopyBtn').addEventListener('click', async () => {
     });
   }
 
-  // ===== LÓGICA DE HISTORIAL Y TENDENCIA BCV (SÓLO VISUAL) =====
+  // ===== LÓGICA DE HISTORIAL Y TENDENCIA (SÓLO VISUAL) =====
+  let bcvHistoryCache = {
+    dolar_oficial: null,
+    euro_oficial: null,
+    dolar_paralelo: null
+  };
+  let activeHistorySource = 'dolar_oficial';
   let globalBcvHistory = null;
   let activeBcvPeriod = '10d';
-  let bcvHistoryLoaded = false;
   let bcvHistoryLoading = false;
+
+  function updateHistorySourceBtnUI(source) {
+    const btnDolarBcv = $('btnHistSourceDolarBcv');
+    const btnEuroBcv = $('btnHistSourceEuroBcv');
+    const btnDolarParalelo = $('btnHistSourceDolarParalelo');
+
+    [btnDolarBcv, btnEuroBcv, btnDolarParalelo].forEach(btn => {
+      if (btn) {
+        btn.className = "flex-1 text-[10px] font-semibold py-1.5 rounded-lg text-slate-400 hover:text-slate-300 transition-all duration-200 border border-transparent";
+      }
+    });
+
+    let activeBtn = null;
+    if (source === 'dolar_oficial') activeBtn = btnDolarBcv;
+    else if (source === 'euro_oficial') activeBtn = btnEuroBcv;
+    else if (source === 'dolar_paralelo') activeBtn = btnDolarParalelo;
+
+    if (activeBtn) {
+      activeBtn.className = "flex-1 text-[10px] font-semibold py-1.5 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-400/30 transition-all duration-200";
+    }
+  }
 
   function initBcvHistoryWidget() {
     const toggleBtn = $('toggleBcvHistBtn');
     const contentDiv = $('bcvHistContent');
     const chevron = $('bcvHistChevron');
+    const svgContainer = $('bcvHistSvgContainer');
 
     if (!toggleBtn || !contentDiv) return;
 
     const expandirHistorial = async () => {
       contentDiv.classList.remove('hidden');
       if (chevron) chevron.style.transform = 'rotate(180deg)';
-      if (!bcvHistoryLoaded && !bcvHistoryLoading) {
-        await cargarBcvHistory();
+      if (!bcvHistoryCache[activeHistorySource] && !bcvHistoryLoading) {
+        await cargarBcvHistory(activeHistorySource);
+      } else if (bcvHistoryCache[activeHistorySource]) {
+        globalBcvHistory = bcvHistoryCache[activeHistorySource];
+        const loadingEl = $('bcvHistLoading');
+        if (loadingEl) loadingEl.classList.add('hidden');
+        if (svgContainer) svgContainer.classList.remove('hidden');
+        dibujarBcvHistoryChart(activeBcvPeriod);
       }
     };
 
@@ -3605,6 +3901,31 @@ $('convCopyBtn').addEventListener('click', async () => {
       } else {
         contentDiv.classList.add('hidden');
         if (chevron) chevron.style.transform = 'rotate(0deg)';
+      }
+    });
+
+    // Configurar selectores de fuente de datos
+    const sourceButtons = {
+      'btnHistSourceDolarBcv': 'dolar_oficial',
+      'btnHistSourceEuroBcv': 'euro_oficial',
+      'btnHistSourceDolarParalelo': 'dolar_paralelo'
+    };
+
+    Object.entries(sourceButtons).forEach(([id, source]) => {
+      const btn = $(id);
+      if (btn) {
+        btn.addEventListener('click', async () => {
+          if (bcvHistoryLoading) return;
+          activeHistorySource = source;
+          updateHistorySourceBtnUI(source);
+          
+          if (bcvHistoryCache[source]) {
+            globalBcvHistory = bcvHistoryCache[source];
+            dibujarBcvHistoryChart(activeBcvPeriod);
+          } else {
+            await cargarBcvHistory(source);
+          }
+        });
       }
     });
 
@@ -3634,7 +3955,7 @@ $('convCopyBtn').addEventListener('click', async () => {
     });
   }
 
-  async function cargarBcvHistory() {
+  async function cargarBcvHistory(source = activeHistorySource) {
     bcvHistoryLoading = true;
     const loadingEl = $('bcvHistLoading');
     const svgContainer = $('bcvHistSvgContainer');
@@ -3644,13 +3965,20 @@ $('convCopyBtn').addEventListener('click', async () => {
     }
     if (svgContainer) svgContainer.classList.add('hidden');
 
+    let url = 'https://ve.dolarapi.com/v1/historicos/dolares/oficial';
+    if (source === 'euro_oficial') {
+      url = 'https://ve.dolarapi.com/v1/historicos/euros/oficial';
+    } else if (source === 'dolar_paralelo') {
+      url = 'https://ve.dolarapi.com/v1/historicos/dolares/paralelo';
+    }
+
     try {
-      const respuesta = await fetchConTimeout('https://ve.dolarapi.com/v1/historicos/dolares/oficial', 8000);
+      const respuesta = await fetchConTimeout(url, 8000);
       if (!respuesta.ok) throw new Error('Error al cargar datos históricos');
       const datos = await respuesta.json();
       
       if (Array.isArray(datos)) {
-        globalBcvHistory = datos
+        const sortedData = datos
           .filter(item => item && item.promedio && item.fecha)
           .map(item => ({
             fecha: item.fecha,
@@ -3658,10 +3986,14 @@ $('convCopyBtn').addEventListener('click', async () => {
           }))
           .sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
           
-        bcvHistoryLoaded = true;
-        if (loadingEl) loadingEl.classList.add('hidden');
-        if (svgContainer) svgContainer.classList.remove('hidden');
-        dibujarBcvHistoryChart(activeBcvPeriod);
+        bcvHistoryCache[source] = sortedData;
+        
+        if (activeHistorySource === source) {
+          globalBcvHistory = sortedData;
+          if (loadingEl) loadingEl.classList.add('hidden');
+          if (svgContainer) svgContainer.classList.remove('hidden');
+          dibujarBcvHistoryChart(activeBcvPeriod);
+        }
       } else {
         throw new Error('Formato de datos incorrecto');
       }
@@ -3671,7 +4003,7 @@ $('convCopyBtn').addEventListener('click', async () => {
         loadingEl.innerHTML = `<span class="text-red-400 text-center font-medium">⚠️ Error de conexión al cargar histórico.</span><button type="button" id="btnRetryBcvHist" class="underline text-blue-400 hover:text-blue-300 transition text-[10px] mt-1 font-bold">Reintentar</button>`;
         const retryBtn = $('btnRetryBcvHist');
         if (retryBtn) {
-          retryBtn.addEventListener('click', cargarBcvHistory);
+          retryBtn.addEventListener('click', () => cargarBcvHistory(source));
         }
       }
     } finally {
@@ -3777,6 +4109,13 @@ $('convCopyBtn').addEventListener('click', async () => {
 
     const areaD = `${pathD} L ${points[points.length - 1].x} ${height - paddingBottom} L ${points[0].x} ${height - paddingBottom} Z`;
 
+    const esClaro = document.documentElement.classList.contains('light');
+    const gridStroke1 = esClaro ? 'rgba(15, 23, 42, 0.04)' : 'rgba(255, 255, 255, 0.03)';
+    const gridStroke2 = esClaro ? 'rgba(15, 23, 42, 0.03)' : 'rgba(255, 255, 255, 0.02)';
+    const baseLineStroke = esClaro ? 'rgba(15, 23, 42, 0.12)' : 'rgba(255, 255, 255, 0.08)';
+    const textFill = esClaro ? 'rgba(15, 23, 42, 0.45)' : 'rgba(255, 255, 255, 0.3)';
+    const circleFill = esClaro ? '#dde3ed' : '#0f172a';
+
     let svgHTML = `
       <svg id="bcvHistorySvg" width="100%" height="${height}" viewBox="0 0 ${width} ${height}" class="overflow-visible select-none cursor-crosshair">
         <defs>
@@ -3786,39 +4125,39 @@ $('convCopyBtn').addEventListener('click', async () => {
           </linearGradient>
         </defs>
         
-        <line x1="${paddingLeft}" y1="${paddingTop}" x2="${width - paddingRight}" y2="${paddingTop}" stroke="rgba(255, 255, 255, 0.03)" stroke-dasharray="2" />
-        <line x1="${paddingLeft}" y1="${paddingTop + chartHeight / 2}" x2="${width - paddingRight}" y2="${paddingTop + chartHeight / 2}" stroke="rgba(255, 255, 255, 0.02)" stroke-dasharray="2" />
-        <line x1="${paddingLeft}" y1="${height - paddingBottom}" x2="${width - paddingRight}" y2="${height - paddingBottom}" stroke="rgba(255, 255, 255, 0.08)" />
+        <line x1="${paddingLeft}" y1="${paddingTop}" x2="${width - paddingRight}" y2="${paddingTop}" stroke="${gridStroke1}" stroke-dasharray="2" />
+        <line x1="${paddingLeft}" y1="${paddingTop + chartHeight / 2}" x2="${width - paddingRight}" y2="${paddingTop + chartHeight / 2}" stroke="${gridStroke2}" stroke-dasharray="2" />
+        <line x1="${paddingLeft}" y1="${height - paddingBottom}" x2="${width - paddingRight}" y2="${height - paddingBottom}" stroke="${baseLineStroke}" />
         
         <path d="${areaD}" fill="url(#bcvChartGrad)" />
         <path d="${pathD}" fill="none" stroke="rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.9)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
         
         <line id="bcvChartHoverLine" x1="0" y1="${paddingTop}" x2="0" y2="${height - paddingBottom}" stroke="rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.35)" stroke-width="1" stroke-dasharray="2.5" class="hidden" />
-        <circle id="bcvChartHoverCircle" cx="0" cy="0" r="4.5" fill="#0f172a" stroke="rgba(var(--accent-r), var(--accent-g), var(--accent-b), 1)" stroke-width="2" class="hidden" />
+        <circle id="bcvChartHoverCircle" cx="0" cy="0" r="4.5" fill="${circleFill}" stroke="rgba(var(--accent-r), var(--accent-g), var(--accent-b), 1)" stroke-width="2" class="hidden" />
     `;
 
     if (points.length <= 12) {
       points.forEach((p) => {
-        svgHTML += `<circle cx="${p.x}" cy="${p.y}" r="2" fill="#0f172a" stroke="rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.6)" stroke-width="1.2" />`;
+        svgHTML += `<circle cx="${p.x}" cy="${p.y}" r="2" fill="${circleFill}" stroke="rgba(var(--accent-r), var(--accent-g), var(--accent-b), 0.6)" stroke-width="1.2" />`;
       });
     }
 
     svgHTML += `
-        <text x="${paddingLeft - 4}" y="${paddingTop + 3}" fill="rgba(255,255,255,0.3)" font-size="8" text-anchor="end" font-weight="600">${chartMax.toFixed(2)}</text>
-        <text x="${paddingLeft - 4}" y="${height - paddingBottom + 2}" fill="rgba(255,255,255,0.3)" font-size="8" text-anchor="end" font-weight="600">${chartMin.toFixed(2)}</text>
+        <text x="${paddingLeft - 4}" y="${paddingTop + 3}" fill="${textFill}" font-size="8" text-anchor="end" font-weight="600">${chartMax.toFixed(2)}</text>
+        <text x="${paddingLeft - 4}" y="${height - paddingBottom + 2}" fill="${textFill}" font-size="8" text-anchor="end" font-weight="600">${chartMin.toFixed(2)}</text>
     `;
 
     if (points.length >= 2) {
       const firstDateStr = points[0].date.split('-').slice(1).join('/');
-      svgHTML += `<text x="${points[0].x}" y="${height - 3}" fill="rgba(255,255,255,0.3)" font-size="8" text-anchor="start" font-weight="600">${firstDateStr}</text>`;
+      svgHTML += `<text x="${points[0].x}" y="${height - 3}" fill="${textFill}" font-size="8" text-anchor="start" font-weight="600">${firstDateStr}</text>`;
       
       const lastDateStr = points[points.length - 1].date.split('-').slice(1).join('/');
-      svgHTML += `<text x="${points[points.length - 1].x}" y="${height - 3}" fill="rgba(255,255,255,0.3)" font-size="8" text-anchor="end" font-weight="600">${lastDateStr}</text>`;
+      svgHTML += `<text x="${points[points.length - 1].x}" y="${height - 3}" fill="${textFill}" font-size="8" text-anchor="end" font-weight="600">${lastDateStr}</text>`;
 
       if (points.length > 2) {
         const midIdx = Math.floor(points.length / 2);
         const midDateStr = points[midIdx].date.split('-').slice(1).join('/');
-        svgHTML += `<text x="${points[midIdx].x}" y="${height - 3}" fill="rgba(255,255,255,0.3)" font-size="8" text-anchor="middle" font-weight="600">${midDateStr}</text>`;
+        svgHTML += `<text x="${points[midIdx].x}" y="${height - 3}" fill="${textFill}" font-size="8" text-anchor="middle" font-weight="600">${midDateStr}</text>`;
       }
     }
 
@@ -3925,6 +4264,339 @@ $('convCopyBtn').addEventListener('click', async () => {
 
   // Inicializar widget del gráfico BCV
   initBcvHistoryWidget();
+
+  // ==========================================
+  // LÓGICA DE ONBOARDING INTERACTIVO (HOW-TO)
+  // ==========================================
+  let onboardingIndex = 0;
+  const onboardingSteps = [
+    {
+      element: '#appHeader',
+      title: 'Calculadora PRO',
+      text: '¡Bienvenido! Este es tu asistente interactivo para calcular el arbitraje cambiario (banca oficial vs. paralelo/P2P) de forma fluida y en tiempo real.'
+    },
+    {
+      element: '#syncStatusBar',
+      title: 'Tasas en Tiempo Real',
+      text: 'Aquí se muestra el estado de actualización automática de las cotizaciones oficiales del Dólar y Euro BCV, así como el USDT P2P de Binance.'
+    },
+    {
+      element: '#mainNavigation',
+      title: 'Pestañas de Navegación',
+      text: 'Utiliza esta barra para cambiar entre la calculadora de **Arbitraje** (simulación de operaciones completas) y el **Conversor** rápido de divisas.'
+    },
+    {
+      element: '#seccion1Titulo',
+      title: '1. Compra en Banco',
+      text: 'Ingresa el capital a comprar en USD o Bs. La tasa oficial del BCV se precarga automáticamente, pero puedes editarla o buscar tasas históricas de otros días.',
+      beforeShow: () => {
+        const tabArbitraje = $('tabArbitraje');
+        if (tabArbitraje && tabArbitraje.classList.contains('text-slate-400')) {
+          tabArbitraje.click();
+        }
+      }
+    },
+    {
+      element: '#seccion2Titulo',
+      title: '2. Venta en Cripto (Binance)',
+      text: 'Define la tasa de venta (ej: cotización USDT P2P en Binance) y el monto a recibir para proyectar los bolívares de retorno.',
+      beforeShow: () => {
+        const tabArbitraje = $('tabArbitraje');
+        if (tabArbitraje && tabArbitraje.classList.contains('text-slate-400')) {
+          tabArbitraje.click();
+        }
+      }
+    },
+    {
+      element: '#cardsResultadoGanancia',
+      title: 'Resultado de Operación',
+      text: 'Visualiza la ganancia neta estimada (en Bs y USD) junto al porcentaje exacto de rentabilidad de tu arbitraje.',
+      beforeShow: () => {
+        const tabArbitraje = $('tabArbitraje');
+        if (tabArbitraje && tabArbitraje.classList.contains('text-slate-400')) {
+          tabArbitraje.click();
+        }
+      }
+    },
+    {
+      element: '#brechaVisualContainer',
+      title: 'Semáforo de Spread',
+      text: 'El cursor dinámico en esta barra te indica visualmente qué tan viable es tu operación: Rojo (pérdida/riesgo), Amarillo (retorno marginal), Verde (alta rentabilidad).',
+      beforeShow: () => {
+        const tabArbitraje = $('tabArbitraje');
+        if (tabArbitraje && tabArbitraje.classList.contains('text-slate-400')) {
+          tabArbitraje.click();
+        }
+        const brecha = $('brechaVisualContainer');
+        if (brecha) brecha.classList.remove('hidden');
+      }
+    },
+    {
+      element: '#saveHistorialBtn',
+      title: 'Historial y Exportación',
+      text: 'Guarda tus cálculos localmente para auditar tus operaciones a lo largo del tiempo. También puedes exportar el historial a formato CSV.',
+      beforeShow: () => {
+        const tabArbitraje = $('tabArbitraje');
+        if (tabArbitraje && tabArbitraje.classList.contains('text-slate-400')) {
+          tabArbitraje.click();
+        }
+      }
+    },
+    {
+      element: '#conversorSeccionPrincipal',
+      title: 'Conversor Multimoneda',
+      text: 'En esta pestaña puedes hacer conversiones instantáneas bidireccionales de Dólar, Euro, USDT, o ingresar tu propia tasa personalizada.',
+      beforeShow: () => {
+        const tabConversor = $('tabConversor');
+        if (tabConversor && tabConversor.classList.contains('text-slate-400')) {
+          tabConversor.click();
+        }
+      }
+    },
+    {
+      element: '#sectionGraficaTendencia',
+      title: 'Tendencia Histórica',
+      text: 'Visualiza en este widget interactivo el gráfico evolutivo de las tasas de Dólar Oficial, Euro Oficial o Dólar Paralelo para analizar su comportamiento en el mercado.',
+      beforeShow: () => {
+        const tabConversor = $('tabConversor');
+        if (tabConversor && tabConversor.classList.contains('text-slate-400')) {
+          tabConversor.click();
+        }
+        const content = $('bcvHistContent');
+        if (content && content.classList.contains('hidden')) {
+          $('toggleBcvHistBtn').click();
+        }
+      }
+    },
+    {
+      element: '#settingsToggleBtn',
+      title: 'Personaliza tu Interfaz',
+      text: 'Cambia los acentos de color, fondos (Cosmic, Grid o Simple), activa el Modo Incógnito (Privacidad) o repite este recorrido tutorial cuando desees.',
+      beforeShow: () => {
+        const tabArbitraje = $('tabArbitraje');
+        if (tabArbitraje && tabArbitraje.classList.contains('text-slate-400')) {
+          tabArbitraje.click();
+        }
+      }
+    }
+  ];
+
+  function iniciarOnboarding() {
+    let overlay = $('onboardingOverlay');
+    let spotlight = $('onboardingSpotlight');
+    let card = $('onboardingCard');
+
+    if (!overlay) {
+      // Crear overlay
+      overlay = document.createElement('div');
+      overlay.id = 'onboardingOverlay';
+      document.body.appendChild(overlay);
+
+      // Crear spotlight
+      spotlight = document.createElement('div');
+      spotlight.id = 'onboardingSpotlight';
+      document.body.appendChild(spotlight);
+
+      // Crear card de onboarding
+      card = document.createElement('div');
+      card.id = 'onboardingCard';
+      card.className = 'glass-card rounded-2xl p-5 shadow-2xl border border-white/10 flex flex-col justify-between';
+      card.innerHTML = `
+        <div>
+          <div class="flex justify-between items-center mb-2.5">
+            <span id="onboardingStepTitle" class="text-sm font-extrabold text-blue-400">Título del paso</span>
+            <span id="onboardingStepBadge" class="text-[9px] px-1.5 py-0.5 rounded-full bg-slate-900 border border-white/10 text-slate-400 font-semibold">1 / 10</span>
+          </div>
+          <p id="onboardingStepText" class="text-xs text-slate-300 leading-relaxed font-medium mb-5">Descripción explicativa del tutorial.</p>
+        </div>
+        <div class="flex justify-between items-center gap-2 pt-3.5 border-t border-white/5">
+          <button id="onboardingSkipBtn" type="button" class="text-[10px] font-semibold text-slate-500 hover:text-slate-300 transition">Saltar</button>
+          <div class="flex gap-2">
+            <button id="onboardingPrevBtn" type="button" class="text-[10px] font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 transition">Atrás</button>
+            <button id="onboardingNextBtn" type="button" class="text-[10px] font-semibold bg-blue-500 hover:bg-blue-600 text-slate-100 px-3 py-1.5 rounded-lg transition">Siguiente</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(card);
+
+      // Event listeners
+      $('onboardingSkipBtn').addEventListener('click', finalizarOnboarding);
+      $('onboardingPrevBtn').addEventListener('click', () => {
+        if (onboardingIndex > 0) {
+          onboardingIndex--;
+          mostrarPasoOnboarding(onboardingIndex);
+        }
+      });
+      $('onboardingNextBtn').addEventListener('click', () => {
+        if (onboardingIndex < onboardingSteps.length - 1) {
+          onboardingIndex++;
+          mostrarPasoOnboarding(onboardingIndex);
+        } else {
+          finalizarOnboarding();
+        }
+      });
+
+      // Reposicionar al cambiar tamaño de pantalla o al scrollear
+      window.addEventListener('resize', repositionOnboarding);
+      window.addEventListener('scroll', repositionOnboarding, { passive: true });
+    }
+
+    onboardingIndex = 0;
+    overlay.classList.add('active');
+    card.classList.add('active');
+    mostrarPasoOnboarding(onboardingIndex);
+  }
+
+  function finalizarOnboarding() {
+    const overlay = $('onboardingOverlay');
+    const spotlight = $('onboardingSpotlight');
+    const card = $('onboardingCard');
+
+    if (overlay) overlay.classList.remove('active');
+    if (card) card.classList.remove('active');
+    
+    // Ocultar spotlight removiendo coordenadas
+    if (spotlight) {
+      spotlight.style.width = '0px';
+      spotlight.style.height = '0px';
+      spotlight.style.top = '0px';
+      spotlight.style.left = '0px';
+      spotlight.style.boxShadow = 'none';
+    }
+
+    setTimeout(() => {
+      if (overlay) overlay.remove();
+      if (spotlight) spotlight.remove();
+      if (card) card.remove();
+    }, 300);
+
+    localStorage.setItem('onboardingVisto', 'true');
+    window.removeEventListener('resize', repositionOnboarding);
+    window.removeEventListener('scroll', repositionOnboarding);
+  }
+
+  function repositionOnboarding() {
+    if (typeof onboardingIndex !== 'undefined') {
+      updateSpotlightAndCard(onboardingSteps[onboardingIndex]);
+    }
+  }
+
+  function updateSpotlightAndCard(step) {
+    const el = document.querySelector(step.element);
+    const spotlight = $('onboardingSpotlight');
+    const card = $('onboardingCard');
+    if (!el || !spotlight || !card) return;
+
+    const rect = el.getBoundingClientRect();
+    const padding = 6;
+    
+    // Actualizar spotlight
+    spotlight.style.top = `${rect.top - padding}px`;
+    spotlight.style.left = `${rect.left - padding}px`;
+    spotlight.style.width = `${rect.width + (padding * 2)}px`;
+    spotlight.style.height = `${rect.height + (padding * 2)}px`;
+    
+    // Sombra según modo claro u oscuro
+    const isLight = document.documentElement.classList.contains('light');
+    spotlight.style.boxShadow = isLight 
+      ? '0 0 0 9999px rgba(15, 23, 42, 0.65)' 
+      : '0 0 0 9999px rgba(15, 23, 42, 0.75)';
+
+    // Posicionamiento inteligente de la tarjeta (Desktop y Mobile)
+    if (window.innerWidth > 768) {
+      // Limpiar clases de móvil
+      card.classList.remove('mobile-top', 'mobile-bottom');
+
+      const cardHeight = card.offsetHeight || 160;
+      const cardWidth = card.offsetWidth || 320;
+      
+      // Intentar colocarla debajo del elemento
+      let top = rect.bottom + 12;
+      let left = rect.left + (rect.width / 2) - (cardWidth / 2);
+      
+      // Si se sale por abajo de la pantalla, colocarla arriba
+      if (top + cardHeight > window.innerHeight) {
+        top = rect.top - cardHeight - 12;
+      }
+      
+      // Si se sale por la izquierda o derecha, ajustar límites
+      if (left < 16) left = 16;
+      if (left + cardWidth > window.innerWidth - 16) {
+        left = window.innerWidth - cardWidth - 16;
+      }
+      
+      card.style.top = `${top}px`;
+      card.style.left = `${left}px`;
+      card.style.bottom = 'auto';
+      card.style.right = 'auto';
+    } else {
+      // Limpiar estilos inline de desktop para dar paso a las clases CSS responsivas
+      card.style.top = '';
+      card.style.left = '';
+      card.style.bottom = '';
+      card.style.right = '';
+
+      // Determinar si el elemento está en la mitad inferior de la pantalla para evitar superposición
+      const isElementInBottomHalf = rect.top > (window.innerHeight / 2);
+      if (isElementInBottomHalf) {
+        card.classList.remove('mobile-bottom');
+        card.classList.add('mobile-top');
+      } else {
+        card.classList.remove('mobile-top');
+        card.classList.add('mobile-bottom');
+      }
+    }
+  }
+
+  async function mostrarPasoOnboarding(index) {
+    const step = onboardingSteps[index];
+    if (!step) return;
+
+    // Ejecutar callback inicial si existe
+    if (typeof step.beforeShow === 'function') {
+      step.beforeShow();
+      // Pequeña espera para permitir cambios de DOM / transiciones de pestañas
+      await new Promise(r => setTimeout(r, 150));
+    }
+
+    const el = document.querySelector(step.element);
+    if (el) {
+      // Hacer scroll suave hacia el elemento enfocado
+      const offsetTop = el.getBoundingClientRect().top + window.scrollY - 100;
+      window.scrollTo({ top: offsetTop, behavior: 'smooth' });
+      // Esperar a que el scroll termine para centrar el spotlight
+      await new Promise(r => setTimeout(r, 200));
+    }
+
+    // Actualizar contenido de la tarjeta
+    $('onboardingStepTitle').textContent = step.title;
+    $('onboardingStepText').innerHTML = step.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    $('onboardingStepBadge').textContent = `${index + 1} / ${onboardingSteps.length}`;
+
+    // Estado de los botones
+    $('onboardingPrevBtn').disabled = index === 0;
+    $('onboardingPrevBtn').classList.toggle('opacity-50', index === 0);
+    $('onboardingNextBtn').textContent = index === onboardingSteps.length - 1 ? 'Finalizar' : 'Siguiente';
+
+    updateSpotlightAndCard(step);
+  }
+
+  // Listener para botón de arranque manual
+  const startOnboardingBtn = $('startOnboardingBtn');
+  if (startOnboardingBtn) {
+    startOnboardingBtn.addEventListener('click', () => {
+      const panel = $('settingsPanel');
+      if (panel) panel.classList.add('hidden');
+      iniciarOnboarding();
+    });
+  }
+
+  // Auto-arranque en primera visita
+  setTimeout(() => {
+    if (localStorage.getItem('onboardingVisto') !== 'true') {
+      iniciarOnboarding();
+    }
+  }, 1800);
 
   setTimeout(consultarTasasEnTiempoReal, 500);
 </script>
