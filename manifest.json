@@ -1,6 +1,6 @@
 {
-  "short_name": "Arbitraje",
-  "name": "Calculadora de Arbitraje Cambiario",
+  "short_name": "Arby",
+  "name": "Arby",
   "icons": [
     {
       "src": "icon.png",
@@ -23,14 +23,14 @@
     {
       "name": "Arbitraje",
       "short_name": "Arbitraje",
-      "description": "Abrir la calculadora de arbitraje directamente",
+      "description": "Abrir la calculadora de arbitraje directamente en Arby",
       "url": "index.html?tab=arbitraje",
       "icons": [{ "src": "icon.png", "sizes": "192x192" }]
     },
     {
       "name": "Conversor",
       "short_name": "Conversor",
-      "description": "Abrir el convertidor de divisas directamente",
+      "description": "Abrir el convertidor de divisas directamente en Arby",
       "url": "index.html?tab=conversor",
       "icons": [{ "src": "icon.png", "sizes": "192x192" }]
     }
@@ -41,14 +41,14 @@
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Vista móvil de la Calculadora de Arbitraje"
+      "label": "Vista móvil de Arby"
     },
     {
       "src": "icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Vista amplia de la Calculadora de Arbitraje"
+      "label": "Vista amplia de Arby"
     }
   ]
 }
