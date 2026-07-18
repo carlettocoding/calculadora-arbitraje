@@ -1044,12 +1044,17 @@
             <p class="text-xs text-slate-400 mb-1 font-semibold">Equivale a</p>
             <p id="convResultadoFinal" class="text-4xl font-extrabold text-slate-100 tracking-tight break-words">Bs 0,00</p>
             
-            <div class="mt-4 flex items-center justify-center gap-2">
-              <button id="convCopyBtn" class="text-xs font-semibold glass-input hover:bg-white/10 text-slate-300 hover:text-blue-400 px-4 py-2 rounded-lg transition flex items-center justify-center gap-2">
-                <i class="fa-regular fa-copy"></i> <span id="convCopyText">Copiar resultado</span>
-              </button>
-              <button id="clearConversorBtn" class="text-xs font-semibold glass-input hover:bg-red-500/15 text-slate-300 hover:text-red-400 px-4 py-2 rounded-lg transition flex items-center justify-center gap-2">
-                <i class="fa-solid fa-trash-can"></i> <span>Borrar</span>
+            <div class="mt-4 flex flex-col gap-2">
+              <div class="grid grid-cols-2 gap-2">
+                <button id="convCopyNumBtn" class="text-xs font-semibold glass-input hover:bg-white/10 text-slate-300 hover:text-blue-400 py-2 rounded-lg transition flex items-center justify-center gap-1.5" title="Copiar solo el número del resultado">
+                  🔢 <span id="convCopyNumText">Copiar número</span>
+                </button>
+                <button id="convCopyBtn" class="text-xs font-semibold glass-input hover:bg-white/10 text-slate-300 hover:text-blue-400 py-2 rounded-lg transition flex items-center justify-center gap-1.5" title="Copiar resumen detallado de la conversión">
+                  📋 <span id="convCopyText">Copiar detalle</span>
+                </button>
+              </div>
+              <button id="clearConversorBtn" class="text-xs font-semibold glass-input hover:bg-red-500/15 text-slate-300 hover:text-red-400 py-2 rounded-lg transition flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-trash-can"></i> <span>Borrar todo</span>
               </button>
             </div>
           </section>
@@ -1296,6 +1301,7 @@
             <li><strong>Nuevo Nombre Comercial:</strong> Calculadora PRO ahora es oficialmente <strong>Arby</strong>.</li>
             <li><strong>Instalación PWA:</strong> Se actualizó el manifiesto para instalar la app en PC y móvil como "Arby".</li>
             <li><strong>Organización del Proyecto:</strong> El conversor standalone se separó formalmente en el proyecto <strong>Valo</strong>.</li>
+            <li><strong>Identidad Visual:</strong> Actualización del icono de la aplicación (`icon.png` y `favicon.png`) al estilo moderno 3D glassmorphism sutil cian/verde.</li>
           </ul>
         </div>
 
@@ -1305,7 +1311,7 @@
           <div class="flex items-center gap-2 mb-1">
             <span class="font-bold text-slate-300 text-sm">v1.6.1</span>
           </div>
-          <p class="text-xs font-semibold text-emerald-400/90 mb-2">Correcciones de Superposición del Tutorial y CSS</p>
+          <p class="text-xs font-semibold text-slate-400 mb-2">Correcciones de Superposición del Tutorial y CSS</p>
           <ul class="list-disc list-inside space-y-1 text-xs text-slate-400 leading-relaxed">
             <li><strong>Evitar superposición del Onboarding Card:</strong> Corregido el problema en móviles donde la tarjeta informativa se superponía al resaltar elementos situados en la parte inferior (como el dock flotante). Ahora, la tarjeta cambia dinámicamente al extremo superior si el elemento está abajo.</li>
             <li><strong>Corrección de sintaxis CSS:</strong> Eliminados los corchetes sobrantes en las reglas de responsive design que arrojaban advertencias en el validador IDE.</li>
@@ -1982,30 +1988,40 @@
         const bsOficial = divisaAmount * globalTasaBCV;
         const bsUsdt = divisaAmount * globalTasaUsdtP2P;
         const diffBs = Math.abs(bsUsdt - bsOficial);
+        const spreadPct = ((globalTasaUsdtP2P - globalTasaBCV) / globalTasaBCV) * 100;
+        const sign = spreadPct >= 0 ? '+' : '';
         
         diffContainer.classList.remove('hidden');
         if (bsUsdt >= bsOficial) {
-          diffContainer.innerHTML = `<span class="text-slate-400">Con tasa Oficial (BCV), serían </span><span class="text-red-400 font-semibold">-${fmtBs(diffBs)}</span>`;
+          diffContainer.innerHTML = `<span class="text-slate-400">Con tasa Oficial (BCV), serían </span><span class="text-red-400 font-semibold">-${fmtBs(diffBs)}</span> <span class="text-slate-500 font-medium ml-1.5">(Spread: ${sign}${spreadPct.toFixed(2)}%)</span>`;
         } else {
-          diffContainer.innerHTML = `<span class="text-slate-400">Con tasa Oficial (BCV), serían </span><span class="text-emerald-400 font-semibold">+${fmtBs(diffBs)}</span>`;
+          diffContainer.innerHTML = `<span class="text-slate-400">Con tasa Oficial (BCV), serían </span><span class="text-emerald-400 font-semibold">+${fmtBs(diffBs)}</span> <span class="text-slate-500 font-medium ml-1.5">(Spread: ${sign}${spreadPct.toFixed(2)}%)</span>`;
         }
       } else if (convActiveOption === 'DOLAR') {
         const bsOficial = divisaAmount * globalTasaBCV;
-        const bsParalelo = divisaAmount * globalTasaP2P;
-        const diffBs = Math.abs(bsParalelo - bsOficial);
+        const bsUsdt = divisaAmount * globalTasaUsdtP2P;
+        const diffBs = Math.abs(bsUsdt - bsOficial);
+        const spreadPct = ((globalTasaUsdtP2P - globalTasaBCV) / globalTasaBCV) * 100;
+        const sign = spreadPct >= 0 ? '+' : '';
         
         diffContainer.classList.remove('hidden');
-        diffContainer.innerHTML = `<span class="text-slate-400">Con tasa Paralelo, serían </span><span class="text-emerald-400 font-semibold">+${fmtBs(diffBs)}</span>`;
+        if (bsOficial >= bsUsdt) {
+          diffContainer.innerHTML = `<span class="text-slate-400">Con tasa USDT P2P, serían </span><span class="text-red-400 font-semibold">-${fmtBs(diffBs)}</span> <span class="text-slate-500 font-medium ml-1.5">(Spread: ${sign}${spreadPct.toFixed(2)}%)</span>`;
+        } else {
+          diffContainer.innerHTML = `<span class="text-slate-400">Con tasa USDT P2P, serían </span><span class="text-emerald-400 font-semibold">+${fmtBs(diffBs)}</span> <span class="text-slate-500 font-medium ml-1.5">(Spread: ${sign}${spreadPct.toFixed(2)}%)</span>`;
+        }
       } else if (convActiveOption === 'PROPIA') {
         const bsOficial = divisaAmount * globalTasaBCV;
         const bsPropia = divisaAmount * globalTasaPropia;
         const diffBs = Math.abs(bsPropia - bsOficial);
+        const spreadPct = globalTasaPropia > 0 ? (((globalTasaPropia - globalTasaBCV) / globalTasaBCV) * 100) : 0;
+        const sign = spreadPct >= 0 ? '+' : '';
         
         diffContainer.classList.remove('hidden');
         if (bsPropia >= bsOficial) {
-          diffContainer.innerHTML = `<span class="text-slate-400">Con tasa Oficial (BCV), serían </span><span class="text-red-400 font-semibold">-${fmtBs(diffBs)}</span>`;
+          diffContainer.innerHTML = `<span class="text-slate-400">Con tasa Oficial (BCV), serían </span><span class="text-red-400 font-semibold">-${fmtBs(diffBs)}</span> <span class="text-slate-500 font-medium ml-1.5">(Spread: ${sign}${spreadPct.toFixed(2)}%)</span>`;
         } else {
-          diffContainer.innerHTML = `<span class="text-slate-400">Con tasa Oficial (BCV), serían </span><span class="text-emerald-400 font-semibold">+${fmtBs(diffBs)}</span>`;
+          diffContainer.innerHTML = `<span class="text-slate-400">Con tasa Oficial (BCV), serían </span><span class="text-emerald-400 font-semibold">+${fmtBs(diffBs)}</span> <span class="text-slate-500 font-medium ml-1.5">(Spread: ${sign}${spreadPct.toFixed(2)}%)</span>`;
         }
       } else {
         diffContainer.classList.add('hidden');
@@ -2137,13 +2153,13 @@
   convInputDivisa.addEventListener('input', () => setActiveButton('.quick-conv', null, QUICK_CONV_INACTIVE, QUICK_CONV_ACTIVE));
   convInputBs.addEventListener('input', () => setActiveButton('.quick-conv', null, QUICK_CONV_INACTIVE, QUICK_CONV_ACTIVE));
   
-$('convCopyBtn').addEventListener('click', async () => {
+  $('convCopyBtn').addEventListener('click', async () => {
     const resText = $('convResultadoFinal').textContent;
     if (resText === 'Bs 0,00' || resText.includes('0,00')) return;
     
     // Capturamos los datos actuales para armar el resumen sin emojis
     const simbolo = convActiveOption === 'DOLAR' ? '$' : (convActiveOption === 'EURO' ? '€' : '₮');
-    const divisaVal = $('convInputDivisa').value;
+    const divisaVal = $('convInputDivisa').value || '0';
     const tasaVal = fmtBs(getTasaConvertidor());
     const tipoTasa = convActiveOption === 'DOLAR' ? 'Dólar BCV' : (convActiveOption === 'EURO' ? 'Euro BCV' : 'USDT P2P');
     
@@ -2158,11 +2174,29 @@ $('convCopyBtn').addEventListener('click', async () => {
     }
     const textEl = $('convCopyText'); const original = textEl.textContent;
     textEl.textContent = '¡Copiado!';
-    $('convCopyBtn').classList.add('text-emerald-400', 'border-emerald-500/30');
     setTimeout(() => {
       textEl.textContent = original;
-      $('convCopyBtn').classList.remove('text-emerald-400', 'border-emerald-500/30');
-    }, 1800);
+    }, 1500);
+  });
+
+  $('convCopyNumBtn').addEventListener('click', async () => {
+    const resText = $('convResultadoFinal').textContent;
+    if (resText === 'Bs 0,00' || resText.includes('0,00')) return;
+
+    // Extrae sólo los números y los separadores decimales/miles del resultado
+    const limpio = resText.replace(/[^\d,.]/g, '').trim();
+
+    try { await navigator.clipboard.writeText(limpio); } 
+    catch (err) {
+      const temp = document.createElement('textarea');
+      temp.value = limpio; document.body.appendChild(temp);
+      temp.select(); document.execCommand('copy'); document.body.removeChild(temp);
+    }
+    const textEl = $('convCopyNumText'); const original = textEl.textContent;
+    textEl.textContent = '¡Copiado!';
+    setTimeout(() => {
+      textEl.textContent = original;
+    }, 1500);
   });
 
 

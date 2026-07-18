@@ -5,7 +5,7 @@
 // al final del CACHE_NAME (ej: 'arbitraje-v6' -> 'arbitraje-v7') cada vez que
 // realices un nuevo release de la aplicación.
 // =========================================================================
-const CACHE_NAME = 'arby-v21';
+const CACHE_NAME = 'arby-v22';
 const ASSETS = [
   'index.html',
   'manifest.json',
