@@ -5,11 +5,12 @@
 // al final del CACHE_NAME (ej: 'arbitraje-v6' -> 'arbitraje-v7') cada vez que
 // realices un nuevo release de la aplicación.
 // =========================================================================
-const CACHE_NAME = 'arby-v22';
+const CACHE_NAME = 'arby-v24';
 const ASSETS = [
   'index.html',
   'manifest.json',
-  'icon.png'
+  'icon.png',
+  'styles.css'
 ];
 
 self.addEventListener('install', (e) => {
@@ -36,13 +37,14 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-  const isNavigation = e.request.mode === 'navigate' || 
-                       e.request.url.endsWith('index.html') || 
-                       e.request.url === self.location.origin + '/';
+  const isNavigation = e.request.mode === 'navigate' ||
+    e.request.url.endsWith('index.html') ||
+    e.request.url === self.location.origin + '/';
 
   const isApiRequest = e.request.url.includes('dolarapi.com') ||
-                       e.request.url.includes('criptoya.com') ||
-                       e.request.url.includes('yadio.io');
+    e.request.url.includes('rates.dolarvzla.com') ||
+    e.request.url.includes('criptoya.com') ||
+    e.request.url.includes('yadio.io');
 
   if (isNavigation || isApiRequest) {
     // Estrategia Network-First: Intentar red primero para obtener siempre el último despliegue o tasas reales al día.
